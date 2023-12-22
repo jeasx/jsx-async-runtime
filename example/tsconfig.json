@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "jsx-async-runtime",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "target": "ESNext"
+  }
+}

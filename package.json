@@ -1,0 +1,52 @@
+{
+  "name": "jsx-async-runtime",
+  "version": "0.0.0",
+  "description": "An asynchronous JSX runtime without dependencies to be used as server-side template engine.",
+  "keywords": [
+    "jsx",
+    "runtime",
+    "template",
+    "engine",
+    "ssr",
+    "async",
+    "node",
+    "html"
+  ],
+  "license": "MIT",
+  "repository": {
+    "url": "git+https://github.com/jeasx/jsx-async-runtime.git"
+  },
+  "author": {
+    "name": "Maik Jablonski",
+    "email": "mail@mjablonski.de"
+  },
+  "type": "module",
+  "main": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/types/jsx-runtime.d.ts",
+      "import": "./dist/esm/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/types/jsx-dev-runtime.d.ts",
+      "import": "./dist/esm/jsx-dev-runtime.js"
+    }
+  },
+  "scripts": {
+    "build": "esbuild --minify --platform=node --format=esm --outdir=./dist/esm --bundle ./src/*.ts",
+    "build:types": "tsc --emitDeclarationOnly --outDir ./dist/types",
+    "clean": "rm -r dist",
+    "format": "prettier --write src",
+    "release": "npm run clean ; npm run build:types && npm run build"
+  },
+  "devDependencies": {
+    "esbuild": "0.19.10",
+    "prettier": "3.1.1",
+    "typescript": "5.3.3"
+  }
+}
