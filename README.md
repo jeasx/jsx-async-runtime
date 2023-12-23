@@ -27,9 +27,7 @@ If you are using TypeScript for transpiling, simply set these options in the tsc
 
 ## Using
 
-If you're using templates in a server app, you might want to include data from a database in the HTML you serve to the client.
-
-To simplify this process, you can make your components asynchronous and send async requests from within them.
+If you're using `jsx-async-runtime` as server-side template engine, you might want to include data from an asynchronous operation in the resulting markup. To simplify this process, you can make your components asynchronous and send async requests from within them.
 
 You can study the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) to learn about existing features.
 

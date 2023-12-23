@@ -1,14 +1,14 @@
 import type { Attributes } from "./create-element";
 
 export function attributesToString(attributes: Attributes): string {
-  const results: string[] = [];
+  const result: string[] = [];
   for (const attribute of attributes) {
-    const html = attributeToString(attribute);
-    if (html.length > 0) {
-      results.push(html);
+    const str = attributeToString(attribute);
+    if (str.length > 0) {
+      result.push(str);
     }
   }
-  return results.join(" ");
+  return result.join(" ");
 }
 
 function attributeToString([key, value]: [string, any]): string {
