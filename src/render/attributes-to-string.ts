@@ -22,19 +22,19 @@ function attributeToString([key, value]: [string, any]): string {
     switch (key) {
       case "style":
         const styles = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
-        return `style="${escape(styles.join("; "))}"`;
+        return `style="${escapeQuotes(styles.join("; "))}"`;
       case "class":
         const classes = Object.entries(value)
           .filter(([k, v]) => v)
           .map(([k, v]) => k);
-        return `class="${escape(classes.join(" "))}"`;
+        return `class="${escapeQuotes(classes.join(" "))}"`;
       default:
-        return `${key}="${escape(JSON.stringify(value))}"`;
+        return `${key}="${escapeQuotes(JSON.stringify(value))}"`;
     }
   }
-  return `${key}="${escape(value.toString())}"`;
+  return `${key}="${escapeQuotes(value.toString())}"`;
 }
 
-function escape(str: string) {
+function escapeQuotes(str: string) {
   return str.replaceAll('"', "&quot;");
 }
