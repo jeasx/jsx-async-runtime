@@ -1,14 +1,10 @@
 export function escapeEntities(input: string) {
-  if (typeof input === "string") {
-    return input.replace(ESCAPE, (match) => {
-      return ENTITIES[match];
-    });
-  } else {
-    return input;
-  }
+  return typeof input === "string"
+    ? input.replace(ESCAPE, (match) => ENTITIES[match] || match)
+    : input;
 }
 
-const ENTITIES: { [k: string]: any } = {
+const ENTITIES: { [k: string]: string } = {
   "&": "&amp;",
   "<": "&lt;",
   ">": "&gt;",
