@@ -29,10 +29,12 @@ If you are using TypeScript for transpiling, simply set these options in the tsc
 
 If you're using `jsx-async-runtime` as server-side template engine, you might want to include data from an asynchronous operation in the resulting markup. To simplify this process, you can make your components asynchronous and send async requests from within them.
 
+Please note: `jsx-async-runtime` doesn't escape html entities per default, so rendering user input makes your application vulnerable to cross site scripting. `jsx-async-runtime` exports a utility function called `escapeEntities` which can be used to render input from uncontrolled sources.
+
 You can study the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) to learn about existing features.
 
 ```jsx
-import { renderToString } from "jsx-async-runtime";
+import { escapeEntities, renderToString } from "jsx-async-runtime";
 
 export default function App() {
   return (
@@ -44,7 +46,7 @@ export default function App() {
           <title>Todos</title>
         </head>
         <body>
-          <Header label="Todos" />
+          <Header label="<Todos>" />
           <TodoList quantity={3} />
         </body>
       </html>
@@ -60,7 +62,7 @@ function Header({ label }) {
         "padding-bottom": "1rem",
       }}
     >
-      <h1 style="color: white; text-align: center">{label}</h1>
+      <h1 style="color: white; text-align: center">{escapeEntities(label)}</h1>
     </section>
   );
 }
@@ -80,7 +82,7 @@ async function TodoList({ quantity }) {
         {todos.slice(0, quantity).map(({ todo, completed }) => (
           <tr>
             <td>
-              <label for="todo">{todo}</label>
+              <label for="todo">{escapeEntities(todo)}</label>
             </td>
             <td>
               <label for="status">{completed ? "yes" : "no"}</label>

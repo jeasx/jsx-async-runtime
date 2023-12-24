@@ -1,3 +1,5 @@
+import { escapeEntities } from "jsx-async-runtime";
+
 export default function App({ url = "/" }) {
   return (
     <>
@@ -29,7 +31,7 @@ export default function App({ url = "/" }) {
           </style>
         </head>
         <body>
-          <Layout title={`Todos for ${url}`}>
+          <Layout title={`<Todos for ${url}>`}>
             <Todos quantity={11} />
             <hr />
             <p>
@@ -73,7 +75,7 @@ function Layout({ title, children = [] }) {
             stroke-linejoin="round"
           />
         </svg>
-        {title}
+        {escapeEntities(title)}
       </h1>
       {children}
     </main>
@@ -113,7 +115,7 @@ async function Todos({ quantity }) {
                   id={`todo-${index}`}
                   type="text"
                   readonly
-                  value={todo}
+                  value={escapeEntities(todo)}
                 />
               </label>
             </td>
