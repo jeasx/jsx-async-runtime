@@ -4,4 +4,5 @@
 .vscode
 src
 example
+tests
 tsconfig.json
