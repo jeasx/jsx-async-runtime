@@ -26,8 +26,7 @@ export default function App({ url = "/" }) {
             .striped tr:nth-child(odd) {
               background-color: orange;
               padding: 4px;
-            }
-          `
+            }`.replace(/^\s+/gm, "")
               }
             </>
           </style>
