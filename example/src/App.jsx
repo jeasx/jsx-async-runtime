@@ -34,6 +34,7 @@ export default function App({ url = "/" }) {
         <body>
           <Layout title={`<Todos for ${url}>`}>
             <Todos quantity={11} />
+            <Todos quantity={0} />
             <hr />
             <p>
               <i>The current time is {new Date().toLocaleTimeString()}</i>
@@ -89,49 +90,51 @@ async function Todos({ quantity }) {
   todos.sort(() => Math.random() - 0.5); // shuffle array
 
   return (
-    <table style="margin: 0 auto; padding: 1rem; border: 1px solid lightgrey">
-      <thead
-        class={
-          // Generate space separated class names for true properties
-          {
-            striped: false,
-            sticky: true,
-            '"classname-with-quotes"': true,
+    quantity > 0 && (
+      <table style="margin: 0 auto; padding: 1rem; border: 1px solid lightgrey">
+        <thead
+          class={
+            // Generate space separated class names for true properties
+            {
+              striped: false,
+              sticky: true,
+              '"classname-with-quotes"': true,
+            }
           }
-        }
-        // For all attributes besides class & style objects get stringified
-        data-props={{ foo: "bar", count: 10 }}
-      >
-        <tr>
-          <th>Label</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody class="striped">
-        {todos.slice(0, quantity).map(({ todo, completed }, index) => (
+          // For all attributes besides class & style objects get stringified
+          data-props={{ foo: "bar", count: 10 }}
+        >
           <tr>
-            <td>
-              <label for={`todo-${index}`}>
-                <input
-                  id={`todo-${index}`}
-                  type="text"
-                  readonly
-                  value={escapeEntities(todo)}
-                />
-              </label>
-            </td>
-            <td>
-              <label for={`status-${index}`}>
-                <input
-                  id={`status-${index}`}
-                  type="checkbox"
-                  checked={completed}
-                />
-              </label>
-            </td>
+            <th>Label</th>
+            <th>Status</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="striped">
+          {todos.slice(0, quantity).map(({ todo, completed }, index) => (
+            <tr>
+              <td>
+                <label for={`todo-${index}`}>
+                  <input
+                    id={`todo-${index}`}
+                    type="text"
+                    readonly
+                    value={escapeEntities(todo)}
+                  />
+                </label>
+              </td>
+              <td>
+                <label for={`status-${index}`}>
+                  <input
+                    id={`status-${index}`}
+                    type="checkbox"
+                    checked={completed}
+                  />
+                </label>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
   );
 }

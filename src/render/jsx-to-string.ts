@@ -25,8 +25,21 @@ export async function jsxToString(
     currentIndent?: number;
   },
 ): Promise<string> {
-  if (jsxElement === null || typeof jsxElement !== "object") {
-    return String(jsxElement);
+  if (jsxElement === null) {
+    return "";
+  }
+
+  switch (typeof jsxElement) {
+    case "string":
+      return jsxElement;
+    case "bigint":
+    case "number":
+      return String(jsxElement);
+    case "boolean":
+    case "function":
+    case "symbol":
+    case "undefined":
+      return "";
   }
 
   assertSync(jsxElement);
