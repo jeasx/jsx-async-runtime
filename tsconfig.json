@@ -1,20 +1,15 @@
 {
   "compilerOptions": {
+    "module": "ESNext",
     "target": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
+    "rootDir": "src",
+    "outDir": "dist",
+    "skipLibCheck": true,
     "declaration": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "downlevelIteration": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "jsx": "react",
-    "jsxFactory": "jsx",
-    "jsxFragmentFactory": "Fragment"
-  },
-  "include": ["src/**/*"]
+    "forceConsistentCasingInFileNames": true
+  }
 }

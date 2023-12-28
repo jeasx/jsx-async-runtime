@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "checkJs": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "jsx-async-runtime",
     "module": "ESNext",
     "moduleResolution": "Node",
+    "target": "ESNext",
+    "rootDir": "src",
     "outDir": "dist",
-    "target": "ESNext"
+    "jsx": "react-jsx",
+    "jsxImportSource": "jsx-async-runtime",
+    "allowJs": true,
+    "checkJs": true
   }
 }
