@@ -44,7 +44,7 @@ export async function jsxToString(
 
   assertSync(jsxElement);
 
-  const { currentIndent = 0, indent = 2 } = options ?? {};
+  const { currentIndent = 0, indent = 0 } = options ?? {};
   const padding = " ".repeat(currentIndent);
 
   if (jsxElement.type === "textNode") {
