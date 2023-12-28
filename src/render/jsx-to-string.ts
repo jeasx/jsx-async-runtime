@@ -25,29 +25,17 @@ export async function jsxToString(
     currentIndent?: number;
   },
 ): Promise<string> {
-  if (jsxElement === null) {
-    return "";
-  }
-
-  switch (typeof jsxElement) {
-    case "string":
-      return jsxElement;
-    case "bigint":
-    case "number":
-      return String(jsxElement);
-    case "boolean":
-    case "function":
-    case "symbol":
-    case "undefined":
-      return "";
+  if (jsxElement === null || typeof jsxElement !== "object") {
+    return String(jsxElement);
   }
 
   assertSync(jsxElement);
 
   const { currentIndent = 0, indent = 2 } = options ?? {};
+  const padding = " ".repeat(currentIndent);
 
   if (jsxElement.type === "textNode") {
-    return `${" ".repeat(currentIndent)}${jsxElement.text}`;
+    return `${padding}${jsxElement.text}`;
   }
 
   if (typeof jsxElement.tag === "string") {
@@ -57,7 +45,7 @@ export async function jsxToString(
       for (const child of element.children) {
         const str = await jsxToString(child, {
           indent,
-          currentIndent: currentIndent + indent,
+          currentIndent,
         });
         if (str.length > 0) {
           result.push(str);
@@ -65,7 +53,6 @@ export async function jsxToString(
       }
       return result.join("\n");
     } else {
-      const padding = " ".repeat(currentIndent);
       const attributes = attributesToString(element.attributes);
       const separator = attributes.length ? " " : "";
 
@@ -93,12 +80,11 @@ export async function jsxToString(
       if (inlineTag) {
         return `${startTag}${children.join("")}${endTag}`;
       }
-
-      return [startTag, ...children, endTag].join("\n");
+      return `${startTag}\n${children.join("\n")}\n${endTag}`;
     }
   } else {
-    const subJSXElement = await jsxElement.tag(jsxElement.props);
-    return await jsxToString(subJSXElement, { indent, currentIndent });
+    const jsxElementTag = await jsxElement.tag(jsxElement.props);
+    return await jsxToString(jsxElementTag, { indent, currentIndent });
   }
 }
 
@@ -106,6 +92,6 @@ function assertSync(e: JSX.Element): asserts e is JSX.SyncElement {}
 
 function isTextNode(e: JSX.Element) {
   return (
-    typeof e === "object" && e != null && "type" in e && e.type === "textNode"
+    e != null && typeof e === "object" && "type" in e && e.type === "textNode"
   );
 }
