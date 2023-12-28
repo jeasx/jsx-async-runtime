@@ -3,14 +3,15 @@ import { escapeEntities } from "jsx-async-runtime";
 export default function App({ url = "/" }) {
   return (
     <>
-      {`<!DOCTYPE html>`}
+      {"<!DOCTYPE html>"}
       <html lang="en">
         <head>
           <meta charset="utf-8" />
           <title>Todos</title>
           <style>
-            {
-              /* css */ `
+            <>
+              {
+                /* css */ `
             body {
               font-family: sans-serif;
               line-height: 1.5;
@@ -26,8 +27,9 @@ export default function App({ url = "/" }) {
               background-color: orange;
               padding: 4px;
             }
-          `.replace(/ +/g, " ")
-            }
+          `
+              }
+            </>
           </style>
         </head>
         <body>
