@@ -1,152 +1,129 @@
-import { escapeEntities, renderToString } from "jsx-async-runtime";
-import { strict as assert } from "node:assert";
+import { escapeEntities } from "jsx-async-runtime";
+import Layout from "./components/Layout";
+import test from "./utils/test";
 
-assert.strictEqual(
-  await renderToString(
+await test(
+  "default indent",
+  <div>
+    <h1>Hello World</h1>
+  </div>,
+  `<div>\n<h1>Hello World</h1>\n</div>`,
+);
+
+await test(
+  "indent = 2",
+  <main>
     <div>
       <h1>Hello World</h1>
-    </div>,
-  ),
-  `<div>\n<h1>Hello World</h1>\n</div>`,
-  "default indent",
-);
-
-assert.strictEqual(
-  await renderToString(
-    <main>
-      <div>
-        <h1>Hello World</h1>
-      </div>
-    </main>,
-    { indent: 2 },
-  ),
+    </div>
+  </main>,
   `<main>\n  <div>\n    <h1>Hello World</h1>\n  </div>\n</main>`,
-  "indent 2",
+  { indent: 2 },
 );
 
-assert.strictEqual(
-  await renderToString(
-    <div
-      autocapitalize
-      contenteditable={true}
-      spellcheck={false}
-      autofocus="autofocus"
-    />,
-  ),
-  `<div autocapitalize contenteditable autofocus="autofocus"></div>`,
+await test(
   "boolean attributes",
+  <div
+    autocapitalize
+    contenteditable={true}
+    spellcheck={false}
+    autofocus="autofocus"
+  />,
+  `<div autocapitalize contenteditable autofocus="autofocus"></div>`,
 );
 
-assert.strictEqual(
-  await renderToString(
-    <>
-      <hr />
-      <br />
-    </>,
-  ),
-  `<hr>\n<br>`,
+await test(
   "void tags",
+  <>
+    <hr />
+    <br />
+    <img
+      src="https://picsum.photos/1200/200"
+      alt=""
+    />
+  </>,
+  `<hr>\n<br>\n<img src="https://picsum.photos/1200/200" alt="">`,
 );
 
-assert.strictEqual(await renderToString(<></>), ``, "empty fragment");
+await test("empty fragment", <></>, ``);
 
-assert.strictEqual(
-  await renderToString(
-    <div
-      class={{
-        striped: false,
-        sticky: true,
-        highlight: true,
-      }}
-    ></div>,
-  ),
-  `<div class="sticky highlight"></div>`,
+await test(
   "class object",
+  <div
+    class={{
+      striped: false,
+      sticky: true,
+      highlight: true,
+    }}
+  ></div>,
+  `<div class="sticky highlight"></div>`,
 );
 
-assert.strictEqual(
-  await renderToString(
-    <h1
-      style={{
-        "background-image": 'url("https://picsum.photos/1200/200")',
-        "background-color": "red",
-        color: "white",
-        "padding-top": "1rem",
-        "padding-bottom": "1rem",
-      }}
-    >
-      Hello
-    </h1>,
-  ),
-  `<h1 style="background-image: url(&quot;https://picsum.photos/1200/200&quot;); background-color: red; color: white; padding-top: 1rem; padding-bottom: 1rem">Hello</h1>`,
+await test(
   "style object",
+  <h1
+    style={{
+      "background-image": 'url("https://picsum.photos/1200/200")',
+      "background-color": "red",
+      color: "white",
+      "padding-top": "1rem",
+      "padding-bottom": "1rem",
+    }}
+  >
+    Hello
+  </h1>,
+  `<h1 style="background-image: url(&quot;https://picsum.photos/1200/200&quot;); background-color: red; color: white; padding-top: 1rem; padding-bottom: 1rem">Hello</h1>`,
 );
 
-assert.strictEqual(
-  await renderToString(
-    <>
-      {"<!DOCTYPE html>"}
-      <html lang="en">
-        <head>
-          <meta charset="utf-8" />
-        </head>
-      </html>
-    </>,
-  ),
-  `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n</head>\n</html>`,
+await test(
   "doctype declaration",
+  <>
+    {"<!DOCTYPE html>"}
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+      </head>
+    </html>
+  </>,
+  `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n</head>\n</html>`,
 );
 
-assert.strictEqual(await renderToString(false), ``, "boolean value");
+await test("boolean value", false, ``);
 
-assert.strictEqual(await renderToString(5), `5`, "number value");
+await test("number value", 5, `5`);
 
-assert.strictEqual(
-  await renderToString(true && <div></div>),
-  `<div></div>`,
-  "true conditional",
+await test(
+  "quote escape with json attribute",
+  <h1 data-props={{ hello: "world" }}>Hello</h1>,
+  `<h1 data-props="{&quot;hello&quot;:&quot;world&quot;}">Hello</h1>`,
 );
 
-assert.strictEqual(
-  await renderToString(false && <div></div>),
-  ``,
-  "false conditional",
-);
+await test("true conditional", true && <div></div>, `<div></div>`);
 
-const Layout = ({ title = "", children = {} }) => (
-  <main>
-    {title && <h1>{title}</h1>}
-    {children}
-  </main>
-);
+await test("false conditional", false && <div></div>, ``);
 
-assert.strictEqual(
-  await renderToString(
-    <Layout title="Hello">
-      <section>
-        <p>World</p>
-      </section>
-    </Layout>,
-    { indent: 0 },
-  ),
-  "<main>\n<h1>Hello</h1>\n<section>\n<p>World</p>\n</section>\n</main>",
-  "component with props and children",
-);
-
-assert.strictEqual(
-  await renderToString(
-    <Layout>
-      <section>
-        <p>Hello World</p>
-      </section>
-    </Layout>,
-  ),
-  "<main>\n<section>\n<p>Hello World</p>\n</section>\n</main>",
+await test(
   "component with children",
+  <Layout>
+    <section>
+      <p>Hello World</p>
+    </section>
+  </Layout>,
+  "<main>\n<section>\n<p>Hello World</p>\n</section>\n</main>",
 );
 
-assert.strictEqual(
+await test(
+  "component with props and children",
+  <Layout title="Hello">
+    <section>
+      <p>World</p>
+    </section>
+  </Layout>,
+  "<main>\n<h1>Hello</h1>\n<section>\n<p>World</p>\n</section>\n</main>",
+);
+
+await test(
+  "escape entities",
   escapeEntities(`<h1>"Hell<span>'o'</span> && World"</h1>`),
   "&lt;h1&gt;&quot;Hell&lt;span&gt;&#39;o&#39;&lt;/span&gt; &amp;&amp; World&quot;&lt;/h1&gt;",
-  "escape entities",
 );

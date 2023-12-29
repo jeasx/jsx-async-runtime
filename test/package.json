@@ -2,7 +2,8 @@
   "name": "jsx-async-runtime-tests",
   "type": "module",
   "scripts": {
-    "start": "npm run build && node dist/index.js",
+    "start": "npm test",
+    "test": "npm run build && node dist/index.js",
     "build": "esbuild --format=esm --platform=node --outdir=dist --bundle src/index.jsx",
     "dev": "nodemon -i dist -e 'js,jsx' start"
   },
