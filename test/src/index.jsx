@@ -11,7 +11,7 @@ await test(
       <Headline />
     </>
   </div>,
-  `<div>\n<h1>Hello World</h1>\n</div>`,
+  `<div>\n<h1>Hello World</h1>\n</div>`
 );
 
 await test(
@@ -26,7 +26,7 @@ await test(
     </main>
   </>,
   `<main>\n   <div>\n      <h1>Hello World</h1>\n   </div>\n</main>`,
-  { indent: 3 },
+  { indent: 3 }
 );
 
 await test(
@@ -37,7 +37,7 @@ await test(
     spellcheck={false}
     autofocus="autofocus"
   />,
-  `<div autocapitalize contenteditable autofocus="autofocus"></div>`,
+  `<div autocapitalize contenteditable autofocus="autofocus"></div>`
 );
 
 await test(
@@ -45,12 +45,9 @@ await test(
   <>
     <hr />
     <br />
-    <img
-      src="src"
-      alt=""
-    />
+    <img src="src" alt="" />
   </>,
-  `<hr>\n<br>\n<img src="src" alt="">`,
+  `<hr>\n<br>\n<img src="src" alt="">`
 );
 
 await test("empty fragment", <></>, ``);
@@ -64,7 +61,7 @@ await test(
       highlight: true,
     }}
   ></div>,
-  `<div class="sticky highlight"></div>`,
+  `<div class="sticky highlight"></div>`
 );
 
 await test(
@@ -80,7 +77,7 @@ await test(
   >
     Hello
   </h1>,
-  `<h1 style="background-image: url(&quot;url&quot;); background-color: red; color: white; padding-top: 1rem; padding-bottom: 1rem">Hello</h1>`,
+  `<h1 style="background-image: url(&quot;url&quot;); background-color: red; color: white; padding-top: 1rem; padding-bottom: 1rem">Hello</h1>`
 );
 
 await test(
@@ -93,7 +90,7 @@ await test(
       </head>
     </html>
   </>,
-  `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n</head>\n</html>`,
+  `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n</head>\n</html>`
 );
 
 await test("boolean value", false, ``);
@@ -103,7 +100,7 @@ await test("number value", 5, `5`);
 await test(
   "quote escape with json attribute",
   <h1 data-props={{ hello: "world" }}>Hello</h1>,
-  `<h1 data-props="{&quot;hello&quot;:&quot;world&quot;}">Hello</h1>`,
+  `<h1 data-props="{&quot;hello&quot;:&quot;world&quot;}">Hello</h1>`
 );
 
 await test("true conditional", "1" === String(1) && <div></div>, `<div></div>`);
@@ -117,7 +114,7 @@ await test(
       <Headline />
     </section>
   </Layout>,
-  "<main>\n<section>\n<h1>Hello World</h1>\n</section>\n</main>",
+  "<main>\n<section>\n<h1>Hello World</h1>\n</section>\n</main>"
 );
 
 await test(
@@ -127,13 +124,13 @@ await test(
       <p>World</p>
     </section>
   </Layout>,
-  "<main>\n<h1>Hello</h1>\n<section>\n<p>World</p>\n</section>\n</main>",
+  "<main>\n<h1>Hello</h1>\n<section>\n<p>World</p>\n</section>\n</main>"
 );
 
 await test(
   "escape entities",
   escapeEntities(`<h1>"Hell<span>'o'</span> && World"</h1>`),
-  "&lt;h1&gt;&quot;Hell&lt;span&gt;&#39;o&#39;&lt;/span&gt; &amp;&amp; World&quot;&lt;/h1&gt;",
+  "&lt;h1&gt;&quot;Hell&lt;span&gt;&#39;o&#39;&lt;/span&gt; &amp;&amp; World&quot;&lt;/h1&gt;"
 );
 
 await test(
@@ -141,5 +138,5 @@ await test(
   <Timeout ms={1}>
     <Headline />
   </Timeout>,
-  "<div>\n<h1>Hello World</h1>\n</div>",
+  "<div>\n<h1>Hello World</h1>\n</div>"
 );

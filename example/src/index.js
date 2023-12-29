@@ -9,5 +9,5 @@ createServer(async (request, response) => {
 }).listen(3000);
 
 console.log(
-  "\n🚀 Server is running at <http://localhost:3000/>\nUse 'CTRL+C' to stop the server...",
+  "\n🚀 Server is running at <http://localhost:3000/>\nUse 'CTRL+C' to stop the server..."
 );

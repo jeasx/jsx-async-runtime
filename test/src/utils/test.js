@@ -5,7 +5,7 @@ export default async function test(
   name,
   actual,
   expected,
-  options = undefined,
+  options = undefined
 ) {
   try {
     assert.strictEqual(await renderToString(actual, options), expected);
