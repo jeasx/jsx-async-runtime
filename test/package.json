@@ -8,9 +8,9 @@
     "dev": "nodemon -i dist -e 'js,jsx' start"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "esbuild": "latest",
+    "@types/node": "20.10.5",
+    "esbuild": "0.19.10",
     "jsx-async-runtime": "latest",
-    "nodemon": "latest"
+    "nodemon": "3.0.2"
   }
 }

@@ -45,8 +45,8 @@
     "release": "npm run clean ; npm run build:types && npm run build"
   },
   "devDependencies": {
-    "esbuild": "latest",
-    "prettier": "latest",
-    "typescript": "latest"
+    "esbuild": "0.19.10",
+    "prettier": "3.1.1",
+    "typescript": "5.3.3"
   }
 }
