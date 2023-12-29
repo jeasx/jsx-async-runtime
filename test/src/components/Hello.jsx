@@ -1,3 +1,3 @@
-export default function Hello() {
-  return <h1>Hello World</h1>;
+export default function Hello({ title = "Hello World" }) {
+  return <h1>{title}</h1>;
 }
