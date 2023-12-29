@@ -1,14 +1,14 @@
 import { escapeEntities } from "jsx-async-runtime";
-import Async from "./components/Async";
-import Hello from "./components/Hello";
+import Headline from "./components/Headline";
 import Layout from "./components/Layout";
+import Timeout from "./components/Timeout";
 import test from "./utils/test";
 
 await test(
   "default indent",
   <div>
     <>
-      <Hello />
+      <Headline />
     </>
   </div>,
   `<div>\n<h1>Hello World</h1>\n</div>`,
@@ -20,7 +20,7 @@ await test(
     <main>
       <>
         <div>
-          <Hello />
+          <Headline />
         </div>
       </>
     </main>
@@ -114,7 +114,7 @@ await test(
   "component with children",
   <Layout>
     <section>
-      <Hello />
+      <Headline />
     </section>
   </Layout>,
   "<main>\n<section>\n<h1>Hello World</h1>\n</section>\n</main>",
@@ -138,8 +138,8 @@ await test(
 
 await test(
   "async execution",
-  <Async>
-    <Hello />
-  </Async>,
+  <Timeout ms={1}>
+    <Headline />
+  </Timeout>,
   "<div>\n<h1>Hello World</h1>\n</div>",
 );

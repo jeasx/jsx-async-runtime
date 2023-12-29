@@ -1,9 +1,9 @@
-import Hello from "./Hello";
+import Headline from "./Headline";
 
 export default function Layout({ title = "", children = {} }) {
   return (
     <main>
-      {title && <Hello title={title} />}
+      {title && <Headline title={title} />}
       {children}
     </main>
   );
