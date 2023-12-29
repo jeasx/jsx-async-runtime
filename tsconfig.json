@@ -11,5 +11,6 @@
     "noUnusedLocals": true,
     "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "include": ["src"]
 }

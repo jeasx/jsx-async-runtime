@@ -9,5 +9,6 @@
     "jsxImportSource": "jsx-async-runtime",
     "allowJs": true,
     "checkJs": true
-  }
+  },
+  "include": ["src"]
 }
