@@ -2,14 +2,13 @@
   "name": "jsx-async-runtime-tests",
   "type": "module",
   "scripts": {
-    "start": "npm test",
+    "start": "nodemon -w src -e 'js,jsx,ts,tsx' --exec npm test",
     "test": "npm run build && node dist/index.js",
-    "build": "esbuild --format=esm --platform=node --outdir=dist --bundle src/index.jsx",
-    "dev": "nodemon -i dist -e 'js,jsx' start"
+    "build": "esbuild --format=esm --platform=node --outdir=dist --bundle src/index.jsx"
   },
   "devDependencies": {
-    "esbuild": "0.19.10",
-    "jsx-async-runtime": "0.1.2",
-    "nodemon": "3.0.2"
+    "esbuild": "file:../node_modules/esbuild",
+    "jsx-async-runtime": "file:..",
+    "nodemon": "file:../node_modules/nodemon"
   }
 }
