@@ -127,7 +127,10 @@ async function Todos({ quantity }) {
                   <input
                     id={`status-${index}`}
                     type="checkbox"
-                    checked={completed}
+                    checked={
+                      /* Property comes from an untrusted source, so don't use it directly */
+                      String(completed) === "true"
+                    }
                   />
                 </label>
               </td>
