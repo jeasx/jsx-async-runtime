@@ -23,7 +23,7 @@ export async function jsxToString(
   options?: {
     indent?: number;
     currentIndent?: number;
-  },
+  }
 ): Promise<string> {
   if (jsxElement === null) {
     return "";
