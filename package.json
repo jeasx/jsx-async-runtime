@@ -1,6 +1,6 @@
 {
   "name": "jsx-async-runtime",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "An asynchronous JSX runtime without dependencies to be used as server-side template engine.",
   "keywords": [
     "jsx",
