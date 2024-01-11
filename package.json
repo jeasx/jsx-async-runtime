@@ -18,7 +18,7 @@
   },
   "author": {
     "name": "Maik Jablonski (Neoskop GmbH)",
-    "email": "jablonski@neoskop.de"
+    "email": "jeasx@neoskop.de"
   },
   "type": "module",
   "main": "./dist/esm/index.js",
