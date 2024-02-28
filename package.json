@@ -1,7 +1,7 @@
 {
   "name": "jsx-async-runtime",
   "version": "0.1.5",
-  "description": "An asynchronous JSX runtime without dependencies to be used as server-side template engine.",
+  "description": "An asynchronous JSX runtime without dependencies to be used as html template engine.",
   "keywords": [
     "jsx",
     "runtime",
@@ -40,7 +40,7 @@
   "scripts": {
     "start": "nodemon -w src -e 'js,jsx,ts,tsx' --exec npm run build",
     "build": "rm -r dist ; npm run build:types && npm run build:esm",
-    "build:esm": "esbuild --minify --platform=node --format=esm --outdir=./dist/esm --bundle ./src/*.ts",
+    "build:esm": "esbuild --minify --platform=neutral --format=esm --outdir=./dist/esm --bundle ./src/*.ts",
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist/types"
   },
   "devDependencies": {
