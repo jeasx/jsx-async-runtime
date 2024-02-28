@@ -1,6 +1,6 @@
 # jsx-async-runtime
 
-An asynchronous JSX runtime without dependencies to be used as server-side template engine.
+An asynchronous JSX runtime without dependencies to be used as html template engine.
 
 ## Getting started
 
@@ -27,7 +27,7 @@ If you are using TypeScript for transpiling, simply set these options in the tsc
 
 ## Using
 
-If you're using `jsx-async-runtime` as server-side template engine, you might want to include data from an asynchronous operation in the resulting markup. To simplify this process, you can make your components asynchronous and send async requests from within them.
+If you're using `jsx-async-runtime` as template engine, you might want to include data from an asynchronous operation in the resulting markup. To simplify this process, you can make your components asynchronous and send async requests from within them.
 
 Please note: `jsx-async-runtime` doesn't escape html entities per default, so rendering user input makes your application vulnerable to cross site scripting. `jsx-async-runtime` exports a utility function called `escapeEntities` which can be used to render input from uncontrolled sources.
 
