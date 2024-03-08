@@ -14,7 +14,8 @@
   ],
   "license": "MIT",
   "repository": {
-    "url": "git+https://github.com/jeasx/jsx-async-runtime.git"
+    "type": "git",
+    "url": "https://github.com/jeasx/jsx-async-runtime.git"
   },
   "author": {
     "name": "Maik Jablonski (Neoskop GmbH)",
@@ -46,6 +47,6 @@
   "devDependencies": {
     "esbuild": "0.20.1",
     "nodemon": "3.1.0",
-    "typescript": "5.3.3"
+    "typescript": "5.4.2"
   }
 }
