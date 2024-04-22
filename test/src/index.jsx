@@ -5,17 +5,7 @@ import Timeout from "./components/Timeout";
 import test from "./utils/test";
 
 await test(
-  "default indent",
-  <div>
-    <>
-      <Headline />
-    </>
-  </div>,
-  `<div>\n<h1>Hello World</h1>\n</div>`
-);
-
-await test(
-  "indent = 3 with fragments",
+  "fragments",
   <>
     <main>
       <>
@@ -25,8 +15,7 @@ await test(
       </>
     </main>
   </>,
-  `<main>\n   <div>\n      <h1>Hello World</h1>\n   </div>\n</main>`,
-  { indent: 3 }
+  `<main><div><h1>Hello World</h1></div></main>`
 );
 
 await test(
@@ -47,7 +36,7 @@ await test(
     <br />
     <img src="src" alt="" />
   </>,
-  `<hr>\n<br>\n<img src="src" alt="">`
+  `<hr><br><img src="src" alt="">`
 );
 
 await test("empty fragment", <></>, ``);
@@ -90,7 +79,7 @@ await test(
       </head>
     </html>
   </>,
-  `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n</head>\n</html>`
+  `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head></html>`
 );
 
 await test("boolean value", false, ``);
@@ -114,7 +103,7 @@ await test(
       <Headline />
     </section>
   </Layout>,
-  "<main>\n<section>\n<h1>Hello World</h1>\n</section>\n</main>"
+  "<main><section><h1>Hello World</h1></section></main>"
 );
 
 await test(
@@ -124,7 +113,7 @@ await test(
       <p>World</p>
     </section>
   </Layout>,
-  "<main>\n<h1>Hello</h1>\n<section>\n<p>World</p>\n</section>\n</main>"
+  "<main><h1>Hello</h1><section><p>World</p></section></main>"
 );
 
 await test(
@@ -138,5 +127,5 @@ await test(
   <Timeout ms={1}>
     <Headline />
   </Timeout>,
-  "<div>\n<h1>Hello World</h1>\n</div>"
+  "<div><h1>Hello World</h1></div>"
 );

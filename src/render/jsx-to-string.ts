@@ -18,13 +18,7 @@ const VOID_TAGS = new Set([
   "wbr",
 ]);
 
-export async function jsxToString(
-  jsxElement: JSX.Element,
-  options?: {
-    indent?: number;
-    currentIndent?: number;
-  }
-): Promise<string> {
+export async function jsxToString(jsxElement: JSX.Element): Promise<string> {
   if (jsxElement === null) {
     return "";
   }
@@ -44,11 +38,8 @@ export async function jsxToString(
 
   assertSync(jsxElement);
 
-  const { currentIndent = 0, indent = 0 } = options ?? {};
-  const padding = " ".repeat(currentIndent);
-
   if (jsxElement.type === "textNode") {
-    return `${padding}${jsxElement.text}`;
+    return jsxElement.text;
   }
 
   if (typeof jsxElement.tag === "string") {
@@ -56,55 +47,36 @@ export async function jsxToString(
     if (element.tag === "") {
       const result: string[] = [];
       for (const child of element.children) {
-        const str = await jsxToString(child, {
-          indent,
-          currentIndent,
-        });
+        const str = await jsxToString(child);
         if (str.length > 0) {
           result.push(str);
         }
       }
-      return result.join("\n");
+      return result.join("");
     } else {
       const attributes = attributesToString(element.attributes);
       const separator = attributes.length ? " " : "";
 
       if (element.children.length === 0 && VOID_TAGS.has(element.tag)) {
-        return `${padding}<${element.tag}${separator}${attributes}>`;
+        return `<${element.tag}${separator}${attributes}>`;
       }
 
-      const inlineTag =
-        element.children.length === 0 || element.children.every(isTextNode);
-
-      const startTag = `${padding}<${element.tag}${separator}${attributes}>`;
-      const endTag = `${inlineTag ? "" : padding}</${element.tag}>`;
       const children: string[] = [];
-
       for (const child of element.children) {
-        const str = await jsxToString(child, {
-          indent: inlineTag ? 0 : indent,
-          currentIndent: inlineTag ? 0 : currentIndent + indent,
-        });
+        const str = await jsxToString(child);
         if (str.length > 0) {
           children.push(str);
         }
       }
 
-      if (inlineTag) {
-        return `${startTag}${children.join("")}${endTag}`;
-      }
-      return `${startTag}\n${children.join("\n")}\n${endTag}`;
+      return `<${element.tag}${separator}${attributes}>${children.join("")}</${
+        element.tag
+      }>`;
     }
   } else {
     const jsxElementTag = await jsxElement.tag(jsxElement.props);
-    return await jsxToString(jsxElementTag, { indent, currentIndent });
+    return await jsxToString(jsxElementTag);
   }
 }
 
 function assertSync(e: JSX.Element): asserts e is JSX.SyncElement {}
-
-function isTextNode(e: JSX.Element) {
-  return (
-    e != null && typeof e === "object" && "type" in e && e.type === "textNode"
-  );
-}

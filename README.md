@@ -94,5 +94,5 @@ async function TodoList({ quantity }) {
   );
 }
 
-console.log(await renderToString(<App />, { indent: 2 }));
+console.log(await renderToString(<App />));
 ```

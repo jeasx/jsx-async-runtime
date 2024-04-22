@@ -1,10 +1,7 @@
 import { jsxToString } from "./jsx-to-string";
 
 export async function renderToString(
-  component: JSX.Element | Promise<JSX.Element>,
-  options?: {
-    indent?: number;
-  }
+  component: JSX.Element | Promise<JSX.Element>
 ): Promise<string> {
-  return await jsxToString(await component, options);
+  return await jsxToString(await component);
 }
