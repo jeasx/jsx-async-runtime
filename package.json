@@ -48,6 +48,6 @@
   "devDependencies": {
     "esbuild": "0.20.2",
     "nodemon": "3.1.0",
-    "typescript": "5.4.3"
+    "typescript": "5.4.5"
   }
 }
