@@ -27,7 +27,9 @@ function attributeToString([key, value]: [string, any]): string {
         const classes = Object.entries(value)
           .filter(([k, v]) => v)
           .map(([k, v]) => k);
-        return `class="${escapeQuotes(classes.join(" "))}"`;
+        return classes.length > 0
+          ? `class="${escapeQuotes(classes.join(" "))}"`
+          : "";
       default:
         return `${key}="${escapeQuotes(JSON.stringify(value))}"`;
     }

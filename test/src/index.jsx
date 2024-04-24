@@ -54,6 +54,12 @@ await test(
 );
 
 await test(
+  "empty class object",
+  <div class={{ highlight: false, sticky: undefined }}></div>,
+  "<div></div>"
+);
+
+await test(
   "style object",
   <h1
     style={{
