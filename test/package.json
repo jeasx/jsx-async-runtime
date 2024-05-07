@@ -7,6 +7,7 @@
     "build": "esbuild --format=esm --platform=node --outdir=dist --bundle src/index.jsx"
   },
   "devDependencies": {
+    "@types/node": "latest",
     "esbuild": "file:../node_modules/esbuild",
     "jsx-async-runtime": "file:..",
     "nodemon": "file:../node_modules/nodemon"
