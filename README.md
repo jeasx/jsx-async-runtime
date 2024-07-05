@@ -34,7 +34,7 @@ Please note: `jsx-async-runtime` doesn't escape html entities per default, so re
 You can study the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) to learn about existing features.
 
 ```jsx
-import { escapeEntities, renderToString } from "jsx-async-runtime";
+import { escapeEntities, jsxToString } from "jsx-async-runtime";
 
 export default function App() {
   return (
@@ -94,5 +94,5 @@ async function TodoList({ quantity }) {
   );
 }
 
-console.log(await renderToString(<App />));
+console.log(await jsxToString(<App />));
 ```
