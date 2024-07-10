@@ -1,3 +1,9 @@
+/**
+ * Escapes special HTML entities in a given input string.
+ *
+ * @param {string} input - The input string to escape.
+ * @return {string} The input string with special HTML entities escaped.
+ */
 export function escapeEntities(input: string) {
   return typeof input === "string"
     ? input.replace(ESCAPE, (match) => ENTITIES[match] || match)
