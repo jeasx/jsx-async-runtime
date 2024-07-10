@@ -1,6 +1,10 @@
 import { escapeEntities } from "jsx-async-runtime";
 
 export default function App({ url = "/" }) {
+  // In the given setup you can use "this" as context
+  // to pass data to subcomponents to avoid prop drilling.
+  this.timestamp = new Date();
+
   return (
     <>
       {"<!DOCTYPE html>"}
@@ -36,9 +40,6 @@ export default function App({ url = "/" }) {
             <Todos quantity={11} />
             <Todos quantity={0} />
             <hr />
-            <p>
-              <i>The current time is {new Date().toLocaleTimeString()}</i>
-            </p>
           </Layout>
         </body>
       </html>
@@ -137,6 +138,15 @@ async function Todos({ quantity }) {
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colspan={3}>
+              <p>
+                <i>The current time is {this.timestamp.toLocaleTimeString()}</i>
+              </p>
+            </td>
+          </tr>
+        </tfoot>
       </table>
     )
   );

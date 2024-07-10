@@ -18,7 +18,17 @@ const VOID_TAGS = new Set([
   "wbr",
 ]);
 
-export async function jsxToString(jsxElement: JSX.Element): Promise<string> {
+/**
+ * Renders a JSX element to a string representation.
+ *
+ * @param {any} this - The (optional) 'this' context of the function.
+ * @param {JSX.Element} jsxElement - The JSX element to render.
+ * @return {Promise<string>} The string representation of the rendered JSX element.
+ */
+export async function jsxToString(
+  this: any,
+  jsxElement: JSX.Element
+): Promise<string> {
   if (jsxElement === null) {
     return "";
   }
@@ -47,7 +57,7 @@ export async function jsxToString(jsxElement: JSX.Element): Promise<string> {
     if (element.tag === "") {
       const result: string[] = [];
       for (const child of element.children) {
-        const str = await jsxToString(child);
+        const str = await jsxToString.call(this, child);
         if (str.length > 0) {
           result.push(str);
         }
@@ -63,7 +73,7 @@ export async function jsxToString(jsxElement: JSX.Element): Promise<string> {
 
       const children: string[] = [];
       for (const child of element.children) {
-        const str = await jsxToString(child);
+        const str = await jsxToString.call(this, child);
         if (str.length > 0) {
           children.push(str);
         }
@@ -74,8 +84,8 @@ export async function jsxToString(jsxElement: JSX.Element): Promise<string> {
       }>`;
     }
   } else {
-    const jsxElementTag = await jsxElement.tag(jsxElement.props);
-    return await jsxToString(jsxElementTag);
+    const jsxElementTag = await jsxElement.tag.call(this, jsxElement.props);
+    return await jsxToString.call(this, jsxElementTag);
   }
 }
 

@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 import App from "./App";
 
 createServer(async (request, response) => {
-  const markup = await jsxToString(App({ url: request.url }));
+  const markup = await jsxToString.call({}, <App url={request.url} />);
   response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
   response.end(markup);
 }).listen(3000);

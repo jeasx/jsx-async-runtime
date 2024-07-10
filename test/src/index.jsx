@@ -135,3 +135,11 @@ await test(
   </Timeout>,
   "<div><h1>Hello World</h1></div>"
 );
+
+await test(
+  "with 'this' as context",
+  <Layout context={{ subtitle: "world" }}>
+    <Headline title="Hello" />
+  </Layout>,
+  "<main><h1>Hello - world</h1></main>"
+);

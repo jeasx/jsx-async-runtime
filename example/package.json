@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon -w src -e 'js,jsx,ts,tsx' --exec 'npm run build && node dist/index.js'",
-    "build": "esbuild --format=esm --platform=node --outdir=dist --bundle src/index.js"
+    "build": "esbuild --format=esm --platform=node --outdir=dist --bundle src/index.jsx"
   },
   "devDependencies": {
     "@types/node": "latest",
