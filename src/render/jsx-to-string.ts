@@ -83,10 +83,14 @@ export async function jsxToString(
         element.tag
       }>`;
     }
-  } else {
+  }
+
+  if (typeof jsxElement.tag === "function") {
     const jsxElementTag = await jsxElement.tag.call(this, jsxElement.props);
     return await jsxToString.call(this, jsxElementTag);
   }
+
+  return "";
 }
 
 function assertSync(e: JSX.Element): asserts e is JSX.SyncElement {}
