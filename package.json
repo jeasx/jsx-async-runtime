@@ -42,7 +42,7 @@
   "scripts": {
     "start": "nodemon -w src -e 'js,jsx,ts,tsx' --exec npm run build",
     "build": "rm -r dist ; npm run build:types && npm run build:esm",
-    "build:esm": "esbuild --minify --platform=neutral --format=esm --outdir=./dist/esm --bundle ./src/*.ts",
+    "build:esm": "esbuild --platform=neutral --format=esm --outdir=./dist/esm --bundle ./src/*.ts",
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist/types"
   },
   "devDependencies": {
