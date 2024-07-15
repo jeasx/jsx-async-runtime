@@ -2,13 +2,11 @@
   "name": "jsx-async-runtime-example",
   "type": "module",
   "scripts": {
-    "start": "nodemon -w src -e 'js,jsx,ts,tsx' --exec 'npm run build && node dist/index.js'",
-    "build": "esbuild --format=esm --platform=node --outdir=dist --bundle src/index.jsx"
+    "start": "tsx watch src/index.jsx"
   },
   "devDependencies": {
     "@types/node": "latest",
-    "esbuild": "file:../node_modules/esbuild",
     "jsx-async-runtime": "file:..",
-    "nodemon": "file:../node_modules/nodemon"
+    "tsx": "4.16.2"
   }
 }
