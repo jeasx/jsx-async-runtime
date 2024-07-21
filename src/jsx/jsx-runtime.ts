@@ -23,9 +23,6 @@ export function createElement(
 
   props.children = finalChildren;
 
-  Object.freeze(finalChildren);
-  Object.freeze(props);
-
   return {
     type: "tag",
     //@ts-expect-error
