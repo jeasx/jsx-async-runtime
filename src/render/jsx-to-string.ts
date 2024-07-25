@@ -29,6 +29,8 @@ export async function jsxToString(
   this: any,
   jsxElement: JSX.Element
 ): Promise<string> {
+  const $jsxToString = this?.jsxToString || jsxToString;
+
   if (jsxElement === null) {
     return "";
   }
@@ -57,7 +59,7 @@ export async function jsxToString(
     if (element.tag === "") {
       const result: string[] = [];
       for (const child of element.children) {
-        const str = await jsxToString.call(this, child);
+        const str = await $jsxToString.call(this, child);
         if (str.length > 0) {
           result.push(str);
         }
@@ -73,7 +75,7 @@ export async function jsxToString(
 
       const children: string[] = [];
       for (const child of element.children) {
-        const str = await jsxToString.call(this, child);
+        const str = await $jsxToString.call(this, child);
         if (str.length > 0) {
           children.push(str);
         }
@@ -87,7 +89,7 @@ export async function jsxToString(
 
   if (typeof jsxElement.tag === "function") {
     const jsxElementTag = await jsxElement.tag.call(this, jsxElement.props);
-    return await jsxToString.call(this, jsxElementTag);
+    return await $jsxToString.call(this, jsxElementTag);
   }
 
   return "";
