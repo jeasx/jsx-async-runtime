@@ -46,8 +46,8 @@
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist/types"
   },
   "devDependencies": {
-    "esbuild": "0.23.0",
-    "nodemon": "3.1.4",
-    "typescript": "5.5.4"
+    "esbuild": "0.23.1",
+    "nodemon": "3.1.5",
+    "typescript": "5.6.2"
   }
 }
