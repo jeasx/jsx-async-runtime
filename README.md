@@ -2,6 +2,8 @@
 
 An asynchronous JSX runtime without dependencies to be used as html template engine.
 
+This runtime was initially developed for [Jeasx](https://www.jeasx.dev), but has a value of its own. Its main focus is to keep things simple, reliable and fast.
+
 ## Getting started
 
 ### Installation
