@@ -8,6 +8,6 @@
   "devDependencies": {
     "@types/node": "latest",
     "jsx-async-runtime": "file:..",
-    "tsx": "4.19.1"
+    "tsx": "4.19.2"
   }
 }
