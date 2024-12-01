@@ -6,7 +6,9 @@
  */
 export function escapeEntities(input: string) {
   return typeof input === "string"
-    ? input.replace(ESCAPE, (match) => ENTITIES[match] || match)
+    ? input
+        .replaceAll("&amp;", "&")
+        .replace(ESCAPE, (match) => ENTITIES[match] || match)
     : input;
 }
 

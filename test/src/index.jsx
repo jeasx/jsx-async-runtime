@@ -130,7 +130,7 @@ test("component with props and children", () =>
 
 test("escape entities", () =>
   equal(
-    escapeEntities(`<h1>"Hell<span>'o'</span> && World"</h1>`),
+    escapeEntities(`<h1>"Hell<span>'o'</span> &amp;& World"</h1>`),
     "&lt;h1&gt;&quot;Hell&lt;span&gt;&#39;o&#39;&lt;/span&gt; &amp;&amp; World&quot;&lt;/h1&gt;"
   ));
 
