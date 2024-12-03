@@ -30,6 +30,7 @@ declare global {
 
     interface GlobalAttributes {
       accesskey?: any;
+      anchor?: any;
       autocapitalize?: any;
       autofocus?: any;
       class?: any;
@@ -145,6 +146,7 @@ declare global {
       title?: any;
       translate?: any;
       virtualkeyboardpolicy?: any;
+      writingsuggestions?: any;
     }
 
     interface EventHandlerAttributes {
@@ -278,6 +280,7 @@ declare global {
       // HTML
       a:
         | {
+            attributionsrc?: any;
             download?: any;
             href?: any;
             hreflang?: any;
@@ -287,9 +290,21 @@ declare global {
             rel?: any;
             target?: any;
             type?: any;
+            /** @deprecated */
+            charset?: any;
+            /** @deprecated */
+            coords?: any;
+            /** @deprecated */
+            name?: any;
+            /** @deprecated */
+            rev?: any;
+            /** @deprecated */
+            shape?: any;
           }
         | HTMLAttributes;
       abbr: HTMLAttributes;
+      /** @deprecated */
+      acronym: HTMLAttributes;
       address: HTMLAttributes;
       area:
         | {
@@ -323,15 +338,74 @@ declare global {
           }
         | HTMLAttributes;
       b: HTMLAttributes;
-      base: { href?: any; target?: any } | HTMLAttributes;
+      base:
+        | {
+            href?: any;
+            target?: any;
+          }
+        | HTMLAttributes;
       bdi: HTMLAttributes;
-      bdo: HTMLAttributes;
-      blockquote: { cite?: any } | HTMLAttributes;
-      body: HTMLAttributes;
-      br: HTMLAttributes;
+      bdo:
+        | {
+            dir?: any;
+          }
+        | HTMLAttributes;
+      /** @deprecated */
+      big: HTMLAttributes;
+      blockquote:
+        | {
+            cite?: any;
+          }
+        | HTMLAttributes;
+      body:
+        | {
+            /** @deprecated */
+            alink?: any;
+            /** @deprecated */
+            background?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            bottommargin?: any;
+            /** @deprecated */
+            leftmargin?: any;
+            /** @deprecated */
+            link?: any;
+            onafterprint?: any;
+            onbeforeprint?: any;
+            onbeforeunload?: any;
+            onblur?: any;
+            onerror?: any;
+            onfocus?: any;
+            onhashchange?: any;
+            onlanguagechange?: any;
+            onload?: any;
+            onmessage?: any;
+            onoffline?: any;
+            ononline?: any;
+            onpopstate?: any;
+            onresize?: any;
+            onstorage?: any;
+            onunload?: any;
+            /** @deprecated */
+            rightmargin?: any;
+            /** @deprecated */
+            text?: any;
+            /** @deprecated */
+            topmargin?: any;
+            /** @deprecated */
+            vlink?: any;
+          }
+        | HTMLAttributes;
+      br:
+        | {
+            /** @deprecated */
+            clear?: any;
+          }
+        | HTMLAttributes;
       button:
         | {
-            autocomplete?: any;
+            autofocus?: any;
             disabled?: any;
             form?: any;
             formaction?: any;
@@ -346,32 +420,134 @@ declare global {
             value?: any;
           }
         | HTMLAttributes;
-      canvas: { height?: any; width?: any } | HTMLAttributes;
-      caption: HTMLAttributes;
+      canvas:
+        | {
+            height?: any;
+            /** @deprecated */
+            "moz-opaque"?: any;
+            width?: any;
+          }
+        | HTMLAttributes;
+      caption:
+        | {
+            /** @deprecated */
+            align?: any;
+          }
+        | HTMLAttributes;
+      /** @deprecated */
+      center: HTMLAttributes;
       cite: HTMLAttributes;
       code: HTMLAttributes;
-      col: { span?: any } | HTMLAttributes;
-      colgroup: { span?: any } | HTMLAttributes;
-      data: { value?: any } | HTMLAttributes;
+      col:
+        | {
+            span?: any;
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            valign?: any;
+            /** @deprecated */
+            width?: any;
+          }
+        | HTMLAttributes;
+      colgroup:
+        | {
+            span?: any;
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            valign?: any;
+            /** @deprecated */
+            width?: any;
+          }
+        | HTMLAttributes;
+      data:
+        | {
+            value?: any;
+          }
+        | HTMLAttributes;
       datalist: HTMLAttributes;
       dd: HTMLAttributes;
-      del: { cite?: any; datetime?: any } | HTMLAttributes;
-      details: { open?: any } | HTMLAttributes;
+      del:
+        | {
+            cite?: any;
+            datetime?: any;
+          }
+        | HTMLAttributes;
+      details:
+        | {
+            open?: any;
+            name?: any;
+          }
+        | HTMLAttributes;
       dfn: HTMLAttributes;
-      dialog: { open?: any } | HTMLAttributes;
+      dialog:
+        | {
+            open?: any;
+          }
+        | HTMLAttributes;
+      /** @deprecated */
+      dir:
+        | {
+            /** @deprecated */
+            compact?: any;
+          }
+        | HTMLAttributes;
       div: HTMLAttributes;
       dl: HTMLAttributes;
       dt: HTMLAttributes;
       em: HTMLAttributes;
       embed:
-        | { height?: any; src?: any; type?: any; width?: any }
+        | {
+            height?: any;
+            src?: any;
+            type?: any;
+            width?: any;
+          }
         | HTMLAttributes;
-      fieldset: { disabled?: any; form?: any; name?: any } | HTMLAttributes;
+      fencedframe:
+        | {
+            allow?: any;
+            height?: any;
+            width?: any;
+          }
+        | HTMLAttributes;
+      fieldset:
+        | {
+            disabled?: any;
+            form?: any;
+            name?: any;
+          }
+        | HTMLAttributes;
       figcaption: HTMLAttributes;
       figure: HTMLAttributes;
+      /** @deprecated */
+      font:
+        | {
+            /** @deprecated */
+            color?: any;
+            /** @deprecated */
+            face?: any;
+            /** @deprecated */
+            size?: any;
+          }
+        | HTMLAttributes;
       footer: HTMLAttributes;
       form:
         | {
+            /** @deprecated */
+            accept?: any;
             "accept-charset"?: any;
             action?: any;
             autocomplete?: any;
@@ -383,23 +559,77 @@ declare global {
             target?: any;
           }
         | HTMLAttributes;
+      /** @deprecated */
+      frame:
+        | {
+            /** @deprecated */
+            src?: any;
+            /** @deprecated */
+            name?: any;
+            /** @deprecated */
+            noresize?: any;
+            /** @deprecated */
+            scrolling?: any;
+            /** @deprecated */
+            marginheight?: any;
+            /** @deprecated */
+            marginwidth?: any;
+            /** @deprecated */
+            frameborder?: any;
+          }
+        | HTMLAttributes;
+      /** @deprecated */
+      frameset:
+        | {
+            /** @deprecated */
+            cols?: any;
+            /** @deprecated */
+            rows?: any;
+          }
+        | HTMLAttributes;
       h1: HTMLAttributes;
       h2: HTMLAttributes;
       h3: HTMLAttributes;
       h4: HTMLAttributes;
       h5: HTMLAttributes;
       h6: HTMLAttributes;
-      head: HTMLAttributes;
+      head:
+        | {
+            /** @deprecated */
+            profile?: any;
+          }
+        | HTMLAttributes;
       header: HTMLAttributes;
       hgroup: HTMLAttributes;
-      hr: HTMLAttributes;
-      html: { xmlns?: any } | HTMLAttributes;
+      hr:
+        | {
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            color?: any;
+            /** @deprecated */
+            noshade?: any;
+            /** @deprecated */
+            size?: any;
+            /** @deprecated */
+            width?: any;
+          }
+        | HTMLAttributes;
+      html:
+        | {
+            /** @deprecated */
+            version?: any;
+            xmlns?: any;
+          }
+        | HTMLAttributes;
       i: HTMLAttributes;
       iframe:
         | {
             allow?: any;
             allowfullscreen?: any;
+            /** @deprecated */
             allowpaymentrequest?: any;
+            browsingtopics?: any;
             credentialless?: any;
             csp?: any;
             height?: any;
@@ -410,11 +640,24 @@ declare global {
             src?: any;
             srcdoc?: any;
             width?: any;
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            frameborder?: any;
+            /** @deprecated */
+            longdesc?: any;
+            /** @deprecated */
+            marginheight?: any;
+            /** @deprecated */
+            marginwidth?: any;
+            /** @deprecated */
+            scrolling?: any;
           }
         | HTMLAttributes;
       img:
         | {
             alt?: any;
+            attributionsrc?: any;
             crossorigin?: any;
             decoding?: any;
             elementtiming?: any;
@@ -427,16 +670,30 @@ declare global {
             sizes?: any;
             src?: any;
             srcset?: any;
-            usemap?: any;
             width?: any;
+            usemap?: any;
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            border?: any;
+            /** @deprecated */
+            hspace?: any;
+            /** @deprecated */
+            longdesc?: any;
+            /** @deprecated */
+            name?: any;
+            /** @deprecated */
+            vspace?: any;
           }
         | HTMLAttributes;
       input:
         | {
             accept?: any;
             alt?: any;
+            autocapitalize?: any;
             autocomplete?: any;
             autocorrect?: any;
+            autofocus?: any;
             capture?: any;
             checked?: any;
             dirname?: any;
@@ -449,6 +706,8 @@ declare global {
             formtarget?: any;
             height?: any;
             incremental?: any;
+            id?: any;
+            inputmode?: any;
             list?: any;
             max?: any;
             maxlength?: any;
@@ -467,6 +726,8 @@ declare global {
             size?: any;
             src?: any;
             step?: any;
+            tabindex?: any;
+            title?: any;
             type?:
               | "button"
               | "checkbox"
@@ -495,11 +756,26 @@ declare global {
             width?: any;
           }
         | HTMLAttributes;
-      ins: { cite?: any; datetime?: any } | HTMLAttributes;
+      ins:
+        | {
+            cite?: any;
+            datetime?: any;
+          }
+        | HTMLAttributes;
       kbd: HTMLAttributes;
-      label: { for?: any } | HTMLAttributes;
+      label:
+        | {
+            for?: any;
+          }
+        | HTMLAttributes;
       legend: HTMLAttributes;
-      li: { value?: any } | HTMLAttributes;
+      li:
+        | {
+            value?: any;
+            /** @deprecated */
+            type?: any;
+          }
+        | HTMLAttributes;
       link:
         | {
             as?: any;
@@ -516,69 +792,195 @@ declare global {
             referrerpolicy?: any;
             rel?: any;
             sizes?: any;
+            title?: any;
             type?: any;
           }
         | HTMLAttributes;
       main: HTMLAttributes;
-      map: { name?: any } | HTMLAttributes;
+      map:
+        | {
+            name?: any;
+          }
+        | HTMLAttributes;
       mark: HTMLAttributes;
-      menu: { type?: any } | HTMLAttributes;
+      /** @deprecated */
+      marquee:
+        | {
+            /** @deprecated */
+            behavior?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            direction?: any;
+            /** @deprecated */
+            height?: any;
+            /** @deprecated */
+            hspace?: any;
+            /** @deprecated */
+            loop?: any;
+            /** @deprecated */
+            scrollamount?: any;
+            /** @deprecated */
+            scrolldelay?: any;
+            /** @deprecated */
+            truespeed?: any;
+            /** @deprecated */
+            vspace?: any;
+            /** @deprecated */
+            width?: any;
+          }
+        | HTMLAttributes;
+      menu: HTMLAttributes;
       meta:
-        | { charset?: any; content?: any; "http-equiv"?: any; name?: any }
+        | {
+            charset?: any;
+            content?: any;
+            "http-equiv"?: any;
+            name?: any;
+          }
         | HTMLAttributes;
       meter:
         | {
-            form?: any;
-            high?: any;
-            low?: any;
-            max?: any;
-            min?: any;
-            optimum?: any;
             value?: any;
+            min?: any;
+            max?: any;
+            low?: any;
+            high?: any;
+            optimum?: any;
+            form?: any;
           }
         | HTMLAttributes;
       nav: HTMLAttributes;
+      /** @deprecated */
+      nobr: HTMLAttributes;
+      /** @deprecated */
+      noembed: HTMLAttributes;
+      /** @deprecated */
+      noframes: HTMLAttributes;
       noscript: HTMLAttributes;
       object:
         | {
+            /** @deprecated */
+            archive?: any;
+            /** @deprecated */
+            border?: any;
+            /** @deprecated */
+            classid?: any;
+            /** @deprecated */
+            codebase?: any;
+            /** @deprecated */
+            codetype?: any;
             data?: any;
+            /** @deprecated */
+            declare?: any;
             form?: any;
             height?: any;
             name?: any;
+            /** @deprecated */
+            standby?: any;
             type?: any;
+            /** @deprecated */
             usemap?: any;
             width?: any;
           }
         | HTMLAttributes;
-      ol: { reversed?: any; start?: any; type?: any } | HTMLAttributes;
-      optgroup: { disabled?: any; label?: any } | HTMLAttributes;
-      option:
-        | { disabled?: any; label?: any; selected?: any; value?: any }
+      ol:
+        | {
+            reversed?: any;
+            start?: any;
+            type?: any;
+          }
         | HTMLAttributes;
-      output: { for?: any; form?: any; name?: any } | HTMLAttributes;
+      optgroup:
+        | {
+            disabled?: any;
+            label?: any;
+          }
+        | HTMLAttributes;
+      option:
+        | {
+            disabled?: any;
+            label?: any;
+            selected?: any;
+            value?: any;
+          }
+        | HTMLAttributes;
+      output:
+        | {
+            for?: any;
+            form?: any;
+            name?: any;
+          }
+        | HTMLAttributes;
       p: HTMLAttributes;
+      /** @deprecated */
+      param:
+        | {
+            /** @deprecated */
+            name?: any;
+            /** @deprecated */
+            value?: any;
+            /** @deprecated */
+            type?: any;
+            /** @deprecated */
+            valuetype?: any;
+          }
+        | HTMLAttributes;
       picture: HTMLAttributes;
-      portal: { referrerpolicy?: any; src?: any } | HTMLAttributes;
-      pre: HTMLAttributes;
-      progress: { max?: any; value?: any } | HTMLAttributes;
-      q: { cite?: any } | HTMLAttributes;
+      /** @deprecated */
+      plaintext: HTMLAttributes;
+      portal:
+        | {
+            referrerpolicy?: any;
+            src?: any;
+          }
+        | HTMLAttributes;
+      pre:
+        | {
+            /** @deprecated */
+            width?: any;
+            /** @deprecated */
+            wrap?: any;
+          }
+        | HTMLAttributes;
+      progress:
+        | {
+            max?: any;
+            value?: any;
+          }
+        | HTMLAttributes;
+      q:
+        | {
+            cite?: any;
+          }
+        | HTMLAttributes;
+      /** @deprecated */
+      rb: HTMLAttributes;
       rp: HTMLAttributes;
       rt: HTMLAttributes;
+      /** @deprecated */
+      rtc: HTMLAttributes;
       ruby: HTMLAttributes;
       s: HTMLAttributes;
       samp: HTMLAttributes;
       script:
         | {
             async?: any;
+            attributionsrc?: any;
             blocking?: any;
             crossorigin?: any;
             defer?: any;
             fetchpriority?: any;
             integrity?: any;
             nomodule?: any;
+            nonce?: any;
             referrerpolicy?: any;
             src?: any;
             type?: any;
+            /** @deprecated */
+            charset?: any;
+            /** @deprecated */
+            language?: any;
           }
         | HTMLAttributes;
       search: HTMLAttributes;
@@ -586,6 +988,7 @@ declare global {
       select:
         | {
             autocomplete?: any;
+            autofocus?: any;
             disabled?: any;
             form?: any;
             multiple?: any;
@@ -594,40 +997,119 @@ declare global {
             size?: any;
           }
         | HTMLAttributes;
-      slot: { name?: any } | HTMLAttributes;
+      slot:
+        | {
+            name?: any;
+          }
+        | HTMLAttributes;
       small: HTMLAttributes;
       source:
         | {
-            height?: any;
-            media?: any;
-            sizes?: any;
+            type?: any;
             src?: any;
             srcset?: any;
-            type?: any;
+            sizes?: any;
+            media?: any;
+            height?: any;
             width?: any;
           }
         | HTMLAttributes;
       span: HTMLAttributes;
+      /** @deprecated */
+      strike: HTMLAttributes;
       strong: HTMLAttributes;
-      style: { blocking?: any; media?: any; scoped?: any } | HTMLAttributes;
+      style:
+        | {
+            blocking?: any;
+            media?: any;
+            nonce?: any;
+            title?: any;
+            /** @deprecated */
+            type?: any;
+          }
+        | HTMLAttributes;
       sub: HTMLAttributes;
       summary: HTMLAttributes;
       sup: HTMLAttributes;
-      table: HTMLAttributes;
-      tbody: HTMLAttributes;
+      table:
+        | {
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            border?: any;
+            /** @deprecated */
+            cellpadding?: any;
+            /** @deprecated */
+            cellspacing?: any;
+            /** @deprecated */
+            frame?: any;
+            /** @deprecated */
+            rules?: any;
+            /** @deprecated */
+            summary?: any;
+            /** @deprecated */
+            width?: any;
+          }
+        | HTMLAttributes;
+      tbody:
+        | {
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            valign?: any;
+          }
+        | HTMLAttributes;
       td:
         | {
             colspan?: any;
             headers?: any;
             rowspan?: any;
+            /** @deprecated */
+            abbr?: any;
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            axis?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            height?: any;
+            /** @deprecated */
+            scope?: any;
+            /** @deprecated */
+            valign?: any;
+            /** @deprecated */
+            width?: any;
           }
         | HTMLAttributes;
-      template: { shadowroot?: any } | HTMLAttributes;
+      template:
+        | {
+            shadowrootmode?: any;
+            shadowrootclonable?: any;
+            shadowrootdelegatesfocus?: any;
+            shadowrootserializable?: any;
+          }
+        | HTMLAttributes;
       textarea:
         | {
+            autocapitalize?: any;
             autocomplete?: any;
             autocorrect?: any;
+            autofocus?: any;
             cols?: any;
+            dirname?: any;
             disabled?: any;
             enterkeyhint?: any;
             form?: any;
@@ -638,10 +1120,24 @@ declare global {
             readonly?: any;
             required?: any;
             rows?: any;
+            spellcheck?: any;
             wrap?: any;
           }
         | HTMLAttributes;
-      tfoot: HTMLAttributes;
+      tfoot:
+        | {
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            valign?: any;
+          }
+        | HTMLAttributes;
       th:
         | {
             abbr?: any;
@@ -649,17 +1145,78 @@ declare global {
             headers?: any;
             rowspan?: any;
             scope?: any;
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            axis?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            height?: any;
+            /** @deprecated */
+            valign?: any;
+            /** @deprecated */
+            width?: any;
           }
         | HTMLAttributes;
-      thead: HTMLAttributes;
-      time: { datetime?: any } | HTMLAttributes;
-      title: HTMLAttributes;
-      tr: HTMLAttributes;
-      track:
-        | { default?: any; kind?: any; label?: any; src?: any; srclang?: any }
+      thead:
+        | {
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            valign?: any;
+          }
         | HTMLAttributes;
+      time:
+        | {
+            datetime?: any;
+          }
+        | HTMLAttributes;
+      title: HTMLAttributes;
+      tr:
+        | {
+            /** @deprecated */
+            align?: any;
+            /** @deprecated */
+            bgcolor?: any;
+            /** @deprecated */
+            char?: any;
+            /** @deprecated */
+            charoff?: any;
+            /** @deprecated */
+            valign?: any;
+          }
+        | HTMLAttributes;
+      track:
+        | {
+            default?: any;
+            kind?: any;
+            label?: any;
+            src?: any;
+            srclang?: any;
+          }
+        | HTMLAttributes;
+      /** @deprecated */
+      tt: HTMLAttributes;
       u: HTMLAttributes;
-      ul: HTMLAttributes;
+      ul:
+        | {
+            /** @deprecated */
+            compact?: any;
+            /** @deprecated */
+            type?: any;
+          }
+        | HTMLAttributes;
       var: HTMLAttributes;
       video:
         | {
@@ -680,6 +1237,8 @@ declare global {
           }
         | HTMLAttributes;
       wbr: HTMLAttributes;
+      /** @deprecated */
+      xmp: HTMLAttributes;
 
       // SVG
       svg: any;
