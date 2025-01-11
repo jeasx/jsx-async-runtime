@@ -41,9 +41,16 @@ declare global {
         | undefined;
       autofocus?: boolean | string | undefined;
       class?: string | object | undefined;
-      contenteditable?: boolean | "inherit" | undefined;
-      dir?: string | undefined;
-      draggable?: "true" | "false" | boolean | undefined;
+      contenteditable?:
+        | boolean
+        | "true"
+        | "false"
+        | ""
+        | "plaintext-only"
+        | "inherit"
+        | undefined;
+      dir?: "auto" | "rtl" | "ltr" | undefined;
+      draggable?: boolean | "true" | "false" | undefined;
       enterkeyhint?:
         | "enter"
         | "done"
@@ -54,7 +61,13 @@ declare global {
         | "send"
         | undefined;
       exportparts?: string | undefined;
-      hidden?: boolean | string | undefined;
+      hidden?:
+        | boolean
+        | "true"
+        | "false"
+        | "hidden"
+        | "until-found"
+        | undefined;
       id?: string | undefined;
       inert?: boolean | string | undefined;
       inputmode?:
@@ -76,16 +89,26 @@ declare global {
       lang?: string | undefined;
       nonce?: string | undefined;
       part?: string | undefined;
-      popover?: boolean | "auto" | "manual" | undefined;
+      popover?:
+        | "auto"
+        | "hint"
+        | "manual"
+        | boolean
+        | "true"
+        | "false"
+        | undefined;
       role?:
         | "alert"
         | "alertdialog"
         | "application"
         | "article"
         | "banner"
+        | "blockquote"
         | "button"
+        | "caption"
         | "cell"
         | "checkbox"
+        | "code"
         | "columnheader"
         | "combobox"
         | "command"
@@ -94,8 +117,11 @@ declare global {
         | "composite"
         | "contentinfo"
         | "definition"
+        | "deletion"
         | "dialog"
+        | "directory"
         | "document"
+        | "emphasis"
         | "feed"
         | "figure"
         | "form"
@@ -106,6 +132,7 @@ declare global {
         | "heading"
         | "img"
         | "input"
+        | "insertion"
         | "landmark"
         | "link"
         | "list"
@@ -126,6 +153,7 @@ declare global {
         | "none"
         | "note"
         | "option"
+        | "paragraph"
         | "presentation"
         | "progressbar"
         | "radio"
@@ -146,8 +174,11 @@ declare global {
         | "slider"
         | "spinbutton"
         | "status"
+        | "strong"
         | "structure"
+        | "subscript"
         | "suggestion"
+        | "superscript"
         | "switch"
         | "tab"
         | "table"
@@ -155,6 +186,7 @@ declare global {
         | "tabpanel"
         | "term"
         | "textbox"
+        | "time"
         | "timer"
         | "toolbar"
         | "tooltip"
@@ -162,7 +194,8 @@ declare global {
         | "treegrid"
         | "treeitem"
         | "widget"
-        | "window";
+        | "window"
+        | "none presentation";
       slot?: string | undefined;
       spellcheck?: boolean | string | undefined;
       style?: string | object | undefined;
@@ -265,9 +298,18 @@ declare global {
       "aria-description"?: string | undefined;
       "aria-details"?: string | undefined;
       "aria-disabled"?: boolean | "false" | "true" | undefined;
+      "aria-dropeffect"?:
+        | "none"
+        | "copy"
+        | "execute"
+        | "link"
+        | "move"
+        | "popup"
+        | undefined;
       "aria-errormessage"?: string | undefined;
       "aria-expanded"?: boolean | "false" | "true" | undefined;
       "aria-flowto"?: string | undefined;
+      "aria-grabbed"?: boolean | "false" | "true" | undefined;
       "aria-haspopup"?:
         | boolean
         | "false"
@@ -302,10 +344,15 @@ declare global {
       "aria-readonly"?: boolean | "false" | "true" | undefined;
       "aria-relevant"?:
         | "additions"
+        | "additions removals"
         | "additions text"
         | "all"
         | "removals"
+        | "removals additions"
+        | "removals text"
         | "text"
+        | "text additions"
+        | "text removals"
         | undefined;
       "aria-required"?: boolean | "false" | "true" | undefined;
       "aria-roledescription"?: string | undefined;
@@ -447,7 +494,6 @@ declare global {
               | "stylesheet"
               | "tag"
               | undefined;
-
             shape?: "default" | "rect" | "circle" | "poly" | undefined;
             target?:
               | "_self"
@@ -627,7 +673,7 @@ declare global {
         | HTMLAttributes;
       data:
         | {
-            value?: string | undefined;
+            value?: string | number | undefined;
           }
         | HTMLAttributes;
       datalist: HTMLAttributes;
@@ -1070,7 +1116,7 @@ declare global {
       marquee:
         | {
             /** @deprecated */
-            behavior?: string | undefined;
+            behavior?: "scroll" | "slide" | "alternate" | undefined;
             /** @deprecated */
             bgcolor?: string | undefined;
             /** @deprecated */
