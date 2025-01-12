@@ -336,6 +336,145 @@ declare global {
       "aria-valuetext"?: string;
     }
 
+    type RelAttributes =
+      | "about"
+      | "acl"
+      | "alternate"
+      | "amphtml"
+      | "api-catalog"
+      | "appendix"
+      | "apple-touch-icon"
+      | "apple-touch-startup-image"
+      | "archives"
+      | "author"
+      | "blocked-by"
+      | "bookmark"
+      | "c2pa-manifest"
+      | "canonical"
+      | "chapter"
+      | "cite-as"
+      | "collection"
+      | "compression-dictionary"
+      | "contents"
+      | "convertedfrom"
+      | "copyright"
+      | "create-form"
+      | "current"
+      | "deprecation"
+      | "describedby"
+      | "describes"
+      | "disclosure"
+      | "dns-prefetch"
+      | "duplicate"
+      | "edit"
+      | "edit-form"
+      | "edit-media"
+      | "enclosure"
+      | "external"
+      | "first"
+      | "glossary"
+      | "help"
+      | "hosts"
+      | "hub"
+      | "ice-server"
+      | "icon"
+      | "index"
+      | "intervalafter"
+      | "intervalbefore"
+      | "intervalcontains"
+      | "intervaldisjoint"
+      | "intervalduring"
+      | "intervalequals"
+      | "intervalfinishedby"
+      | "intervalfinishes"
+      | "intervalin"
+      | "intervalmeets"
+      | "intervalmetby"
+      | "intervaloverlappedby"
+      | "intervaloverlaps"
+      | "intervalstartedby"
+      | "intervalstarts"
+      | "item"
+      | "last"
+      | "latest-version"
+      | "license"
+      | "linkset"
+      | "lrdd"
+      | "manifest"
+      | "mask-icon"
+      | "me"
+      | "media-feed"
+      | "memento"
+      | "micropub"
+      | "modulepreload"
+      | "monitor"
+      | "monitor-group"
+      | "next"
+      | "next-archive"
+      | "nofollow"
+      | "noopener"
+      | "noreferrer"
+      | "opener"
+      | "openid2.local_id"
+      | "openid2.provider"
+      | "original"
+      | "p3pv1"
+      | "payment"
+      | "pingback"
+      | "preconnect"
+      | "predecessor-version"
+      | "prefetch"
+      | "preload"
+      | "prerender"
+      | "prev"
+      | "preview"
+      | "previous"
+      | "prev-archive"
+      | "privacy-policy"
+      | "profile"
+      | "publication"
+      | "related"
+      | "restconf"
+      | "replies"
+      | "ruleinput"
+      | "search"
+      | "section"
+      | "self"
+      | "service"
+      | "service-desc"
+      | "service-doc"
+      | "service-meta"
+      | "sip-trunking-capability"
+      | "sponsored"
+      | "start"
+      | "status"
+      | "stylesheet"
+      | "subsection"
+      | "successor-version"
+      | "sunset"
+      | "tag"
+      | "terms-of-service"
+      | "timegate"
+      | "timemap"
+      | "type"
+      | "ugc"
+      | "up"
+      | "version-history"
+      | "via"
+      | "webmention"
+      | "working-copy"
+      | "working-copy-of";
+
+    type ReferrerPolicyAttributes =
+      | "no-referrer"
+      | "no-referrer-when-downgrade"
+      | "origin"
+      | "origin-when-cross-origin"
+      | "same-origin"
+      | "strict-origin"
+      | "strict-origin-when-cross-origin"
+      | "unsafe-url";
+
     type HTMLAttributes = GlobalAttributes &
       EventHandlerAttributes &
       AriaAttributes & {
@@ -354,41 +493,8 @@ declare global {
         hreflang?: string;
         media?: string;
         ping?: string;
-        referrerpolicy?:
-          | "no-referrer"
-          | "no-referrer-when-downgrade"
-          | "origin"
-          | "origin-when-cross-origin"
-          | "same-origin"
-          | "strict-origin"
-          | "strict-origin-when-cross-origin"
-          | "unsafe-url";
-        rel?:
-          | "alternate"
-          | "author"
-          | "bookmark"
-          | "canonical"
-          | "dns-prefetch"
-          | "external"
-          | "help"
-          | "icon"
-          | "license"
-          | "manifest"
-          | "modulepreload"
-          | "next"
-          | "nofollow"
-          | "noopener"
-          | "noreferrer"
-          | "opener"
-          | "pingback"
-          | "preconnect"
-          | "prefetch"
-          | "preload"
-          | "prerender"
-          | "prev"
-          | "search"
-          | "stylesheet"
-          | "tag";
+        referrerpolicy?: ReferrerPolicyAttributes;
+        rel?: RelAttributes;
         target?: "_self" | "_blank" | "_parent" | "_top" | string;
         type?: string;
         /** @deprecated */
@@ -414,41 +520,8 @@ declare global {
         hreflang?: string;
         media?: string;
         ping?: string;
-        referrerpolicy?:
-          | "no-referrer"
-          | "no-referrer-when-downgrade"
-          | "origin"
-          | "origin-when-cross-origin"
-          | "same-origin"
-          | "strict-origin"
-          | "strict-origin-when-cross-origin"
-          | "unsafe-url";
-        rel?:
-          | "alternate"
-          | "author"
-          | "bookmark"
-          | "canonical"
-          | "dns-prefetch"
-          | "external"
-          | "help"
-          | "icon"
-          | "license"
-          | "manifest"
-          | "modulepreload"
-          | "next"
-          | "nofollow"
-          | "noopener"
-          | "noreferrer"
-          | "opener"
-          | "pingback"
-          | "preconnect"
-          | "prefetch"
-          | "preload"
-          | "prerender"
-          | "prev"
-          | "search"
-          | "stylesheet"
-          | "tag";
+        referrerpolicy?: ReferrerPolicyAttributes;
+        rel?: RelAttributes;
         shape?: "default" | "rect" | "circle" | "poly";
         target?: "_self" | "_blank" | "_parent" | "_top" | string;
         type?: string;
@@ -650,39 +723,8 @@ declare global {
         method?: "post" | "get" | "dialog";
         name?: string;
         novalidate?: "" | "novalidate" | boolean;
-        rel?:
-          | "alternate"
-          | "author"
-          | "bookmark"
-          | "canonical"
-          | "dns-prefetch"
-          | "external"
-          | "help"
-          | "icon"
-          | "license"
-          | "manifest"
-          | "modulepreload"
-          | "next"
-          | "nofollow"
-          | "noopener"
-          | "noreferrer"
-          | "opener"
-          | "pingback"
-          | "preconnect"
-          | "prefetch"
-          | "preload"
-          | "prerender"
-          | "prev"
-          | "search"
-          | "stylesheet"
-          | "tag";
-        target?:
-          | "_self"
-          | "_blank"
-          | "_parent"
-          | "_top"
-          | "_unfencedTop"
-          | string;
+        rel?: RelAttributes;
+        target?: "_self" | "_blank" | "_parent" | "_top" | string;
       } & HTMLAttributes;
       /** @deprecated */
       frame: {
@@ -749,15 +791,7 @@ declare global {
         height?: number | string;
         loading?: "eager" | "lazy";
         name?: string;
-        referrerpolicy?:
-          | "no-referrer"
-          | "no-referrer-when-downgrade"
-          | "origin"
-          | "origin-when-cross-origin"
-          | "same-origin"
-          | "strict-origin"
-          | "strict-origin-when-cross-origin"
-          | "unsafe-url";
+        referrerpolicy?: ReferrerPolicyAttributes;
         sandbox?: string;
         src?: string;
         srcdoc?: string;
@@ -786,15 +820,7 @@ declare global {
         intrinsicsize?: string;
         ismap?: "" | "ismap" | boolean;
         loading?: "eager" | "lazy";
-        referrerpolicy?:
-          | "no-referrer"
-          | "no-referrer-when-downgrade"
-          | "origin"
-          | "origin-when-cross-origin"
-          | "same-origin"
-          | "strict-origin"
-          | "strict-origin-when-cross-origin"
-          | "unsafe-url";
+        referrerpolicy?: ReferrerPolicyAttributes;
         sizes?: string;
         src?: string;
         srcset?: string;
@@ -916,41 +942,8 @@ declare global {
         imagesrcset?: string;
         integrity?: string;
         media?: string;
-        referrerpolicy?:
-          | "no-referrer"
-          | "no-referrer-when-downgrade"
-          | "origin"
-          | "origin-when-cross-origin"
-          | "same-origin"
-          | "strict-origin"
-          | "strict-origin-when-cross-origin"
-          | "unsafe-url";
-        rel?:
-          | "alternate"
-          | "author"
-          | "bookmark"
-          | "canonical"
-          | "dns-prefetch"
-          | "external"
-          | "help"
-          | "icon"
-          | "license"
-          | "manifest"
-          | "modulepreload"
-          | "next"
-          | "nofollow"
-          | "noopener"
-          | "noreferrer"
-          | "opener"
-          | "pingback"
-          | "preconnect"
-          | "prefetch"
-          | "preload"
-          | "prerender"
-          | "prev"
-          | "search"
-          | "stylesheet"
-          | "tag";
+        referrerpolicy?: ReferrerPolicyAttributes;
+        rel?: RelAttributes;
         sizes?: string;
         title?: string;
         type?: string;
@@ -1087,15 +1080,7 @@ declare global {
       /** @deprecated */
       plaintext: HTMLAttributes;
       portal: {
-        referrerpolicy?:
-          | "no-referrer"
-          | "no-referrer-when-downgrade"
-          | "origin"
-          | "origin-when-cross-origin"
-          | "same-origin"
-          | "strict-origin"
-          | "strict-origin-when-cross-origin"
-          | "unsafe-url";
+        referrerpolicy?: ReferrerPolicyAttributes;
         src?: string;
       } & HTMLAttributes;
       pre: {
@@ -1130,15 +1115,7 @@ declare global {
         integrity?: string;
         nomodule?: "" | "nomodule" | boolean;
         nonce?: string;
-        referrerpolicy?:
-          | "no-referrer"
-          | "no-referrer-when-downgrade"
-          | "origin"
-          | "origin-when-cross-origin"
-          | "same-origin"
-          | "strict-origin"
-          | "strict-origin-when-cross-origin"
-          | "unsafe-url";
+        referrerpolicy?: ReferrerPolicyAttributes;
         src?: string;
         type?: string;
         /** @deprecated */
