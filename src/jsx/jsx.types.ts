@@ -39,18 +39,17 @@ declare global {
         | "words"
         | "characters"
         | undefined;
-      autofocus?: boolean | string | undefined;
+      autofocus?: "" | "autofocus" | boolean | undefined;
       class?: string | object | undefined;
       contenteditable?:
-        | boolean
+        | ""
         | "true"
         | "false"
-        | ""
         | "plaintext-only"
-        | "inherit"
+        | boolean
         | undefined;
       dir?: "auto" | "rtl" | "ltr" | undefined;
-      draggable?: boolean | "true" | "false" | undefined;
+      draggable?: "true" | "false" | undefined;
       enterkeyhint?:
         | "enter"
         | "done"
@@ -61,15 +60,9 @@ declare global {
         | "send"
         | undefined;
       exportparts?: string | undefined;
-      hidden?:
-        | boolean
-        | "true"
-        | "false"
-        | "hidden"
-        | "until-found"
-        | undefined;
+      hidden?: "" | "hidden" | "until-found" | boolean | undefined;
       id?: string | undefined;
-      inert?: boolean | string | undefined;
+      inert?: "" | "inert" | boolean | undefined;
       inputmode?:
         | "none"
         | "text"
@@ -84,19 +77,12 @@ declare global {
       itemid?: string | undefined;
       itemprop?: string | undefined;
       itemref?: string | undefined;
-      itemscope?: boolean | string | undefined;
+      itemscope?: "" | "itemscope" | boolean | undefined;
       itemtype?: string | undefined;
       lang?: string | undefined;
       nonce?: string | undefined;
       part?: string | undefined;
-      popover?:
-        | "auto"
-        | "hint"
-        | "manual"
-        | boolean
-        | "true"
-        | "false"
-        | undefined;
+      popover?: "" | "auto" | "hint" | "manual" | boolean | undefined;
       role?:
         | "alert"
         | "alertdialog"
@@ -197,13 +183,13 @@ declare global {
         | "window"
         | "none presentation";
       slot?: string | undefined;
-      spellcheck?: boolean | string | undefined;
+      spellcheck?: "" | "true" | "false" | boolean | undefined;
       style?: string | object | undefined;
       tabindex?: number | string | undefined;
       title?: string | undefined;
-      translate?: "yes" | "no" | undefined;
+      translate?: "" | "yes" | "no" | boolean | undefined;
       virtualkeyboardpolicy?: "auto" | "manual" | "none" | undefined;
-      writingsuggestions?: boolean | string | undefined;
+      writingsuggestions?: "" | "true" | "false" | boolean | undefined;
     }
 
     interface EventHandlerAttributes {
@@ -273,19 +259,18 @@ declare global {
 
     interface AriaAttributes {
       "aria-activedescendant"?: string | undefined;
-      "aria-atomic"?: boolean | "false" | "true" | undefined;
+      "aria-atomic"?: "false" | "true" | boolean | undefined;
       "aria-autocomplete"?: "none" | "inline" | "list" | "both" | undefined;
       "aria-braillelabel"?: string | undefined;
       "aria-brailleroledescription"?: string | undefined;
-      "aria-busy"?: boolean | "false" | "true" | undefined;
-      "aria-checked"?: boolean | "false" | "mixed" | "true" | undefined;
+      "aria-busy"?: "false" | "true" | boolean | undefined;
+      "aria-checked"?: "false" | "mixed" | "true" | boolean | undefined;
       "aria-colcount"?: number | string | undefined;
       "aria-colindex"?: number | string | undefined;
       "aria-colindextext"?: string | undefined;
       "aria-colspan"?: number | string | undefined;
       "aria-controls"?: string | undefined;
       "aria-current"?:
-        | boolean
         | "false"
         | "true"
         | "page"
@@ -293,11 +278,12 @@ declare global {
         | "location"
         | "date"
         | "time"
+        | boolean
         | undefined;
       "aria-describedby"?: string | undefined;
       "aria-description"?: string | undefined;
       "aria-details"?: string | undefined;
-      "aria-disabled"?: boolean | "false" | "true" | undefined;
+      "aria-disabled"?: "false" | "true" | boolean | undefined;
       "aria-dropeffect"?:
         | "none"
         | "copy"
@@ -307,11 +293,10 @@ declare global {
         | "popup"
         | undefined;
       "aria-errormessage"?: string | undefined;
-      "aria-expanded"?: boolean | "false" | "true" | undefined;
+      "aria-expanded"?: "false" | "true" | boolean | undefined;
       "aria-flowto"?: string | undefined;
-      "aria-grabbed"?: boolean | "false" | "true" | undefined;
+      "aria-grabbed"?: "false" | "true" | boolean | undefined;
       "aria-haspopup"?:
-        | boolean
         | "false"
         | "true"
         | "menu"
@@ -319,29 +304,30 @@ declare global {
         | "tree"
         | "grid"
         | "dialog"
-        | undefined;
-      "aria-hidden"?: boolean | "false" | "true" | undefined;
-      "aria-invalid"?:
         | boolean
+        | undefined;
+      "aria-hidden"?: "false" | "true" | boolean | undefined;
+      "aria-invalid"?:
         | "false"
         | "true"
         | "grammar"
         | "spelling"
+        | boolean
         | undefined;
       "aria-keyshortcuts"?: string | undefined;
       "aria-label"?: string | undefined;
       "aria-labelledby"?: string | undefined;
       "aria-level"?: number | string | undefined;
       "aria-live"?: "off" | "assertive" | "polite" | undefined;
-      "aria-modal"?: boolean | "false" | "true" | undefined;
-      "aria-multiline"?: boolean | "false" | "true" | undefined;
-      "aria-multiselectable"?: boolean | "false" | "true" | undefined;
+      "aria-modal"?: "false" | "true" | boolean | undefined;
+      "aria-multiline"?: "false" | "true" | boolean | undefined;
+      "aria-multiselectable"?: "false" | "true" | boolean | undefined;
       "aria-orientation"?: "horizontal" | "vertical" | undefined;
       "aria-owns"?: string | undefined;
       "aria-placeholder"?: string | undefined;
       "aria-posinset"?: number | string | undefined;
-      "aria-pressed"?: boolean | "false" | "mixed" | "true" | undefined;
-      "aria-readonly"?: boolean | "false" | "true" | undefined;
+      "aria-pressed"?: "mixed" | "false" | "true" | boolean | undefined;
+      "aria-readonly"?: "false" | "true" | boolean | undefined;
       "aria-relevant"?:
         | "additions"
         | "additions removals"
@@ -354,13 +340,13 @@ declare global {
         | "text additions"
         | "text removals"
         | undefined;
-      "aria-required"?: boolean | "false" | "true" | undefined;
+      "aria-required"?: "false" | "true" | boolean | undefined;
       "aria-roledescription"?: string | undefined;
       "aria-rowcount"?: number | string | undefined;
       "aria-rowindex"?: number | string | undefined;
       "aria-rowindextext"?: string | undefined;
       "aria-rowspan"?: number | string | undefined;
-      "aria-selected"?: boolean | "false" | "true" | undefined;
+      "aria-selected"?: "false" | "true" | boolean | undefined;
       "aria-setsize"?: number | string | undefined;
       "aria-sort"?: "none" | "ascending" | "descending" | "other" | undefined;
       "aria-valuemax"?: number | string | undefined;
@@ -372,11 +358,11 @@ declare global {
       | GlobalAttributes
       | EventHandlerAttributes
       | AriaAttributes
-      | { [key: string]: any };
+      | { [key: string]: string | number | boolean | object | undefined };
 
     interface IntrinsicElements {
       // Allow unknown elements
-      [key: string]: any;
+      [key: string]: unknown;
 
       // HTML
       a:
@@ -509,14 +495,18 @@ declare global {
       aside: HTMLAttributes;
       audio:
         | {
-            autoplay?: boolean | string | undefined;
-            controls?: boolean | string | undefined;
+            autoplay?: "" | "autoplay" | boolean | undefined;
+            controls?: "" | "controls" | boolean | undefined;
             controlslist?: string | undefined;
-            crossorigin?: "anonymous" | "use-credentials" | "" | undefined;
-            disableremoteplayback?: boolean | string | undefined;
-            loop?: boolean | string | undefined;
-            muted?: boolean | string | undefined;
-            preload?: "none" | "metadata" | "auto" | "" | undefined;
+            crossorigin?: "" | "anonymous" | "use-credentials" | undefined;
+            disableremoteplayback?:
+              | ""
+              | "disableremoteplayback"
+              | boolean
+              | undefined;
+            loop?: "" | "loop" | boolean | undefined;
+            muted?: "" | "muted" | boolean | undefined;
+            preload?: "" | "auto" | "none" | "metadata" | undefined;
             src?: string | undefined;
           }
         | HTMLAttributes;
@@ -594,8 +584,7 @@ declare global {
         | HTMLAttributes;
       button:
         | {
-            autofocus?: boolean | string | undefined;
-            disabled?: boolean | string | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             form?: string | undefined;
             formaction?: string | undefined;
             formenctype?:
@@ -604,7 +593,7 @@ declare global {
               | "text/plain"
               | undefined;
             formmethod?: "post" | "get" | "dialog" | undefined;
-            formnovalidate?: boolean | string | undefined;
+            formnovalidate?: "" | "formnovalidate" | boolean | undefined;
             formtarget?:
               | "_self"
               | "_blank"
@@ -686,14 +675,14 @@ declare global {
         | HTMLAttributes;
       details:
         | {
-            open?: boolean | string | undefined;
+            open?: "" | "open" | boolean | undefined;
             name?: string | undefined;
           }
         | HTMLAttributes;
       dfn: HTMLAttributes;
       dialog:
         | {
-            open?: boolean | string | undefined;
+            open?: "" | "open" | boolean | undefined;
           }
         | HTMLAttributes;
       /** @deprecated */
@@ -724,7 +713,7 @@ declare global {
         | HTMLAttributes;
       fieldset:
         | {
-            disabled?: boolean | string | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             form?: string | undefined;
             name?: string | undefined;
           }
@@ -749,15 +738,15 @@ declare global {
             accept?: string | undefined;
             "accept-charset"?: string | undefined;
             action?: string | undefined;
-            autocomplete?: "on" | "off" | undefined;
+            autocomplete?: "on" | "off" | string | undefined;
             enctype?:
               | "application/x-www-form-urlencoded"
               | "multipart/form-data"
               | "text/plain"
               | undefined;
-            method?: "post" | "get" | undefined;
+            method?: "post" | "get" | "dialog" | undefined;
             name?: string | undefined;
-            novalidate?: boolean | string | undefined;
+            novalidate?: "" | "novalidate" | boolean | undefined;
             rel?:
               | "alternate"
               | "author"
@@ -785,12 +774,12 @@ declare global {
               | "stylesheet"
               | "tag"
               | undefined;
-
             target?:
               | "_self"
               | "_blank"
               | "_parent"
               | "_top"
+              | "_unfencedTop"
               | string
               | undefined;
           }
@@ -803,7 +792,7 @@ declare global {
             /** @deprecated */
             name?: string | undefined;
             /** @deprecated */
-            noresize?: boolean | string | undefined;
+            noresize?: "" | "noresize" | boolean | undefined;
             /** @deprecated */
             scrolling?: "yes" | "no" | "auto" | undefined;
             /** @deprecated */
@@ -844,7 +833,7 @@ declare global {
             /** @deprecated */
             color?: string | undefined;
             /** @deprecated */
-            noshade?: boolean | string | undefined;
+            noshade?: "" | "noshade" | boolean | undefined;
             /** @deprecated */
             size?: number | string | undefined;
             /** @deprecated */
@@ -862,11 +851,15 @@ declare global {
       iframe:
         | {
             allow?: string | undefined;
-            allowfullscreen?: boolean | string | undefined;
+            allowfullscreen?: "" | "allowfullscreen" | boolean | undefined;
             /** @deprecated */
-            allowpaymentrequest?: boolean | string | undefined;
-            browsingtopics?: string | undefined;
-            credentialless?: boolean | string | undefined;
+            allowpaymentrequest?:
+              | ""
+              | "allowpaymentrequest"
+              | boolean
+              | undefined;
+            browsingtopics?: "" | "browsingtopics" | boolean | undefined;
+            credentialless?: "" | "credentialless" | boolean | undefined;
             csp?: string | undefined;
             height?: number | string | undefined;
             loading?: "eager" | "lazy" | undefined;
@@ -903,13 +896,13 @@ declare global {
         | {
             alt?: string | undefined;
             attributionsrc?: string | undefined;
-            crossorigin?: "anonymous" | "use-credentials" | "" | undefined;
+            crossorigin?: "" | "anonymous" | "use-credentials" | undefined;
             decoding?: "sync" | "async" | "auto" | undefined;
             elementtiming?: string | undefined;
             fetchpriority?: "high" | "low" | "auto" | undefined;
             height?: number | string | undefined;
             intrinsicsize?: string | undefined;
-            ismap?: boolean | string | undefined;
+            ismap?: "" | "ismap" | boolean | undefined;
             loading?: "eager" | "lazy" | undefined;
             referrerpolicy?:
               | "no-referrer"
@@ -944,14 +937,12 @@ declare global {
         | {
             accept?: string | undefined;
             alt?: string | undefined;
-            autocapitalize?: string | undefined;
-            autocomplete?: string | undefined;
-            autocorrect?: string | undefined;
-            autofocus?: boolean | undefined;
+            autocomplete?: "on" | "off" | string | undefined;
+            autocorrect?: "on" | "off" | undefined;
             capture?: boolean | "user" | "environment" | undefined;
-            checked?: boolean | string | undefined;
+            checked?: "" | "checked" | boolean | undefined;
             dirname?: string | undefined;
-            disabled?: boolean | string | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             form?: string | undefined;
             formaction?: string | undefined;
             formenctype?:
@@ -960,7 +951,7 @@ declare global {
               | "text/plain"
               | undefined;
             formmethod?: "post" | "get" | "dialog" | undefined;
-            formnovalidate?: boolean | string | undefined;
+            formnovalidate?: "" | "formnovalidate" | boolean | undefined;
             formtarget?:
               | "_self"
               | "_blank"
@@ -986,16 +977,16 @@ declare global {
             maxlength?: number | string | undefined;
             min?: number | string | undefined;
             minlength?: number | string | undefined;
-            multiple?: boolean | string | undefined;
+            multiple?: "" | "multiple" | boolean | undefined;
             name?: string | undefined;
             orient?: "horizontal" | "vertical" | undefined;
             pattern?: string | undefined;
             placeholder?: string | undefined;
             popovertarget?: string | undefined;
             popovertargetaction?: "show" | "hide" | "toggle" | undefined;
-            readonly?: boolean | string | undefined;
+            readonly?: "" | "readonly" | boolean | undefined;
             results?: number | string | undefined;
-            required?: boolean | string | undefined;
+            required?: "" | "required" | boolean | undefined;
             size?: number | string | undefined;
             src?: string | undefined;
             step?: number | string | undefined;
@@ -1026,7 +1017,7 @@ declare global {
               | "week"
               | undefined;
             value?: string | number | undefined;
-            webkitdirectory?: boolean | string | undefined;
+            webkitdirectory?: "" | "webkitdirectory" | boolean | undefined;
             width?: number | string | undefined;
           }
         | HTMLAttributes;
@@ -1055,7 +1046,7 @@ declare global {
             as?: string | undefined;
             blocking?: "render" | "script" | "style" | undefined;
             crossorigin?: "anonymous" | "use-credentials" | "" | undefined;
-            disabled?: boolean | string | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             fetchpriority?: "high" | "low" | "auto" | undefined;
             href?: string | undefined;
             hreflang?: string | undefined;
@@ -1201,7 +1192,7 @@ declare global {
             codetype?: string | undefined;
             data?: string | undefined;
             /** @deprecated */
-            declare?: boolean | string | undefined;
+            declare?: "" | "declare" | boolean | undefined;
             form?: string | undefined;
             height?: number | string | undefined;
             name?: string | undefined;
@@ -1215,22 +1206,22 @@ declare global {
         | HTMLAttributes;
       ol:
         | {
-            reversed?: boolean | string | undefined;
+            reversed?: "" | "reversed" | boolean | undefined;
             start?: number | string | undefined;
             type?: "1" | "a" | "A" | "i" | "I" | undefined;
           }
         | HTMLAttributes;
       optgroup:
         | {
-            disabled?: boolean | string | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             label?: string | undefined;
           }
         | HTMLAttributes;
       option:
         | {
-            disabled?: boolean | string | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             label?: string | undefined;
-            selected?: boolean | string | undefined;
+            selected?: "" | "selected" | boolean | undefined;
             value?: string | number | undefined;
           }
         | HTMLAttributes;
@@ -1303,14 +1294,14 @@ declare global {
       samp: HTMLAttributes;
       script:
         | {
-            async?: boolean | string | undefined;
+            async?: "" | "async" | boolean | undefined;
             attributionsrc?: string | undefined;
             blocking?: "render" | "script" | "style" | undefined;
             crossorigin?: "anonymous" | "use-credentials" | "" | undefined;
-            defer?: boolean | string | undefined;
+            defer?: "" | "defer" | boolean | undefined;
             fetchpriority?: "high" | "low" | "auto" | undefined;
             integrity?: string | undefined;
-            nomodule?: boolean | string | undefined;
+            nomodule?: "" | "nomodule" | boolean | undefined;
             nonce?: string | undefined;
             referrerpolicy?:
               | "no-referrer"
@@ -1334,13 +1325,12 @@ declare global {
       section: HTMLAttributes;
       select:
         | {
-            autocomplete?: string | undefined;
-            autofocus?: boolean | string | undefined;
-            disabled?: boolean | string | undefined;
+            autocomplete?: "on" | "off" | string | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             form?: string | undefined;
-            multiple?: boolean | string | undefined;
+            multiple?: "" | "multiple" | boolean | undefined;
             name?: string | undefined;
-            required?: boolean | string | undefined;
+            required?: "" | "required" | boolean | undefined;
             size?: number | string | undefined;
           }
         | HTMLAttributes;
@@ -1454,38 +1444,38 @@ declare global {
       template:
         | {
             shadowrootmode?: "open" | "closed" | undefined;
-            shadowrootclonable?: boolean | string | undefined;
-            shadowrootdelegatesfocus?: boolean | string | undefined;
-            shadowrootserializable?: boolean | string | undefined;
+            shadowrootclonable?:
+              | ""
+              | "shadowrootclonable"
+              | boolean
+              | undefined;
+            shadowrootdelegatesfocus?:
+              | ""
+              | "shadowrootdelegatesfocus"
+              | boolean
+              | undefined;
+            shadowrootserializable?:
+              | ""
+              | "shadowrootserializable"
+              | boolean
+              | undefined;
           }
         | HTMLAttributes;
       textarea:
         | {
-            autocapitalize?: string | undefined;
-            autocomplete?: string | undefined;
-            autocorrect?: string | undefined;
-            autofocus?: boolean | string | undefined;
+            autocomplete?: "on" | "off" | string | undefined;
+            autocorrect?: "on" | "off" | undefined;
             cols?: number | string | undefined;
             dirname?: string | undefined;
-            disabled?: boolean | string | undefined;
-            enterkeyhint?:
-              | "enter"
-              | "done"
-              | "go"
-              | "next"
-              | "previous"
-              | "search"
-              | "send"
-              | undefined;
+            disabled?: "" | "disabled" | boolean | undefined;
             form?: string | undefined;
             maxlength?: number | string | undefined;
             minlength?: number | string | undefined;
             name?: string | undefined;
             placeholder?: string | undefined;
-            readonly?: boolean | string | undefined;
-            required?: boolean | string | undefined;
+            readonly?: "" | "readonly" | boolean | undefined;
+            required?: "" | "required" | boolean | undefined;
             rows?: number | string | undefined;
-            spellcheck?: boolean | string | undefined;
             wrap?: "hard" | "soft" | "off" | undefined;
           }
         | HTMLAttributes;
@@ -1564,7 +1554,7 @@ declare global {
         | HTMLAttributes;
       track:
         | {
-            default?: boolean | string | undefined;
+            default?: "" | "default" | boolean | undefined;
             kind?: string | undefined;
             label?: string | undefined;
             src?: string | undefined;
@@ -1585,18 +1575,26 @@ declare global {
       var: HTMLAttributes;
       video:
         | {
-            autoplay?: boolean | string | undefined;
-            controls?: boolean | string | undefined;
+            autoplay?: "" | "autoplay" | boolean | undefined;
+            controls?: "" | "controls" | boolean | undefined;
             controlslist?: string | undefined;
-            crossorigin?: "anonymous" | "use-credentials" | "" | undefined;
-            disablepictureinpicture?: boolean | string | undefined;
-            disableremoteplayback?: boolean | string | undefined;
+            crossorigin?: "" | "anonymous" | "use-credentials" | undefined;
+            disablepictureinpicture?:
+              | ""
+              | "disablepictureinpicture"
+              | boolean
+              | undefined;
+            disableremoteplayback?:
+              | ""
+              | "disableremoteplayback"
+              | boolean
+              | undefined;
             height?: number | string | undefined;
-            loop?: boolean | string | undefined;
-            muted?: boolean | string | undefined;
-            playsinline?: boolean | string | undefined;
+            loop?: "" | "loop" | boolean | undefined;
+            muted?: "" | "muted" | boolean | undefined;
+            playsinline?: "" | "playsinline" | boolean | undefined;
             poster?: string | undefined;
-            preload?: "none" | "metadata" | "auto" | "" | undefined;
+            preload?: "" | "none" | "metadata" | "auto" | undefined;
             src?: string | undefined;
             width?: number | string | undefined;
           }
