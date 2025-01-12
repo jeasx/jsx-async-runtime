@@ -29,27 +29,20 @@ declare global {
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
     interface GlobalAttributes {
-      accesskey?: string | undefined;
-      anchor?: string | undefined;
+      accesskey?: string;
+      anchor?: string;
       autocapitalize?:
         | "off"
         | "none"
         | "on"
         | "sentences"
         | "words"
-        | "characters"
-        | undefined;
-      autofocus?: "" | "autofocus" | boolean | undefined;
-      class?: string | object | undefined;
-      contenteditable?:
-        | ""
-        | "true"
-        | "false"
-        | "plaintext-only"
-        | boolean
-        | undefined;
-      dir?: "auto" | "rtl" | "ltr" | undefined;
-      draggable?: "true" | "false" | undefined;
+        | "characters";
+      autofocus?: "" | "autofocus" | boolean;
+      class?: string | { [key: string]: boolean };
+      contenteditable?: "" | "true" | "false" | "plaintext-only" | boolean;
+      dir?: "auto" | "rtl" | "ltr";
+      draggable?: "true" | "false";
       enterkeyhint?:
         | "enter"
         | "done"
@@ -57,12 +50,11 @@ declare global {
         | "next"
         | "previous"
         | "search"
-        | "send"
-        | undefined;
-      exportparts?: string | undefined;
-      hidden?: "" | "hidden" | "until-found" | boolean | undefined;
-      id?: string | undefined;
-      inert?: "" | "inert" | boolean | undefined;
+        | "send";
+      exportparts?: string;
+      hidden?: "" | "hidden" | "until-found" | boolean;
+      id?: string;
+      inert?: "" | "inert" | boolean;
       inputmode?:
         | "none"
         | "text"
@@ -71,18 +63,17 @@ declare global {
         | "email"
         | "numeric"
         | "decimal"
-        | "search"
-        | undefined;
-      is?: string | undefined;
-      itemid?: string | undefined;
-      itemprop?: string | undefined;
-      itemref?: string | undefined;
-      itemscope?: "" | "itemscope" | boolean | undefined;
-      itemtype?: string | undefined;
-      lang?: string | undefined;
-      nonce?: string | undefined;
-      part?: string | undefined;
-      popover?: "" | "auto" | "hint" | "manual" | boolean | undefined;
+        | "search";
+      is?: string;
+      itemid?: string;
+      itemprop?: string;
+      itemref?: string;
+      itemscope?: "" | "itemscope" | boolean;
+      itemtype?: string;
+      lang?: string;
+      nonce?: string;
+      part?: string;
+      popover?: "" | "auto" | "hint" | "manual" | boolean;
       role?:
         | "alert"
         | "alertdialog"
@@ -182,94 +173,94 @@ declare global {
         | "widget"
         | "window"
         | "none presentation";
-      slot?: string | undefined;
-      spellcheck?: "" | "true" | "false" | boolean | undefined;
-      style?: string | object | undefined;
-      tabindex?: number | string | undefined;
-      title?: string | undefined;
-      translate?: "" | "yes" | "no" | boolean | undefined;
-      virtualkeyboardpolicy?: "auto" | "manual" | "none" | undefined;
-      writingsuggestions?: "" | "true" | "false" | boolean | undefined;
+      slot?: string;
+      spellcheck?: "" | "true" | "false" | boolean;
+      style?: string | { [key: string]: string };
+      tabindex?: number | string;
+      title?: string;
+      translate?: "" | "yes" | "no" | boolean;
+      virtualkeyboardpolicy?: "auto" | "manual" | "none";
+      writingsuggestions?: "" | "true" | "false" | boolean;
     }
 
     interface EventHandlerAttributes {
-      onabort?: string | undefined;
-      onautocomplete?: string | undefined;
-      onautocompleteerror?: string | undefined;
-      onblur?: string | undefined;
-      oncancel?: string | undefined;
-      oncanplay?: string | undefined;
-      oncanplaythrough?: string | undefined;
-      onchange?: string | undefined;
-      onclick?: string | undefined;
-      onclose?: string | undefined;
-      oncontextmenu?: string | undefined;
-      oncuechange?: string | undefined;
-      ondblclick?: string | undefined;
-      ondrag?: string | undefined;
-      ondragend?: string | undefined;
-      ondragenter?: string | undefined;
-      ondragleave?: string | undefined;
-      ondragover?: string | undefined;
-      ondragstart?: string | undefined;
-      ondrop?: string | undefined;
-      ondurationchange?: string | undefined;
-      onemptied?: string | undefined;
-      onended?: string | undefined;
-      onerror?: string | undefined;
-      onfocus?: string | undefined;
-      oninput?: string | undefined;
-      oninvalid?: string | undefined;
-      onkeydown?: string | undefined;
-      onkeypress?: string | undefined;
-      onkeyup?: string | undefined;
-      onload?: string | undefined;
-      onloadeddata?: string | undefined;
-      onloadedmetadata?: string | undefined;
-      onloadstart?: string | undefined;
-      onmousedown?: string | undefined;
-      onmouseenter?: string | undefined;
-      onmouseleave?: string | undefined;
-      onmousemove?: string | undefined;
-      onmouseout?: string | undefined;
-      onmouseover?: string | undefined;
-      onmouseup?: string | undefined;
-      onmousewheel?: string | undefined;
-      onpause?: string | undefined;
-      onplay?: string | undefined;
-      onplaying?: string | undefined;
-      onprogress?: string | undefined;
-      onratechange?: string | undefined;
-      onreset?: string | undefined;
-      onresize?: string | undefined;
-      onscroll?: string | undefined;
-      onseeked?: string | undefined;
-      onseeking?: string | undefined;
-      onselect?: string | undefined;
-      onshow?: string | undefined;
-      onsort?: string | undefined;
-      onstalled?: string | undefined;
-      onsubmit?: string | undefined;
-      onsuspend?: string | undefined;
-      ontimeupdate?: string | undefined;
-      ontoggle?: string | undefined;
-      onvolumechange?: string | undefined;
-      onwaiting?: string | undefined;
+      onabort?: string;
+      onautocomplete?: string;
+      onautocompleteerror?: string;
+      onblur?: string;
+      oncancel?: string;
+      oncanplay?: string;
+      oncanplaythrough?: string;
+      onchange?: string;
+      onclick?: string;
+      onclose?: string;
+      oncontextmenu?: string;
+      oncuechange?: string;
+      ondblclick?: string;
+      ondrag?: string;
+      ondragend?: string;
+      ondragenter?: string;
+      ondragleave?: string;
+      ondragover?: string;
+      ondragstart?: string;
+      ondrop?: string;
+      ondurationchange?: string;
+      onemptied?: string;
+      onended?: string;
+      onerror?: string;
+      onfocus?: string;
+      oninput?: string;
+      oninvalid?: string;
+      onkeydown?: string;
+      onkeypress?: string;
+      onkeyup?: string;
+      onload?: string;
+      onloadeddata?: string;
+      onloadedmetadata?: string;
+      onloadstart?: string;
+      onmousedown?: string;
+      onmouseenter?: string;
+      onmouseleave?: string;
+      onmousemove?: string;
+      onmouseout?: string;
+      onmouseover?: string;
+      onmouseup?: string;
+      onmousewheel?: string;
+      onpause?: string;
+      onplay?: string;
+      onplaying?: string;
+      onprogress?: string;
+      onratechange?: string;
+      onreset?: string;
+      onresize?: string;
+      onscroll?: string;
+      onseeked?: string;
+      onseeking?: string;
+      onselect?: string;
+      onshow?: string;
+      onsort?: string;
+      onstalled?: string;
+      onsubmit?: string;
+      onsuspend?: string;
+      ontimeupdate?: string;
+      ontoggle?: string;
+      onvolumechange?: string;
+      onwaiting?: string;
     }
 
     interface AriaAttributes {
-      "aria-activedescendant"?: string | undefined;
-      "aria-atomic"?: "false" | "true" | boolean | undefined;
-      "aria-autocomplete"?: "none" | "inline" | "list" | "both" | undefined;
-      "aria-braillelabel"?: string | undefined;
-      "aria-brailleroledescription"?: string | undefined;
-      "aria-busy"?: "false" | "true" | boolean | undefined;
-      "aria-checked"?: "false" | "mixed" | "true" | boolean | undefined;
-      "aria-colcount"?: number | string | undefined;
-      "aria-colindex"?: number | string | undefined;
-      "aria-colindextext"?: string | undefined;
-      "aria-colspan"?: number | string | undefined;
-      "aria-controls"?: string | undefined;
+      "aria-activedescendant"?: string;
+      "aria-atomic"?: "false" | "true" | boolean;
+      "aria-autocomplete"?: "none" | "inline" | "list" | "both";
+      "aria-braillelabel"?: string;
+      "aria-brailleroledescription"?: string;
+      "aria-busy"?: "false" | "true" | boolean;
+      "aria-checked"?: "false" | "mixed" | "true" | boolean;
+      "aria-colcount"?: number | string;
+      "aria-colindex"?: number | string;
+      "aria-colindextext"?: string;
+      "aria-colspan"?: number | string;
+      "aria-controls"?: string;
       "aria-current"?:
         | "false"
         | "true"
@@ -278,24 +269,22 @@ declare global {
         | "location"
         | "date"
         | "time"
-        | boolean
-        | undefined;
-      "aria-describedby"?: string | undefined;
-      "aria-description"?: string | undefined;
-      "aria-details"?: string | undefined;
-      "aria-disabled"?: "false" | "true" | boolean | undefined;
+        | boolean;
+      "aria-describedby"?: string;
+      "aria-description"?: string;
+      "aria-details"?: string;
+      "aria-disabled"?: "false" | "true" | boolean;
       "aria-dropeffect"?:
         | "none"
         | "copy"
         | "execute"
         | "link"
         | "move"
-        | "popup"
-        | undefined;
-      "aria-errormessage"?: string | undefined;
-      "aria-expanded"?: "false" | "true" | boolean | undefined;
-      "aria-flowto"?: string | undefined;
-      "aria-grabbed"?: "false" | "true" | boolean | undefined;
+        | "popup";
+      "aria-errormessage"?: string;
+      "aria-expanded"?: "false" | "true" | boolean;
+      "aria-flowto"?: string;
+      "aria-grabbed"?: "false" | "true" | boolean;
       "aria-haspopup"?:
         | "false"
         | "true"
@@ -304,30 +293,23 @@ declare global {
         | "tree"
         | "grid"
         | "dialog"
-        | boolean
-        | undefined;
-      "aria-hidden"?: "false" | "true" | boolean | undefined;
-      "aria-invalid"?:
-        | "false"
-        | "true"
-        | "grammar"
-        | "spelling"
-        | boolean
-        | undefined;
-      "aria-keyshortcuts"?: string | undefined;
-      "aria-label"?: string | undefined;
-      "aria-labelledby"?: string | undefined;
-      "aria-level"?: number | string | undefined;
-      "aria-live"?: "off" | "assertive" | "polite" | undefined;
-      "aria-modal"?: "false" | "true" | boolean | undefined;
-      "aria-multiline"?: "false" | "true" | boolean | undefined;
-      "aria-multiselectable"?: "false" | "true" | boolean | undefined;
-      "aria-orientation"?: "horizontal" | "vertical" | undefined;
-      "aria-owns"?: string | undefined;
-      "aria-placeholder"?: string | undefined;
-      "aria-posinset"?: number | string | undefined;
-      "aria-pressed"?: "mixed" | "false" | "true" | boolean | undefined;
-      "aria-readonly"?: "false" | "true" | boolean | undefined;
+        | boolean;
+      "aria-hidden"?: "false" | "true" | boolean;
+      "aria-invalid"?: "false" | "true" | "grammar" | "spelling" | boolean;
+      "aria-keyshortcuts"?: string;
+      "aria-label"?: string;
+      "aria-labelledby"?: string;
+      "aria-level"?: number | string;
+      "aria-live"?: "off" | "assertive" | "polite";
+      "aria-modal"?: "false" | "true" | boolean;
+      "aria-multiline"?: "false" | "true" | boolean;
+      "aria-multiselectable"?: "false" | "true" | boolean;
+      "aria-orientation"?: "horizontal" | "vertical";
+      "aria-owns"?: string;
+      "aria-placeholder"?: string;
+      "aria-posinset"?: number | string;
+      "aria-pressed"?: "mixed" | "false" | "true" | boolean;
+      "aria-readonly"?: "false" | "true" | boolean;
       "aria-relevant"?:
         | "additions"
         | "additions removals"
@@ -338,838 +320,705 @@ declare global {
         | "removals text"
         | "text"
         | "text additions"
-        | "text removals"
-        | undefined;
-      "aria-required"?: "false" | "true" | boolean | undefined;
-      "aria-roledescription"?: string | undefined;
-      "aria-rowcount"?: number | string | undefined;
-      "aria-rowindex"?: number | string | undefined;
-      "aria-rowindextext"?: string | undefined;
-      "aria-rowspan"?: number | string | undefined;
-      "aria-selected"?: "false" | "true" | boolean | undefined;
-      "aria-setsize"?: number | string | undefined;
-      "aria-sort"?: "none" | "ascending" | "descending" | "other" | undefined;
-      "aria-valuemax"?: number | string | undefined;
-      "aria-valuemin"?: number | string | undefined;
-      "aria-valuenow"?: number | string | undefined;
-      "aria-valuetext"?: string | undefined;
+        | "text removals";
+      "aria-required"?: "false" | "true" | boolean;
+      "aria-roledescription"?: string;
+      "aria-rowcount"?: number | string;
+      "aria-rowindex"?: number | string;
+      "aria-rowindextext"?: string;
+      "aria-rowspan"?: number | string;
+      "aria-selected"?: "false" | "true" | boolean;
+      "aria-setsize"?: number | string;
+      "aria-sort"?: "none" | "ascending" | "descending" | "other";
+      "aria-valuemax"?: number | string;
+      "aria-valuemin"?: number | string;
+      "aria-valuenow"?: number | string;
+      "aria-valuetext"?: string;
     }
-    type HTMLAttributes =
-      | GlobalAttributes
-      | EventHandlerAttributes
-      | AriaAttributes
-      | { [key: string]: string | number | boolean | object | undefined };
+
+    type HTMLAttributes = GlobalAttributes &
+      EventHandlerAttributes &
+      AriaAttributes & {
+        [key: string]: string | number | boolean | object;
+      };
 
     interface IntrinsicElements {
       // Allow unknown elements
       [key: string]: unknown;
 
       // HTML
-      a:
-        | {
-            attributionsrc?: string | undefined;
-            download?: boolean | string | undefined;
-            href?: string | undefined;
-            hreflang?: string | undefined;
-            media?: string | undefined;
-            ping?: string | undefined;
-            referrerpolicy?:
-              | "no-referrer"
-              | "no-referrer-when-downgrade"
-              | "origin"
-              | "origin-when-cross-origin"
-              | "same-origin"
-              | "strict-origin"
-              | "strict-origin-when-cross-origin"
-              | "unsafe-url"
-              | undefined;
-            rel?:
-              | "alternate"
-              | "author"
-              | "bookmark"
-              | "canonical"
-              | "dns-prefetch"
-              | "external"
-              | "help"
-              | "icon"
-              | "license"
-              | "manifest"
-              | "modulepreload"
-              | "next"
-              | "nofollow"
-              | "noopener"
-              | "noreferrer"
-              | "opener"
-              | "pingback"
-              | "preconnect"
-              | "prefetch"
-              | "preload"
-              | "prerender"
-              | "prev"
-              | "search"
-              | "stylesheet"
-              | "tag"
-              | undefined;
-            target?:
-              | "_self"
-              | "_blank"
-              | "_parent"
-              | "_top"
-              | string
-              | undefined;
-            type?: string | undefined;
-            /** @deprecated */
-            charset?: string | undefined;
-            /** @deprecated */
-            coords?: string | undefined;
-            /** @deprecated */
-            name?: string | undefined;
-            /** @deprecated */
-            rev?: string | undefined;
-            /** @deprecated */
-            shape?: "default" | "rect" | "circle" | "poly" | undefined;
-          }
-        | HTMLAttributes;
+      a: {
+        attributionsrc?: string;
+        download?: boolean | string;
+        href?: string;
+        hreflang?: string;
+        media?: string;
+        ping?: string;
+        referrerpolicy?:
+          | "no-referrer"
+          | "no-referrer-when-downgrade"
+          | "origin"
+          | "origin-when-cross-origin"
+          | "same-origin"
+          | "strict-origin"
+          | "strict-origin-when-cross-origin"
+          | "unsafe-url";
+        rel?:
+          | "alternate"
+          | "author"
+          | "bookmark"
+          | "canonical"
+          | "dns-prefetch"
+          | "external"
+          | "help"
+          | "icon"
+          | "license"
+          | "manifest"
+          | "modulepreload"
+          | "next"
+          | "nofollow"
+          | "noopener"
+          | "noreferrer"
+          | "opener"
+          | "pingback"
+          | "preconnect"
+          | "prefetch"
+          | "preload"
+          | "prerender"
+          | "prev"
+          | "search"
+          | "stylesheet"
+          | "tag";
+        target?: "_self" | "_blank" | "_parent" | "_top" | string;
+        type?: string;
+        /** @deprecated */
+        charset?: string;
+        /** @deprecated */
+        coords?: string;
+        /** @deprecated */
+        name?: string;
+        /** @deprecated */
+        rev?: string;
+        /** @deprecated */
+        shape?: "default" | "rect" | "circle" | "poly";
+      } & HTMLAttributes;
       abbr: HTMLAttributes;
       /** @deprecated */
       acronym: HTMLAttributes;
       address: HTMLAttributes;
-      area:
-        | {
-            alt?: string | undefined;
-            coords?: string | undefined;
-            download?: string | boolean | undefined;
-            href?: string | undefined;
-            hreflang?: string | undefined;
-            media?: string | undefined;
-            ping?: string | undefined;
-            referrerpolicy?:
-              | "no-referrer"
-              | "no-referrer-when-downgrade"
-              | "origin"
-              | "origin-when-cross-origin"
-              | "same-origin"
-              | "strict-origin"
-              | "strict-origin-when-cross-origin"
-              | "unsafe-url"
-              | undefined;
-            rel?:
-              | "alternate"
-              | "author"
-              | "bookmark"
-              | "canonical"
-              | "dns-prefetch"
-              | "external"
-              | "help"
-              | "icon"
-              | "license"
-              | "manifest"
-              | "modulepreload"
-              | "next"
-              | "nofollow"
-              | "noopener"
-              | "noreferrer"
-              | "opener"
-              | "pingback"
-              | "preconnect"
-              | "prefetch"
-              | "preload"
-              | "prerender"
-              | "prev"
-              | "search"
-              | "stylesheet"
-              | "tag"
-              | undefined;
-            shape?: "default" | "rect" | "circle" | "poly" | undefined;
-            target?:
-              | "_self"
-              | "_blank"
-              | "_parent"
-              | "_top"
-              | string
-              | undefined;
-            type?: string | undefined;
-          }
-        | HTMLAttributes;
+      area: {
+        alt?: string;
+        coords?: string;
+        download?: string | boolean;
+        href?: string;
+        hreflang?: string;
+        media?: string;
+        ping?: string;
+        referrerpolicy?:
+          | "no-referrer"
+          | "no-referrer-when-downgrade"
+          | "origin"
+          | "origin-when-cross-origin"
+          | "same-origin"
+          | "strict-origin"
+          | "strict-origin-when-cross-origin"
+          | "unsafe-url";
+        rel?:
+          | "alternate"
+          | "author"
+          | "bookmark"
+          | "canonical"
+          | "dns-prefetch"
+          | "external"
+          | "help"
+          | "icon"
+          | "license"
+          | "manifest"
+          | "modulepreload"
+          | "next"
+          | "nofollow"
+          | "noopener"
+          | "noreferrer"
+          | "opener"
+          | "pingback"
+          | "preconnect"
+          | "prefetch"
+          | "preload"
+          | "prerender"
+          | "prev"
+          | "search"
+          | "stylesheet"
+          | "tag";
+        shape?: "default" | "rect" | "circle" | "poly";
+        target?: "_self" | "_blank" | "_parent" | "_top" | string;
+        type?: string;
+      } & HTMLAttributes;
       article: HTMLAttributes;
       aside: HTMLAttributes;
-      audio:
-        | {
-            autoplay?: "" | "autoplay" | boolean | undefined;
-            controls?: "" | "controls" | boolean | undefined;
-            controlslist?: string | undefined;
-            crossorigin?: "" | "anonymous" | "use-credentials" | undefined;
-            disableremoteplayback?:
-              | ""
-              | "disableremoteplayback"
-              | boolean
-              | undefined;
-            loop?: "" | "loop" | boolean | undefined;
-            muted?: "" | "muted" | boolean | undefined;
-            preload?: "" | "auto" | "none" | "metadata" | undefined;
-            src?: string | undefined;
-          }
-        | HTMLAttributes;
+      audio: {
+        autoplay?: "" | "autoplay" | boolean;
+        controls?: "" | "controls" | boolean;
+        controlslist?: string;
+        crossorigin?: "" | "anonymous" | "use-credentials";
+        disableremoteplayback?: "" | "disableremoteplayback" | boolean;
+        loop?: "" | "loop" | boolean;
+        muted?: "" | "muted" | boolean;
+        preload?: "" | "auto" | "none" | "metadata";
+        src?: string;
+      } & HTMLAttributes;
       b: HTMLAttributes;
-      base:
-        | {
-            href?: string | undefined;
-            target?:
-              | "_self"
-              | "_blank"
-              | "_parent"
-              | "_top"
-              | string
-              | undefined;
-          }
-        | HTMLAttributes;
+      base: {
+        href?: string;
+        target?: "_self" | "_blank" | "_parent" | "_top" | string;
+      } & HTMLAttributes;
       bdi: HTMLAttributes;
-      bdo:
-        | {
-            dir?: "ltr" | "rtl" | "auto" | undefined;
-          }
-        | HTMLAttributes;
+      bdo: {
+        dir?: "ltr" | "rtl" | "auto";
+      } & HTMLAttributes;
       /** @deprecated */
       big: HTMLAttributes;
-      blockquote:
-        | {
-            cite?: string | undefined;
-          }
-        | HTMLAttributes;
-      body:
-        | {
-            /** @deprecated */
-            alink?: string | undefined;
-            /** @deprecated */
-            background?: string | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            bottommargin?: number | string | undefined;
-            /** @deprecated */
-            leftmargin?: number | string | undefined;
-            /** @deprecated */
-            link?: string | undefined;
-            onafterprint?: string | undefined;
-            onbeforeprint?: string | undefined;
-            onbeforeunload?: string | undefined;
-            onblur?: string | undefined;
-            onerror?: string | undefined;
-            onfocus?: string | undefined;
-            onhashchange?: string | undefined;
-            onlanguagechange?: string | undefined;
-            onload?: string | undefined;
-            onmessage?: string | undefined;
-            onoffline?: string | undefined;
-            ononline?: string | undefined;
-            onpopstate?: string | undefined;
-            onresize?: string | undefined;
-            onstorage?: string | undefined;
-            onunload?: string | undefined;
-            /** @deprecated */
-            rightmargin?: number | string | undefined;
-            /** @deprecated */
-            text?: string | undefined;
-            /** @deprecated */
-            topmargin?: number | string | undefined;
-            /** @deprecated */
-            vlink?: string | undefined;
-          }
-        | HTMLAttributes;
-      br:
-        | {
-            /** @deprecated */
-            clear?: "none" | "left" | "right" | "both" | undefined;
-          }
-        | HTMLAttributes;
-      button:
-        | {
-            disabled?: "" | "disabled" | boolean | undefined;
-            form?: string | undefined;
-            formaction?: string | undefined;
-            formenctype?:
-              | "application/x-www-form-urlencoded"
-              | "multipart/form-data"
-              | "text/plain"
-              | undefined;
-            formmethod?: "post" | "get" | "dialog" | undefined;
-            formnovalidate?: "" | "formnovalidate" | boolean | undefined;
-            formtarget?:
-              | "_self"
-              | "_blank"
-              | "_parent"
-              | "_top"
-              | string
-              | undefined;
-            name?: string | undefined;
-            popovertarget?: string | undefined;
-            popovertargetaction?: "show" | "hide" | "toggle" | undefined;
-            type?: "submit" | "reset" | "button" | undefined;
-            value?: string | number | undefined;
-          }
-        | HTMLAttributes;
-      canvas:
-        | {
-            height?: number | string | undefined;
-            /** @deprecated */
-            "moz-opaque"?: boolean | string | undefined;
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      caption:
-        | {
-            /** @deprecated */
-            align?: "left" | "right" | "center" | "justify" | undefined;
-          }
-        | HTMLAttributes;
+      blockquote: {
+        cite?: string;
+      } & HTMLAttributes;
+      body: {
+        /** @deprecated */
+        alink?: string;
+        /** @deprecated */
+        background?: string;
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        bottommargin?: number | string;
+        /** @deprecated */
+        leftmargin?: number | string;
+        /** @deprecated */
+        link?: string;
+        onafterprint?: string;
+        onbeforeprint?: string;
+        onbeforeunload?: string;
+        onblur?: string;
+        onerror?: string;
+        onfocus?: string;
+        onhashchange?: string;
+        onlanguagechange?: string;
+        onload?: string;
+        onmessage?: string;
+        onoffline?: string;
+        ononline?: string;
+        onpopstate?: string;
+        onresize?: string;
+        onstorage?: string;
+        onunload?: string;
+        /** @deprecated */
+        rightmargin?: number | string;
+        /** @deprecated */
+        text?: string;
+        /** @deprecated */
+        topmargin?: number | string;
+        /** @deprecated */
+        vlink?: string;
+      } & HTMLAttributes;
+      br: {
+        /** @deprecated */
+        clear?: "none" | "left" | "right" | "both";
+      } & HTMLAttributes;
+      button: {
+        disabled?: "" | "disabled" | boolean;
+        form?: string;
+        formaction?: string;
+        formenctype?:
+          | "application/x-www-form-urlencoded"
+          | "multipart/form-data"
+          | "text/plain";
+        formmethod?: "post" | "get" | "dialog";
+        formnovalidate?: "" | "formnovalidate" | boolean;
+        formtarget?: "_self" | "_blank" | "_parent" | "_top" | string;
+        name?: string;
+        popovertarget?: string;
+        popovertargetaction?: "show" | "hide" | "toggle";
+        type?: "submit" | "reset" | "button";
+        value?: string | number;
+      } & HTMLAttributes;
+      canvas: {
+        height?: number | string;
+        /** @deprecated */
+        "moz-opaque"?: boolean | string;
+        width?: number | string;
+      } & HTMLAttributes;
+      caption: {
+        /** @deprecated */
+        align?: "left" | "right" | "center" | "justify";
+      } & HTMLAttributes;
       /** @deprecated */
       center: HTMLAttributes;
       cite: HTMLAttributes;
       code: HTMLAttributes;
-      col:
-        | {
-            span?: number | string | undefined;
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-            /** @deprecated */
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      colgroup:
-        | {
-            span?: number | string | undefined;
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-            /** @deprecated */
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      data:
-        | {
-            value?: string | number | undefined;
-          }
-        | HTMLAttributes;
+      col: {
+        span?: number | string;
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+        /** @deprecated */
+        width?: number | string;
+      } & HTMLAttributes;
+      colgroup: {
+        span?: number | string;
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+        /** @deprecated */
+        width?: number | string;
+      } & HTMLAttributes;
+      data: {
+        value?: string | number;
+      } & HTMLAttributes;
       datalist: HTMLAttributes;
       dd: HTMLAttributes;
-      del:
-        | {
-            cite?: string | undefined;
-            datetime?: string | undefined;
-          }
-        | HTMLAttributes;
-      details:
-        | {
-            open?: "" | "open" | boolean | undefined;
-            name?: string | undefined;
-          }
-        | HTMLAttributes;
+      del: {
+        cite?: string;
+        datetime?: string;
+      } & HTMLAttributes;
+      details: {
+        open?: "" | "open" | boolean;
+        name?: string;
+      } & HTMLAttributes;
       dfn: HTMLAttributes;
-      dialog:
-        | {
-            open?: "" | "open" | boolean | undefined;
-          }
-        | HTMLAttributes;
+      dialog: {
+        open?: "" | "open" | boolean;
+      } & HTMLAttributes;
       /** @deprecated */
-      dir:
-        | {
-            /** @deprecated */
-            compact?: boolean | string | undefined;
-          }
-        | HTMLAttributes;
+      dir: {
+        /** @deprecated */
+        compact?: boolean | string;
+      } & HTMLAttributes;
       div: HTMLAttributes;
       dl: HTMLAttributes;
       dt: HTMLAttributes;
       em: HTMLAttributes;
-      embed:
-        | {
-            height?: number | string | undefined;
-            src?: string | undefined;
-            type?: string | undefined;
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      fencedframe:
-        | {
-            allow?: string | undefined;
-            height?: number | string | undefined;
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      fieldset:
-        | {
-            disabled?: "" | "disabled" | boolean | undefined;
-            form?: string | undefined;
-            name?: string | undefined;
-          }
-        | HTMLAttributes;
+      embed: {
+        height?: number | string;
+        src?: string;
+        type?: string;
+        width?: number | string;
+      } & HTMLAttributes;
+      fencedframe: {
+        allow?: string;
+        height?: number | string;
+        width?: number | string;
+      } & HTMLAttributes;
+      fieldset: {
+        disabled?: "" | "disabled" | boolean;
+        form?: string;
+        name?: string;
+      } & HTMLAttributes;
       figcaption: HTMLAttributes;
       figure: HTMLAttributes;
       /** @deprecated */
-      font:
-        | {
-            /** @deprecated */
-            color?: string | undefined;
-            /** @deprecated */
-            face?: string | undefined;
-            /** @deprecated */
-            size?: number | string | undefined;
-          }
-        | HTMLAttributes;
+      font: {
+        /** @deprecated */
+        color?: string;
+        /** @deprecated */
+        face?: string;
+        /** @deprecated */
+        size?: number | string;
+      } & HTMLAttributes;
       footer: HTMLAttributes;
-      form:
-        | {
-            /** @deprecated */
-            accept?: string | undefined;
-            "accept-charset"?: string | undefined;
-            action?: string | undefined;
-            autocomplete?: "on" | "off" | string | undefined;
-            enctype?:
-              | "application/x-www-form-urlencoded"
-              | "multipart/form-data"
-              | "text/plain"
-              | undefined;
-            method?: "post" | "get" | "dialog" | undefined;
-            name?: string | undefined;
-            novalidate?: "" | "novalidate" | boolean | undefined;
-            rel?:
-              | "alternate"
-              | "author"
-              | "bookmark"
-              | "canonical"
-              | "dns-prefetch"
-              | "external"
-              | "help"
-              | "icon"
-              | "license"
-              | "manifest"
-              | "modulepreload"
-              | "next"
-              | "nofollow"
-              | "noopener"
-              | "noreferrer"
-              | "opener"
-              | "pingback"
-              | "preconnect"
-              | "prefetch"
-              | "preload"
-              | "prerender"
-              | "prev"
-              | "search"
-              | "stylesheet"
-              | "tag"
-              | undefined;
-            target?:
-              | "_self"
-              | "_blank"
-              | "_parent"
-              | "_top"
-              | "_unfencedTop"
-              | string
-              | undefined;
-          }
-        | HTMLAttributes;
+      form: {
+        /** @deprecated */
+        accept?: string;
+        "accept-charset"?: string;
+        action?: string;
+        autocomplete?: "on" | "off" | string;
+        enctype?:
+          | "application/x-www-form-urlencoded"
+          | "multipart/form-data"
+          | "text/plain";
+        method?: "post" | "get" | "dialog";
+        name?: string;
+        novalidate?: "" | "novalidate" | boolean;
+        rel?:
+          | "alternate"
+          | "author"
+          | "bookmark"
+          | "canonical"
+          | "dns-prefetch"
+          | "external"
+          | "help"
+          | "icon"
+          | "license"
+          | "manifest"
+          | "modulepreload"
+          | "next"
+          | "nofollow"
+          | "noopener"
+          | "noreferrer"
+          | "opener"
+          | "pingback"
+          | "preconnect"
+          | "prefetch"
+          | "preload"
+          | "prerender"
+          | "prev"
+          | "search"
+          | "stylesheet"
+          | "tag";
+        target?:
+          | "_self"
+          | "_blank"
+          | "_parent"
+          | "_top"
+          | "_unfencedTop"
+          | string;
+      } & HTMLAttributes;
       /** @deprecated */
-      frame:
-        | {
-            /** @deprecated */
-            src?: string | undefined;
-            /** @deprecated */
-            name?: string | undefined;
-            /** @deprecated */
-            noresize?: "" | "noresize" | boolean | undefined;
-            /** @deprecated */
-            scrolling?: "yes" | "no" | "auto" | undefined;
-            /** @deprecated */
-            marginheight?: number | string | undefined;
-            /** @deprecated */
-            marginwidth?: number | string | undefined;
-            /** @deprecated */
-            frameborder?: number | string | undefined;
-          }
-        | HTMLAttributes;
+      frame: {
+        /** @deprecated */
+        src?: string;
+        /** @deprecated */
+        name?: string;
+        /** @deprecated */
+        noresize?: "" | "noresize" | boolean;
+        /** @deprecated */
+        scrolling?: "yes" | "no" | "auto";
+        /** @deprecated */
+        marginheight?: number | string;
+        /** @deprecated */
+        marginwidth?: number | string;
+        /** @deprecated */
+        frameborder?: number | string;
+      } & HTMLAttributes;
       /** @deprecated */
-      frameset:
-        | {
-            /** @deprecated */
-            cols?: number | string | undefined;
-            /** @deprecated */
-            rows?: number | string | undefined;
-          }
-        | HTMLAttributes;
+      frameset: {
+        /** @deprecated */
+        cols?: number | string;
+        /** @deprecated */
+        rows?: number | string;
+      } & HTMLAttributes;
       h1: HTMLAttributes;
       h2: HTMLAttributes;
       h3: HTMLAttributes;
       h4: HTMLAttributes;
       h5: HTMLAttributes;
       h6: HTMLAttributes;
-      head:
-        | {
-            /** @deprecated */
-            profile?: string | undefined;
-          }
-        | HTMLAttributes;
+      head: {
+        /** @deprecated */
+        profile?: string;
+      } & HTMLAttributes;
       header: HTMLAttributes;
       hgroup: HTMLAttributes;
-      hr:
-        | {
-            /** @deprecated */
-            align?: "left" | "center" | "right" | undefined;
-            /** @deprecated */
-            color?: string | undefined;
-            /** @deprecated */
-            noshade?: "" | "noshade" | boolean | undefined;
-            /** @deprecated */
-            size?: number | string | undefined;
-            /** @deprecated */
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      html:
-        | {
-            /** @deprecated */
-            version?: string | undefined;
-            xmlns?: string | undefined;
-          }
-        | HTMLAttributes;
+      hr: {
+        /** @deprecated */
+        align?: "left" | "center" | "right";
+        /** @deprecated */
+        color?: string;
+        /** @deprecated */
+        noshade?: "" | "noshade" | boolean;
+        /** @deprecated */
+        size?: number | string;
+        /** @deprecated */
+        width?: number | string;
+      } & HTMLAttributes;
+      html: {
+        /** @deprecated */
+        version?: string;
+        xmlns?: string;
+      } & HTMLAttributes;
       i: HTMLAttributes;
-      iframe:
-        | {
-            allow?: string | undefined;
-            allowfullscreen?: "" | "allowfullscreen" | boolean | undefined;
-            /** @deprecated */
-            allowpaymentrequest?:
-              | ""
-              | "allowpaymentrequest"
-              | boolean
-              | undefined;
-            browsingtopics?: "" | "browsingtopics" | boolean | undefined;
-            credentialless?: "" | "credentialless" | boolean | undefined;
-            csp?: string | undefined;
-            height?: number | string | undefined;
-            loading?: "eager" | "lazy" | undefined;
-            name?: string | undefined;
-            referrerpolicy?:
-              | "no-referrer"
-              | "no-referrer-when-downgrade"
-              | "origin"
-              | "origin-when-cross-origin"
-              | "same-origin"
-              | "strict-origin"
-              | "strict-origin-when-cross-origin"
-              | "unsafe-url"
-              | undefined;
-            sandbox?: string | undefined;
-            src?: string | undefined;
-            srcdoc?: string | undefined;
-            width?: number | string | undefined;
-            /** @deprecated */
-            align?: "left" | "center" | "right" | undefined;
-            /** @deprecated */
-            frameborder?: number | string | undefined;
-            /** @deprecated */
-            longdesc?: string | undefined;
-            /** @deprecated */
-            marginheight?: number | string | undefined;
-            /** @deprecated */
-            marginwidth?: number | string | undefined;
-            /** @deprecated */
-            scrolling?: "yes" | "no" | "auto" | undefined;
-          }
-        | HTMLAttributes;
-      img:
-        | {
-            alt?: string | undefined;
-            attributionsrc?: string | undefined;
-            crossorigin?: "" | "anonymous" | "use-credentials" | undefined;
-            decoding?: "sync" | "async" | "auto" | undefined;
-            elementtiming?: string | undefined;
-            fetchpriority?: "high" | "low" | "auto" | undefined;
-            height?: number | string | undefined;
-            intrinsicsize?: string | undefined;
-            ismap?: "" | "ismap" | boolean | undefined;
-            loading?: "eager" | "lazy" | undefined;
-            referrerpolicy?:
-              | "no-referrer"
-              | "no-referrer-when-downgrade"
-              | "origin"
-              | "origin-when-cross-origin"
-              | "same-origin"
-              | "strict-origin"
-              | "strict-origin-when-cross-origin"
-              | "unsafe-url"
-              | undefined;
-            sizes?: string | undefined;
-            src?: string | undefined;
-            srcset?: string | undefined;
-            width?: number | string | undefined;
-            usemap?: string | undefined;
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "bottom" | "top" | undefined;
-            /** @deprecated */
-            border?: string | number | undefined;
-            /** @deprecated */
-            hspace?: number | string | undefined;
-            /** @deprecated */
-            longdesc?: string | undefined;
-            /** @deprecated */
-            name?: string | undefined;
-            /** @deprecated */
-            vspace?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      input:
-        | {
-            accept?: string | undefined;
-            alt?: string | undefined;
-            autocomplete?: "on" | "off" | string | undefined;
-            autocorrect?: "on" | "off" | undefined;
-            capture?: boolean | "user" | "environment" | undefined;
-            checked?: "" | "checked" | boolean | undefined;
-            dirname?: string | undefined;
-            disabled?: "" | "disabled" | boolean | undefined;
-            form?: string | undefined;
-            formaction?: string | undefined;
-            formenctype?:
-              | "application/x-www-form-urlencoded"
-              | "multipart/form-data"
-              | "text/plain"
-              | undefined;
-            formmethod?: "post" | "get" | "dialog" | undefined;
-            formnovalidate?: "" | "formnovalidate" | boolean | undefined;
-            formtarget?:
-              | "_self"
-              | "_blank"
-              | "_parent"
-              | "_top"
-              | string
-              | undefined;
-            height?: number | string | undefined;
-            incremental?: boolean | string | undefined;
-            id?: string | undefined;
-            inputmode?:
-              | "none"
-              | "text"
-              | "tel"
-              | "url"
-              | "email"
-              | "numeric"
-              | "decimal"
-              | "search"
-              | undefined;
-            list?: string | undefined;
-            max?: number | string | undefined;
-            maxlength?: number | string | undefined;
-            min?: number | string | undefined;
-            minlength?: number | string | undefined;
-            multiple?: "" | "multiple" | boolean | undefined;
-            name?: string | undefined;
-            orient?: "horizontal" | "vertical" | undefined;
-            pattern?: string | undefined;
-            placeholder?: string | undefined;
-            popovertarget?: string | undefined;
-            popovertargetaction?: "show" | "hide" | "toggle" | undefined;
-            readonly?: "" | "readonly" | boolean | undefined;
-            results?: number | string | undefined;
-            required?: "" | "required" | boolean | undefined;
-            size?: number | string | undefined;
-            src?: string | undefined;
-            step?: number | string | undefined;
-            tabindex?: number | string | undefined;
-            title?: string | undefined;
-            type?:
-              | "button"
-              | "checkbox"
-              | "color"
-              | "date"
-              | "datetime-local"
-              | "email"
-              | "file"
-              | "hidden"
-              | "image"
-              | "month"
-              | "number"
-              | "password"
-              | "radio"
-              | "range"
-              | "reset"
-              | "search"
-              | "submit"
-              | "tel"
-              | "text"
-              | "time"
-              | "url"
-              | "week"
-              | undefined;
-            value?: string | number | undefined;
-            webkitdirectory?: "" | "webkitdirectory" | boolean | undefined;
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      ins:
-        | {
-            cite?: string | undefined;
-            datetime?: string | undefined;
-          }
-        | HTMLAttributes;
+      iframe: {
+        allow?: string;
+        allowfullscreen?: "" | "allowfullscreen" | boolean;
+        /** @deprecated */
+        allowpaymentrequest?: "" | "allowpaymentrequest" | boolean;
+        browsingtopics?: "" | "browsingtopics" | boolean;
+        credentialless?: "" | "credentialless" | boolean;
+        csp?: string;
+        height?: number | string;
+        loading?: "eager" | "lazy";
+        name?: string;
+        referrerpolicy?:
+          | "no-referrer"
+          | "no-referrer-when-downgrade"
+          | "origin"
+          | "origin-when-cross-origin"
+          | "same-origin"
+          | "strict-origin"
+          | "strict-origin-when-cross-origin"
+          | "unsafe-url";
+        sandbox?: string;
+        src?: string;
+        srcdoc?: string;
+        width?: number | string;
+        /** @deprecated */
+        align?: "left" | "center" | "right";
+        /** @deprecated */
+        frameborder?: number | string;
+        /** @deprecated */
+        longdesc?: string;
+        /** @deprecated */
+        marginheight?: number | string;
+        /** @deprecated */
+        marginwidth?: number | string;
+        /** @deprecated */
+        scrolling?: "yes" | "no" | "auto";
+      } & HTMLAttributes;
+      img: {
+        alt?: string;
+        attributionsrc?: string;
+        crossorigin?: "" | "anonymous" | "use-credentials";
+        decoding?: "sync" | "async" | "auto";
+        elementtiming?: string;
+        fetchpriority?: "high" | "low" | "auto";
+        height?: number | string;
+        intrinsicsize?: string;
+        ismap?: "" | "ismap" | boolean;
+        loading?: "eager" | "lazy";
+        referrerpolicy?:
+          | "no-referrer"
+          | "no-referrer-when-downgrade"
+          | "origin"
+          | "origin-when-cross-origin"
+          | "same-origin"
+          | "strict-origin"
+          | "strict-origin-when-cross-origin"
+          | "unsafe-url";
+        sizes?: string;
+        src?: string;
+        srcset?: string;
+        width?: number | string;
+        usemap?: string;
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "bottom" | "top";
+        /** @deprecated */
+        border?: string | number;
+        /** @deprecated */
+        hspace?: number | string;
+        /** @deprecated */
+        longdesc?: string;
+        /** @deprecated */
+        name?: string;
+        /** @deprecated */
+        vspace?: number | string;
+      } & HTMLAttributes;
+      input: {
+        accept?: string;
+        alt?: string;
+        autocomplete?: "on" | "off" | string;
+        autocorrect?: "on" | "off";
+        capture?: boolean | "user" | "environment";
+        checked?: "" | "checked" | boolean;
+        dirname?: string;
+        disabled?: "" | "disabled" | boolean;
+        form?: string;
+        formaction?: string;
+        formenctype?:
+          | "application/x-www-form-urlencoded"
+          | "multipart/form-data"
+          | "text/plain";
+        formmethod?: "post" | "get" | "dialog";
+        formnovalidate?: "" | "formnovalidate" | boolean;
+        formtarget?: "_self" | "_blank" | "_parent" | "_top" | string;
+        height?: number | string;
+        incremental?: boolean | string;
+        id?: string;
+        inputmode?:
+          | "none"
+          | "text"
+          | "tel"
+          | "url"
+          | "email"
+          | "numeric"
+          | "decimal"
+          | "search";
+        list?: string;
+        max?: number | string;
+        maxlength?: number | string;
+        min?: number | string;
+        minlength?: number | string;
+        multiple?: "" | "multiple" | boolean;
+        name?: string;
+        orient?: "horizontal" | "vertical";
+        pattern?: string;
+        placeholder?: string;
+        popovertarget?: string;
+        popovertargetaction?: "show" | "hide" | "toggle";
+        readonly?: "" | "readonly" | boolean;
+        results?: number | string;
+        required?: "" | "required" | boolean;
+        size?: number | string;
+        src?: string;
+        step?: number | string;
+        tabindex?: number | string;
+        title?: string;
+        type?:
+          | "button"
+          | "checkbox"
+          | "color"
+          | "date"
+          | "datetime-local"
+          | "email"
+          | "file"
+          | "hidden"
+          | "image"
+          | "month"
+          | "number"
+          | "password"
+          | "radio"
+          | "range"
+          | "reset"
+          | "search"
+          | "submit"
+          | "tel"
+          | "text"
+          | "time"
+          | "url"
+          | "week";
+        value?: string | number;
+        webkitdirectory?: "" | "webkitdirectory" | boolean;
+        width?: number | string;
+      } & HTMLAttributes;
+      ins: {
+        cite?: string;
+        datetime?: string;
+      } & HTMLAttributes;
       kbd: HTMLAttributes;
-      label:
-        | {
-            for?: string | undefined;
-          }
-        | HTMLAttributes;
+      label: {
+        for?: string;
+      } & HTMLAttributes;
       legend: HTMLAttributes;
-      li:
-        | {
-            value?: string | number | undefined;
-            /** @deprecated */
-            type?: string | undefined;
-          }
-        | HTMLAttributes;
-      link:
-        | {
-            as?: string | undefined;
-            blocking?: "render" | "script" | "style" | undefined;
-            crossorigin?: "anonymous" | "use-credentials" | "" | undefined;
-            disabled?: "" | "disabled" | boolean | undefined;
-            fetchpriority?: "high" | "low" | "auto" | undefined;
-            href?: string | undefined;
-            hreflang?: string | undefined;
-            imagesizes?: string | undefined;
-            imagesrcset?: string | undefined;
-            integrity?: string | undefined;
-            media?: string | undefined;
-            referrerpolicy?:
-              | "no-referrer"
-              | "no-referrer-when-downgrade"
-              | "origin"
-              | "origin-when-cross-origin"
-              | "same-origin"
-              | "strict-origin"
-              | "strict-origin-when-cross-origin"
-              | "unsafe-url"
-              | undefined;
-            rel?:
-              | "alternate"
-              | "author"
-              | "bookmark"
-              | "canonical"
-              | "dns-prefetch"
-              | "external"
-              | "help"
-              | "icon"
-              | "license"
-              | "manifest"
-              | "modulepreload"
-              | "next"
-              | "nofollow"
-              | "noopener"
-              | "noreferrer"
-              | "opener"
-              | "pingback"
-              | "preconnect"
-              | "prefetch"
-              | "preload"
-              | "prerender"
-              | "prev"
-              | "search"
-              | "stylesheet"
-              | "tag"
-              | undefined;
-            sizes?: string | undefined;
-            title?: string | undefined;
-            type?: string | undefined;
-          }
-        | HTMLAttributes;
+      li: {
+        value?: string | number;
+        /** @deprecated */
+        type?: string;
+      } & HTMLAttributes;
+      link: {
+        as?: string;
+        blocking?: "render" | "script" | "style";
+        crossorigin?: "anonymous" | "use-credentials" | "";
+        disabled?: "" | "disabled" | boolean;
+        fetchpriority?: "high" | "low" | "auto";
+        href?: string;
+        hreflang?: string;
+        imagesizes?: string;
+        imagesrcset?: string;
+        integrity?: string;
+        media?: string;
+        referrerpolicy?:
+          | "no-referrer"
+          | "no-referrer-when-downgrade"
+          | "origin"
+          | "origin-when-cross-origin"
+          | "same-origin"
+          | "strict-origin"
+          | "strict-origin-when-cross-origin"
+          | "unsafe-url";
+        rel?:
+          | "alternate"
+          | "author"
+          | "bookmark"
+          | "canonical"
+          | "dns-prefetch"
+          | "external"
+          | "help"
+          | "icon"
+          | "license"
+          | "manifest"
+          | "modulepreload"
+          | "next"
+          | "nofollow"
+          | "noopener"
+          | "noreferrer"
+          | "opener"
+          | "pingback"
+          | "preconnect"
+          | "prefetch"
+          | "preload"
+          | "prerender"
+          | "prev"
+          | "search"
+          | "stylesheet"
+          | "tag";
+        sizes?: string;
+        title?: string;
+        type?: string;
+      } & HTMLAttributes;
       main: HTMLAttributes;
-      map:
-        | {
-            name?: string | undefined;
-          }
-        | HTMLAttributes;
+      map: {
+        name?: string;
+      } & HTMLAttributes;
       mark: HTMLAttributes;
       /** @deprecated */
-      marquee:
-        | {
-            /** @deprecated */
-            behavior?: "scroll" | "slide" | "alternate" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            direction?: "left" | "right" | "up" | "down" | undefined;
-            /** @deprecated */
-            height?: number | string | undefined;
-            /** @deprecated */
-            hspace?: number | string | undefined;
-            /** @deprecated */
-            loop?: number | string | undefined;
-            /** @deprecated */
-            scrollamount?: number | string | undefined;
-            /** @deprecated */
-            scrolldelay?: number | string | undefined;
-            /** @deprecated */
-            truespeed?: boolean | string | undefined;
-            /** @deprecated */
-            vspace?: number | string | undefined;
-            /** @deprecated */
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
+      marquee: {
+        /** @deprecated */
+        behavior?: "scroll" | "slide" | "alternate";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        direction?: "left" | "right" | "up" | "down";
+        /** @deprecated */
+        height?: number | string;
+        /** @deprecated */
+        hspace?: number | string;
+        /** @deprecated */
+        loop?: number | string;
+        /** @deprecated */
+        scrollamount?: number | string;
+        /** @deprecated */
+        scrolldelay?: number | string;
+        /** @deprecated */
+        truespeed?: boolean | string;
+        /** @deprecated */
+        vspace?: number | string;
+        /** @deprecated */
+        width?: number | string;
+      } & HTMLAttributes;
       menu: HTMLAttributes;
-      meta:
-        | {
-            charset?: string | undefined;
-            content?: string | undefined;
-            "http-equiv"?:
-              | "content-security-policy"
-              | "content-type"
-              | "default-style"
-              | "x-ua-compatible"
-              | "refresh"
-              | undefined;
-            name?:
-              | "application-name"
-              | "author"
-              | "description"
-              | "generator"
-              | "keywords"
-              | "referrer"
-              | "theme-color"
-              | "color-scheme"
-              | "viewport"
-              | "creator"
-              | "googlebot"
-              | "publisher"
-              | "robots"
-              | undefined;
-          }
-        | HTMLAttributes;
-      meter:
-        | {
-            value?: number | string | undefined;
-            min?: number | string | undefined;
-            max?: number | string | undefined;
-            low?: number | string | undefined;
-            high?: number | string | undefined;
-            optimum?: number | string | undefined;
-            form?: string | undefined;
-          }
-        | HTMLAttributes;
+      meta: {
+        charset?: string;
+        content?: string;
+        "http-equiv"?:
+          | "content-security-policy"
+          | "content-type"
+          | "default-style"
+          | "x-ua-compatible"
+          | "refresh";
+        name?:
+          | "application-name"
+          | "author"
+          | "description"
+          | "generator"
+          | "keywords"
+          | "referrer"
+          | "theme-color"
+          | "color-scheme"
+          | "viewport"
+          | "creator"
+          | "googlebot"
+          | "publisher"
+          | "robots";
+      } & HTMLAttributes;
+      meter: {
+        value?: number | string;
+        min?: number | string;
+        max?: number | string;
+        low?: number | string;
+        high?: number | string;
+        optimum?: number | string;
+        form?: string;
+      } & HTMLAttributes;
       nav: HTMLAttributes;
       /** @deprecated */
       nobr: HTMLAttributes;
@@ -1178,111 +1027,90 @@ declare global {
       /** @deprecated */
       noframes: HTMLAttributes;
       noscript: HTMLAttributes;
-      object:
-        | {
-            /** @deprecated */
-            archive?: string | undefined;
-            /** @deprecated */
-            border?: string | number | undefined;
-            /** @deprecated */
-            classid?: string | undefined;
-            /** @deprecated */
-            codebase?: string | undefined;
-            /** @deprecated */
-            codetype?: string | undefined;
-            data?: string | undefined;
-            /** @deprecated */
-            declare?: "" | "declare" | boolean | undefined;
-            form?: string | undefined;
-            height?: number | string | undefined;
-            name?: string | undefined;
-            /** @deprecated */
-            standby?: string | undefined;
-            type?: string | undefined;
-            /** @deprecated */
-            usemap?: string | undefined;
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      ol:
-        | {
-            reversed?: "" | "reversed" | boolean | undefined;
-            start?: number | string | undefined;
-            type?: "1" | "a" | "A" | "i" | "I" | undefined;
-          }
-        | HTMLAttributes;
-      optgroup:
-        | {
-            disabled?: "" | "disabled" | boolean | undefined;
-            label?: string | undefined;
-          }
-        | HTMLAttributes;
-      option:
-        | {
-            disabled?: "" | "disabled" | boolean | undefined;
-            label?: string | undefined;
-            selected?: "" | "selected" | boolean | undefined;
-            value?: string | number | undefined;
-          }
-        | HTMLAttributes;
-      output:
-        | {
-            for?: string | undefined;
-            form?: string | undefined;
-            name?: string | undefined;
-          }
-        | HTMLAttributes;
+      object: {
+        /** @deprecated */
+        archive?: string;
+        /** @deprecated */
+        border?: string | number;
+        /** @deprecated */
+        classid?: string;
+        /** @deprecated */
+        codebase?: string;
+        /** @deprecated */
+        codetype?: string;
+        data?: string;
+        /** @deprecated */
+        declare?: "" | "declare" | boolean;
+        form?: string;
+        height?: number | string;
+        name?: string;
+        /** @deprecated */
+        standby?: string;
+        type?: string;
+        /** @deprecated */
+        usemap?: string;
+        width?: number | string;
+      } & HTMLAttributes;
+      ol: {
+        reversed?: "" | "reversed" | boolean;
+        start?: number | string;
+        type?: "1" | "a" | "A" | "i" | "I";
+      } & HTMLAttributes;
+      optgroup: {
+        disabled?: "" | "disabled" | boolean;
+        label?: string;
+      } & HTMLAttributes;
+      option: {
+        disabled?: "" | "disabled" | boolean;
+        label?: string;
+        selected?: "" | "selected" | boolean;
+        value?: string | number;
+      } & HTMLAttributes;
+      output: {
+        for?: string;
+        form?: string;
+        name?: string;
+      } & HTMLAttributes;
       p: HTMLAttributes;
       /** @deprecated */
-      param:
-        | {
-            /** @deprecated */
-            name?: string | undefined;
-            /** @deprecated */
-            value?: string | undefined;
-            /** @deprecated */
-            type?: string | undefined;
-            /** @deprecated */
-            valuetype?: "data" | "ref" | "object" | undefined;
-          }
-        | HTMLAttributes;
+      param: {
+        /** @deprecated */
+        name?: string;
+        /** @deprecated */
+        value?: string;
+        /** @deprecated */
+        type?: string;
+        /** @deprecated */
+        valuetype?: "data" | "ref" | "object";
+      } & HTMLAttributes;
       picture: HTMLAttributes;
       /** @deprecated */
       plaintext: HTMLAttributes;
-      portal:
-        | {
-            referrerpolicy?:
-              | "no-referrer"
-              | "no-referrer-when-downgrade"
-              | "origin"
-              | "origin-when-cross-origin"
-              | "same-origin"
-              | "strict-origin"
-              | "strict-origin-when-cross-origin"
-              | "unsafe-url"
-              | undefined;
-            src?: string | undefined;
-          }
-        | HTMLAttributes;
-      pre:
-        | {
-            /** @deprecated */
-            width?: number | string | undefined;
-            /** @deprecated */
-            wrap?: "hard" | "soft" | "off" | undefined;
-          }
-        | HTMLAttributes;
-      progress:
-        | {
-            max?: number | string | undefined;
-            value?: string | number | undefined;
-          }
-        | HTMLAttributes;
-      q:
-        | {
-            cite?: string | undefined;
-          }
-        | HTMLAttributes;
+      portal: {
+        referrerpolicy?:
+          | "no-referrer"
+          | "no-referrer-when-downgrade"
+          | "origin"
+          | "origin-when-cross-origin"
+          | "same-origin"
+          | "strict-origin"
+          | "strict-origin-when-cross-origin"
+          | "unsafe-url";
+        src?: string;
+      } & HTMLAttributes;
+      pre: {
+        /** @deprecated */
+        width?: number | string;
+        /** @deprecated */
+        wrap?: "hard" | "soft" | "off";
+      } & HTMLAttributes;
+      progress: {
+        max?: number | string;
+        value?: string | number;
+      } & HTMLAttributes;
+      q: {
+        cite?: string;
+      } & HTMLAttributes;
       /** @deprecated */
       rb: HTMLAttributes;
       rp: HTMLAttributes;
@@ -1292,313 +1120,255 @@ declare global {
       ruby: HTMLAttributes;
       s: HTMLAttributes;
       samp: HTMLAttributes;
-      script:
-        | {
-            async?: "" | "async" | boolean | undefined;
-            attributionsrc?: string | undefined;
-            blocking?: "render" | "script" | "style" | undefined;
-            crossorigin?: "anonymous" | "use-credentials" | "" | undefined;
-            defer?: "" | "defer" | boolean | undefined;
-            fetchpriority?: "high" | "low" | "auto" | undefined;
-            integrity?: string | undefined;
-            nomodule?: "" | "nomodule" | boolean | undefined;
-            nonce?: string | undefined;
-            referrerpolicy?:
-              | "no-referrer"
-              | "no-referrer-when-downgrade"
-              | "origin"
-              | "origin-when-cross-origin"
-              | "same-origin"
-              | "strict-origin"
-              | "strict-origin-when-cross-origin"
-              | "unsafe-url"
-              | undefined;
-            src?: string | undefined;
-            type?: string | undefined;
-            /** @deprecated */
-            charset?: string | undefined;
-            /** @deprecated */
-            language?: string | undefined;
-          }
-        | HTMLAttributes;
+      script: {
+        async?: "" | "async" | boolean;
+        attributionsrc?: string;
+        blocking?: "render" | "script" | "style";
+        crossorigin?: "anonymous" | "use-credentials" | "";
+        defer?: "" | "defer" | boolean;
+        fetchpriority?: "high" | "low" | "auto";
+        integrity?: string;
+        nomodule?: "" | "nomodule" | boolean;
+        nonce?: string;
+        referrerpolicy?:
+          | "no-referrer"
+          | "no-referrer-when-downgrade"
+          | "origin"
+          | "origin-when-cross-origin"
+          | "same-origin"
+          | "strict-origin"
+          | "strict-origin-when-cross-origin"
+          | "unsafe-url";
+        src?: string;
+        type?: string;
+        /** @deprecated */
+        charset?: string;
+        /** @deprecated */
+        language?: string;
+      } & HTMLAttributes;
       search: HTMLAttributes;
       section: HTMLAttributes;
-      select:
-        | {
-            autocomplete?: "on" | "off" | string | undefined;
-            disabled?: "" | "disabled" | boolean | undefined;
-            form?: string | undefined;
-            multiple?: "" | "multiple" | boolean | undefined;
-            name?: string | undefined;
-            required?: "" | "required" | boolean | undefined;
-            size?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      slot:
-        | {
-            name?: string | undefined;
-          }
-        | HTMLAttributes;
+      select: {
+        autocomplete?: "on" | "off" | string;
+        disabled?: "" | "disabled" | boolean;
+        form?: string;
+        multiple?: "" | "multiple" | boolean;
+        name?: string;
+        required?: "" | "required" | boolean;
+        size?: number | string;
+      } & HTMLAttributes;
+      slot: {
+        name?: string;
+      } & HTMLAttributes;
       small: HTMLAttributes;
-      source:
-        | {
-            type?: string | undefined;
-            src?: string | undefined;
-            srcset?: string | undefined;
-            sizes?: string | undefined;
-            media?: string | undefined;
-            height?: number | string | undefined;
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
+      source: {
+        type?: string;
+        src?: string;
+        srcset?: string;
+        sizes?: string;
+        media?: string;
+        height?: number | string;
+        width?: number | string;
+      } & HTMLAttributes;
       span: HTMLAttributes;
       /** @deprecated */
       strike: HTMLAttributes;
       strong: HTMLAttributes;
-      style:
-        | {
-            blocking?: "render" | "script" | "style" | undefined;
-            media?: string | undefined;
-            nonce?: string | undefined;
-            title?: string | undefined;
-            /** @deprecated */
-            type?: string | undefined;
-          }
-        | HTMLAttributes;
+      style: {
+        blocking?: "render" | "script" | "style";
+        media?: string;
+        nonce?: string;
+        title?: string;
+        /** @deprecated */
+        type?: string;
+      } & HTMLAttributes;
       sub: HTMLAttributes;
       summary: HTMLAttributes;
       sup: HTMLAttributes;
-      table:
-        | {
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            border?: string | number | undefined;
-            /** @deprecated */
-            cellpadding?: string | number | undefined;
-            /** @deprecated */
-            cellspacing?: string | number | undefined;
-            /** @deprecated */
-            frame?:
-              | "void"
-              | "above"
-              | "below"
-              | "hsides"
-              | "lhs"
-              | "rhs"
-              | "vsides"
-              | "box"
-              | "border"
-              | undefined;
-            /** @deprecated */
-            rules?: "none" | "groups" | "rows" | "cols" | "all" | undefined;
-            /** @deprecated */
-            summary?: string | undefined;
-            /** @deprecated */
-            width?: string | number | undefined;
-          }
-        | HTMLAttributes;
-      tbody:
-        | {
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-          }
-        | HTMLAttributes;
-      td:
-        | {
-            colspan?: number | string | undefined;
-            headers?: string | undefined;
-            rowspan?: number | string | undefined;
-            /** @deprecated */
-            abbr?: string | undefined;
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            axis?: string | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            height?: number | string | undefined;
-            /** @deprecated */
-            scope?: string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-            /** @deprecated */
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      template:
-        | {
-            shadowrootmode?: "open" | "closed" | undefined;
-            shadowrootclonable?:
-              | ""
-              | "shadowrootclonable"
-              | boolean
-              | undefined;
-            shadowrootdelegatesfocus?:
-              | ""
-              | "shadowrootdelegatesfocus"
-              | boolean
-              | undefined;
-            shadowrootserializable?:
-              | ""
-              | "shadowrootserializable"
-              | boolean
-              | undefined;
-          }
-        | HTMLAttributes;
-      textarea:
-        | {
-            autocomplete?: "on" | "off" | string | undefined;
-            autocorrect?: "on" | "off" | undefined;
-            cols?: number | string | undefined;
-            dirname?: string | undefined;
-            disabled?: "" | "disabled" | boolean | undefined;
-            form?: string | undefined;
-            maxlength?: number | string | undefined;
-            minlength?: number | string | undefined;
-            name?: string | undefined;
-            placeholder?: string | undefined;
-            readonly?: "" | "readonly" | boolean | undefined;
-            required?: "" | "required" | boolean | undefined;
-            rows?: number | string | undefined;
-            wrap?: "hard" | "soft" | "off" | undefined;
-          }
-        | HTMLAttributes;
-      tfoot:
-        | {
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-          }
-        | HTMLAttributes;
-      th:
-        | {
-            abbr?: string | undefined;
-            colspan?: number | string | undefined;
-            headers?: string | undefined;
-            rowspan?: number | string | undefined;
-            scope?: string | undefined;
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            axis?: string | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            height?: number | string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-            /** @deprecated */
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
-      thead:
-        | {
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-          }
-        | HTMLAttributes;
-      time:
-        | {
-            datetime?: string | undefined;
-          }
-        | HTMLAttributes;
+      table: {
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        border?: string | number;
+        /** @deprecated */
+        cellpadding?: string | number;
+        /** @deprecated */
+        cellspacing?: string | number;
+        /** @deprecated */
+        frame?:
+          | "void"
+          | "above"
+          | "below"
+          | "hsides"
+          | "lhs"
+          | "rhs"
+          | "vsides"
+          | "box"
+          | "border";
+        /** @deprecated */
+        rules?: "none" | "groups" | "rows" | "cols" | "all";
+        /** @deprecated */
+        summary?: string;
+        /** @deprecated */
+        width?: string | number;
+      } & HTMLAttributes;
+      tbody: {
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+      } & HTMLAttributes;
+      td: {
+        colspan?: number | string;
+        headers?: string;
+        rowspan?: number | string;
+        /** @deprecated */
+        abbr?: string;
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        axis?: string;
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        height?: number | string;
+        /** @deprecated */
+        scope?: string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+        /** @deprecated */
+        width?: number | string;
+      } & HTMLAttributes;
+      template: {
+        shadowrootmode?: "open" | "closed";
+        shadowrootclonable?: "" | "shadowrootclonable" | boolean;
+        shadowrootdelegatesfocus?: "" | "shadowrootdelegatesfocus" | boolean;
+        shadowrootserializable?: "" | "shadowrootserializable" | boolean;
+      } & HTMLAttributes;
+      textarea: {
+        autocomplete?: "on" | "off" | string;
+        autocorrect?: "on" | "off";
+        cols?: number | string;
+        dirname?: string;
+        disabled?: "" | "disabled" | boolean;
+        form?: string;
+        maxlength?: number | string;
+        minlength?: number | string;
+        name?: string;
+        placeholder?: string;
+        readonly?: "" | "readonly" | boolean;
+        required?: "" | "required" | boolean;
+        rows?: number | string;
+        wrap?: "hard" | "soft" | "off";
+      } & HTMLAttributes;
+      tfoot: {
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+      } & HTMLAttributes;
+      th: {
+        abbr?: string;
+        colspan?: number | string;
+        headers?: string;
+        rowspan?: number | string;
+        scope?: string;
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        axis?: string;
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        height?: number | string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+        /** @deprecated */
+        width?: number | string;
+      } & HTMLAttributes;
+      thead: {
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+      } & HTMLAttributes;
+      time: {
+        datetime?: string;
+      } & HTMLAttributes;
       title: HTMLAttributes;
-      tr:
-        | {
-            /** @deprecated */
-            align?: "left" | "center" | "right" | "justify" | undefined;
-            /** @deprecated */
-            bgcolor?: string | undefined;
-            /** @deprecated */
-            char?: string | undefined;
-            /** @deprecated */
-            charoff?: string | undefined;
-            /** @deprecated */
-            valign?: "top" | "middle" | "bottom" | "baseline" | undefined;
-          }
-        | HTMLAttributes;
-      track:
-        | {
-            default?: "" | "default" | boolean | undefined;
-            kind?: string | undefined;
-            label?: string | undefined;
-            src?: string | undefined;
-            srclang?: string | undefined;
-          }
-        | HTMLAttributes;
+      tr: {
+        /** @deprecated */
+        align?: "left" | "center" | "right" | "justify";
+        /** @deprecated */
+        bgcolor?: string;
+        /** @deprecated */
+        char?: string;
+        /** @deprecated */
+        charoff?: string;
+        /** @deprecated */
+        valign?: "top" | "middle" | "bottom" | "baseline";
+      } & HTMLAttributes;
+      track: {
+        default?: "" | "default" | boolean;
+        kind?: string;
+        label?: string;
+        src?: string;
+        srclang?: string;
+      } & HTMLAttributes;
       /** @deprecated */
       tt: HTMLAttributes;
       u: HTMLAttributes;
-      ul:
-        | {
-            /** @deprecated */
-            compact?: boolean | string | undefined;
-            /** @deprecated */
-            type?: string | undefined;
-          }
-        | HTMLAttributes;
+      ul: {
+        /** @deprecated */
+        compact?: boolean | string;
+        /** @deprecated */
+        type?: string;
+      } & HTMLAttributes;
       var: HTMLAttributes;
-      video:
-        | {
-            autoplay?: "" | "autoplay" | boolean | undefined;
-            controls?: "" | "controls" | boolean | undefined;
-            controlslist?: string | undefined;
-            crossorigin?: "" | "anonymous" | "use-credentials" | undefined;
-            disablepictureinpicture?:
-              | ""
-              | "disablepictureinpicture"
-              | boolean
-              | undefined;
-            disableremoteplayback?:
-              | ""
-              | "disableremoteplayback"
-              | boolean
-              | undefined;
-            height?: number | string | undefined;
-            loop?: "" | "loop" | boolean | undefined;
-            muted?: "" | "muted" | boolean | undefined;
-            playsinline?: "" | "playsinline" | boolean | undefined;
-            poster?: string | undefined;
-            preload?: "" | "none" | "metadata" | "auto" | undefined;
-            src?: string | undefined;
-            width?: number | string | undefined;
-          }
-        | HTMLAttributes;
+      video: {
+        autoplay?: "" | "autoplay" | boolean;
+        controls?: "" | "controls" | boolean;
+        controlslist?: string;
+        crossorigin?: "" | "anonymous" | "use-credentials";
+        disablepictureinpicture?: "" | "disablepictureinpicture" | boolean;
+        disableremoteplayback?: "" | "disableremoteplayback" | boolean;
+        height?: number | string;
+        loop?: "" | "loop" | boolean;
+        muted?: "" | "muted" | boolean;
+        playsinline?: "" | "playsinline" | boolean;
+        poster?: string;
+        preload?: "" | "none" | "metadata" | "auto";
+        src?: string;
+        width?: number | string;
+      } & HTMLAttributes;
       wbr: HTMLAttributes;
       /** @deprecated */
       xmp: HTMLAttributes;
