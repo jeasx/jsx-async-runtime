@@ -172,7 +172,8 @@ declare global {
         | "treeitem"
         | "widget"
         | "window"
-        | "none presentation";
+        | "none presentation"
+        | (string & {});
       slot?: string;
       spellcheck?: "" | "true" | "false" | boolean;
       style?: string | { [key: string]: string | number };
@@ -494,8 +495,11 @@ declare global {
         media?: string;
         ping?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
-        target?: "_self" | "_blank" | "_parent" | "_top" | string;
+        rel?:
+          | RelAttributes
+          | `${RelAttributes} ${RelAttributes}`
+          | (string & {});
+        target?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
         type?: string;
         /** @deprecated */
         charset?: string;
@@ -521,9 +525,12 @@ declare global {
         media?: string;
         ping?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
+        rel?:
+          | RelAttributes
+          | `${RelAttributes} ${RelAttributes}`
+          | (string & {});
         shape?: "default" | "rect" | "circle" | "poly";
-        target?: "_self" | "_blank" | "_parent" | "_top" | string;
+        target?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
         type?: string;
       } & HTMLAttributes;
       article: HTMLAttributes;
@@ -542,7 +549,7 @@ declare global {
       b: HTMLAttributes;
       base: {
         href?: string;
-        target?: "_self" | "_blank" | "_parent" | "_top" | string;
+        target?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
       } & HTMLAttributes;
       bdi: HTMLAttributes;
       bdo: {
@@ -605,7 +612,7 @@ declare global {
           | "text/plain";
         formmethod?: "post" | "get" | "dialog";
         formnovalidate?: "" | "formnovalidate" | boolean;
-        formtarget?: "_self" | "_blank" | "_parent" | "_top" | string;
+        formtarget?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
         name?: string;
         popovertarget?: string;
         popovertargetaction?: "show" | "hide" | "toggle";
@@ -723,8 +730,11 @@ declare global {
         method?: "post" | "get" | "dialog";
         name?: string;
         novalidate?: "" | "novalidate" | boolean;
-        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
-        target?: "_self" | "_blank" | "_parent" | "_top" | string;
+        rel?:
+          | RelAttributes
+          | `${RelAttributes} ${RelAttributes}`
+          | (string & {});
+        target?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
       } & HTMLAttributes;
       /** @deprecated */
       frame: {
@@ -856,7 +866,7 @@ declare global {
           | "text/plain";
         formmethod?: "post" | "get" | "dialog";
         formnovalidate?: "" | "formnovalidate" | boolean;
-        formtarget?: "_self" | "_blank" | "_parent" | "_top" | string;
+        formtarget?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
         height?: number | string;
         incremental?: boolean | string;
         id?: string;
@@ -943,7 +953,10 @@ declare global {
         integrity?: string;
         media?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
+        rel?:
+          | RelAttributes
+          | `${RelAttributes} ${RelAttributes}`
+          | (string & {});
         sizes?: string;
         title?: string;
         type?: string;
@@ -987,7 +1000,8 @@ declare global {
           | "content-type"
           | "default-style"
           | "x-ua-compatible"
-          | "refresh";
+          | "refresh"
+          | (string & {});
         name?:
           | "application-name"
           | "author"
@@ -1001,7 +1015,8 @@ declare global {
           | "creator"
           | "googlebot"
           | "publisher"
-          | "robots";
+          | "robots"
+          | (string & {});
       } & HTMLAttributes;
       meter: {
         value?: number | string;
