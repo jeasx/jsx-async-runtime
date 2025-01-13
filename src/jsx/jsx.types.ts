@@ -175,7 +175,7 @@ declare global {
         | "none presentation";
       slot?: string;
       spellcheck?: "" | "true" | "false" | boolean;
-      style?: string | { [key: string]: string };
+      style?: string | { [key: string]: string | number };
       tabindex?: number | string;
       title?: string;
       translate?: "" | "yes" | "no" | boolean;
@@ -494,7 +494,7 @@ declare global {
         media?: string;
         ping?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?: RelAttributes;
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
         target?: "_self" | "_blank" | "_parent" | "_top" | string;
         type?: string;
         /** @deprecated */
@@ -521,7 +521,7 @@ declare global {
         media?: string;
         ping?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?: RelAttributes;
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
         shape?: "default" | "rect" | "circle" | "poly";
         target?: "_self" | "_blank" | "_parent" | "_top" | string;
         type?: string;
@@ -723,7 +723,7 @@ declare global {
         method?: "post" | "get" | "dialog";
         name?: string;
         novalidate?: "" | "novalidate" | boolean;
-        rel?: RelAttributes;
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
         target?: "_self" | "_blank" | "_parent" | "_top" | string;
       } & HTMLAttributes;
       /** @deprecated */
@@ -943,7 +943,7 @@ declare global {
         integrity?: string;
         media?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?: RelAttributes;
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}`;
         sizes?: string;
         title?: string;
         type?: string;
