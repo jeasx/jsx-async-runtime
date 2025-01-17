@@ -154,7 +154,10 @@ async function Todos({ quantity }) {
           // For all attributes besides class & style objects get stringified
           data-props={{ foo: "bar", count: 10 }}
         >
-          <tr>
+          <tr
+            // Use array for class names, join string values with space
+            class={["a", "b", "", undefined, "c"]}
+          >
             <th>Label</th>
             <th>Status</th>
           </tr>

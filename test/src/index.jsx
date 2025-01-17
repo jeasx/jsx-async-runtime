@@ -47,25 +47,56 @@ test("void tags", () =>
 
 test("empty fragment", () => equal(<></>, ``));
 
-test("class object", () =>
+test("class as string", () =>
+  equal(<div class="a b c"></div>, `<div class="a b c"></div>`));
+
+test("class as empty string", () =>
+  equal(<div class=""></div>, `<div class=""></div>`));
+
+test("class as object", () => {
+  const className1 = "";
+  const className2 = "hidden";
+  const className3 = undefined;
   equal(
     <div
       class={{
         striped: false,
         sticky: true,
         highlight: true,
+        [className1]: !!className1,
+        [className2]: !!className2,
+        [className3]: !!className3,
       }}
     ></div>,
-    `<div class="sticky highlight"></div>`
-  ));
+    `<div class="sticky highlight hidden"></div>`
+  );
+});
 
-test("empty class object", () =>
+test("class as empty object", () =>
   equal(
     <div class={{ highlight: false, sticky: undefined }}></div>,
     "<div></div>"
   ));
 
-test("style object", () =>
+test("class as array", () =>
+  equal(
+    <div class={["a", "b", undefined, "c", null, ""]}></div>,
+    `<div class="a b c"></div>`
+  ));
+
+test("class as empty array", () =>
+  equal(<div class={[]}></div>, `<div></div>`));
+
+test("class as undefined array", () =>
+  equal(<div class={[null, undefined, ""]}></div>, `<div></div>`));
+
+test("style as string", () =>
+  equal(<h1 style="color: red"></h1>, `<h1 style="color: red"></h1>`));
+
+test("style as empty string", () =>
+  equal(<h1 style=""></h1>, `<h1 style=""></h1>`));
+
+test("style as object", () =>
   equal(
     <h1
       style={{

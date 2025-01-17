@@ -24,9 +24,11 @@ function attributeToString([key, value]: [string, any]): string {
         const styles = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
         return `style="${escapeQuotes(styles.join("; "))}"`;
       case "class":
-        const classes = Object.entries(value)
-          .filter(([k, v]) => v)
-          .map(([k, v]) => k);
+        const classes = Array.isArray(value)
+          ? value.filter((v) => v)
+          : Object.entries(value)
+              .filter(([k, v]) => v)
+              .map(([k, v]) => k);
         return classes.length > 0
           ? `class="${escapeQuotes(classes.join(" "))}"`
           : "";

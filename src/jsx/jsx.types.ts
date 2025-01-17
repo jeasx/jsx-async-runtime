@@ -39,7 +39,7 @@ declare global {
         | "words"
         | "characters";
       autofocus?: "" | "autofocus" | boolean;
-      class?: string | { [key: string]: boolean };
+      class?: string | string[] | { [key: string]: boolean };
       contenteditable?: "" | "true" | "false" | "plaintext-only" | boolean;
       dir?: "auto" | "rtl" | "ltr";
       draggable?: "true" | "false";
