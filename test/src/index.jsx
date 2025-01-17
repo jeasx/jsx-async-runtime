@@ -26,12 +26,13 @@ test("fragments", () =>
 test("boolean attributes", () =>
   equal(
     <div
-      autocapitalize
+      hidden
+      autocapitalize="off"
       contenteditable={true}
       spellcheck={false}
       autofocus="autofocus"
     />,
-    `<div autocapitalize contenteditable autofocus="autofocus"></div>`
+    `<div hidden autocapitalize="off" contenteditable autofocus="autofocus"></div>`
   ));
 
 test("void tags", () =>
