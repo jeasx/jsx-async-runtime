@@ -482,6 +482,417 @@ declare global {
         [key: string]: string | number | boolean | object;
       };
 
+    interface SVGAttributes {
+      /**@deprecated */
+      accelerate?: number | string;
+      /**@deprecated */
+      "accent-height"?: number | string;
+      accumulate?: "none" | "sum";
+      additive?: "replace" | "sum";
+      "alignment-baseline"?:
+        | "auto"
+        | "baseline"
+        | "before-edge"
+        | "text-before-edge"
+        | "middle"
+        | "central"
+        | "after-edge"
+        | "text-after-edge"
+        | "ideographic"
+        | "alphabetic"
+        | "hanging"
+        | "mathematical"
+        | "top"
+        | "center"
+        | "bottom";
+      /**@deprecated */
+      alphabetic?: number | string;
+      amplitude?: number | string;
+      /** @deprecated */
+      "arabic-form"?: "initial" | "medial" | "terminal" | "isolated";
+      /**@deprecated */
+      ascent?: number | string;
+      attributeName?: string;
+      /**@deprecated */
+      attributeType?: "CSS" | "XML" | "auto";
+      azimuth?: number | string;
+      baseFrequency?: number | string;
+      /** @deprecated */
+      "baseline-shift"?: number | "sub" | "super" | (string & {});
+      /** @deprecated */
+      baseProfile?: number | string;
+      /** @deprecated */
+      bbox?: string;
+      begin?: string;
+      bias?: number | string;
+      by?: number | string;
+      calcMode?: "discrete" | "linear" | "paced" | "spline";
+      /** @deprecated */
+      "cap-height"?: number | string;
+      class?: string | string[] | { [key: string]: boolean };
+      /** @deprecated */
+      clip?: "auto" | (string & {});
+      "clip-path"?: "none" | (string & {});
+      "clip-rule"?: "nonzero" | "evenodd" | "inherit";
+      clipPathUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      color?: number | "inherit" | (string & {});
+      "color-interpolation"?: "auto" | "sRGB" | "linearRGB";
+      "color-interpolation-filters"?: "auto" | "sRGB" | "linearRGB";
+      cursor?:
+        | "auto"
+        | "crosshair"
+        | "default"
+        | "pointer"
+        | "move"
+        | "e-resize"
+        | "ne-resize"
+        | "nw-resize"
+        | "n-resize"
+        | "se-resize"
+        | "sw-resize"
+        | "s-resize"
+        | "w-resize"
+        | "text"
+        | "wait"
+        | "help"
+        | "inherit"
+        | (string & {});
+      cx?: number | string;
+      cy?: number | string;
+      d?: string;
+      /**@deprecated */
+      decelerate?: number | string;
+      decoding?: "sync" | "async" | "auto";
+      /**@deprecated */
+      descent?: number | string;
+      diffuseConstant?: number | string;
+      direction?: "ltr" | "rtl";
+      display?: string;
+      divisor?: number | string;
+      "dominant-baseline"?:
+        | "auto"
+        | "text-bottom"
+        | "alphabetic"
+        | "ideographic"
+        | "middle"
+        | "central"
+        | "mathematical"
+        | "hanging"
+        | "text-top";
+      dur?: number | "media" | "indefinite" | (string & {});
+      dx?: number | string;
+      dy?: number | string;
+      edgeMode?: "duplicate" | "wrap" | "none";
+      elevation?: number | string;
+      "enable-background"?: number | string;
+      end?: number | string;
+      exponent?: number | string;
+      fill?: string;
+      "fill-opacity"?: number | string;
+      "fill-rule"?: "nonzero" | "evenodd";
+      filter?: string;
+      filterUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      "flood-color"?: number | string;
+      "flood-opacity"?: number | string;
+      font?: string;
+      "font-family"?: string;
+      "font-size"?: number | string;
+      "font-size-adjust"?: number | string;
+      "font-stretch"?: number | string;
+      "font-style"?: "normal" | "italic" | "oblique";
+      "font-variant"?: number | string;
+      "font-weight"?:
+        | number
+        | "normal"
+        | "bold"
+        | "bolder"
+        | "lighter"
+        | (string & {});
+      fr?: number | string;
+      from?: number | string;
+      fx?: number | string;
+      fy?: number | string;
+      /**@deprecated */
+      g1?: number | string;
+      /**@deprecated */
+      g2?: number | string;
+      /**@deprecated */
+      "glyph-name"?: number | string;
+      /**@deprecated */
+      "glyph-orientation-horizontal"?: number | string;
+      /**@deprecated */
+      "glyph-orientation-vertical"?: number | string;
+      glyphRef?: number | string;
+      gradientTransform?: string;
+      gradientUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      /**@deprecated */
+      hanging?: number | string;
+      height?: number | string;
+      /**@deprecated */
+      "horiz-adv-x"?: number | string;
+      /**@deprecated */
+      "horiz-origin-x"?: number | string;
+      /**@deprecated */
+      "horiz-origin-y"?: number | string;
+      href?: string;
+      id?: string;
+      /**@deprecated */
+      ideographic?: number | string;
+      "image-rendering"?: "auto" | "optimizeSpeed" | "optimizeQuality";
+      in?:
+        | "SourceGraphic"
+        | "SourceAlpha"
+        | "BackgroundImage"
+        | "BackgroundAlpha"
+        | "FillPaint"
+        | "StrokePaint"
+        | (string & {});
+      in2?:
+        | "SourceGraphic"
+        | "SourceAlpha"
+        | "BackgroundImage"
+        | "BackgroundAlpha"
+        | "FillPaint"
+        | "StrokePaint"
+        | (string & {});
+      intercept?: number | string;
+      isolation?: "auto" | "isolate";
+      /**@deprecated */
+      k?: number | string;
+      k1?: number | string;
+      k2?: number | string;
+      k3?: number | string;
+      k4?: number | string;
+      kernelMatrix?: number | string;
+      kernelUnitLength?: number | string;
+      /**@deprecated */
+      kerning?: number | string;
+      keyPoints?: number | string;
+      keySplines?: number | string;
+      keyTimes?: number | string;
+      lang?: string;
+      lengthAdjust?: "spacing" | "spacingAndGlyphs";
+      "letter-spacing"?: number | "normal" | (string & {});
+      "lighting-color"?: number | string;
+      limitingConeAngle?: number | string;
+      marker?: string;
+      "marker-end"?: "none" | (string & {});
+      "marker-mid"?: "none" | (string & {});
+      "marker-start"?: "none" | (string & {});
+      markerHeight?: number | string;
+      markerUnits?: "userSpaceOnUse" | "strokeWidth";
+      markerWidth?: number | string;
+      mask?: string;
+      maskContentUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      maskUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      /**@deprecated */
+      mathematical?: number | string;
+      max?: number | string;
+      media?: number | string;
+      method?: "align" | "stretch";
+      min?: number | string;
+      mode?: number | string;
+      /**@deprecated */
+      name?: number | string;
+      numOctaves?: number | string;
+      offset?: number | string;
+      opacity?: number | string;
+      operator?:
+        | "over"
+        | "in"
+        | "out"
+        | "atop"
+        | "xor"
+        | "lighter"
+        | "arithmetic"
+        | "erode"
+        | "dilate";
+      order?: number | string;
+      orient?: number | "auto" | "auto-start-reverse" | (string & {});
+      /**@deprecated */
+      orientation?: "h" | "v";
+      origin?: "default";
+      overflow?: "visible" | "hidden" | "scroll" | "auto";
+      "overline-position"?: number | string;
+      "overline-thickness"?: number | string;
+      "paint-order"?: "normal" | "fill" | "stroke" | "markers";
+      /**@deprecated */
+      "panose-1"?: number | string;
+      path?: number | string;
+      pathLength?: number | string;
+      patternContentUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      patternTransform?: number | string;
+      patternUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      /**@deprecated */
+      pitch?: number | string;
+      "pointer-events"?:
+        | "bounding-box"
+        | "visiblePainted"
+        | "visibleFill"
+        | "visibleStroke"
+        | "visible"
+        | "painted"
+        | "fill"
+        | "stroke"
+        | "all"
+        | "none";
+      points?: string;
+      pointsAtX?: number | string;
+      pointsAtY?: number | string;
+      pointsAtZ?: number | string;
+      preserveAlpha?: "true" | "false";
+      preserveAspectRatio?: string;
+      primitiveUnits?: "userSpaceOnUse" | "objectBoundingBox";
+      r?: number | string;
+      radius?: number | string;
+      rel?: string;
+      refX?: number | string;
+      refY?: number | string;
+      repeatCount?: number | "indefinite" | (string & {});
+      repeatDur?: number | "indefinite" | (string & {});
+      /**@deprecated */
+      requiredExtensions?: number | string;
+      /**@deprecated */
+      requiredFeatures?: number | string;
+      restart?: "always" | "whenNotActive" | "never";
+      result?: string;
+      rotate?: number | "auto" | "auto-reverse" | (string & {});
+      rx?: number | "auto" | (string & {});
+      ry?: number | "auto" | (string & {});
+      scale?: number | string;
+      seed?: number | string;
+      "shape-rendering"?:
+        | "auto"
+        | "optimizeSpeed"
+        | "crispEdges"
+        | "geometricPrecision";
+      side?: "left" | "right";
+      slope?: number | string;
+      spacing?: "auto" | "exact";
+      specularConstant?: number | string;
+      specularExponent?: number | string;
+      speed?: number | string;
+      spreadMethod?: "pad" | "reflect" | "repeat";
+      startOffset?: number | string;
+      stdDeviation?: number | string;
+      /**@deprecated */
+      stemh?: number | string;
+      /**@deprecated */
+      stemv?: number | string;
+      stitchTiles?: "noStitch" | "stitch";
+      "stop-color"?: string;
+      "stop-opacity"?: number | string;
+      "strikethrough-position"?: number | string;
+      "strikethrough-thickness"?: number | string;
+      /**@deprecated */
+      string?: number | string;
+      stroke?: string;
+      "stroke-align"?: string | number;
+      "stroke-dasharray"?: string | number;
+      "stroke-dashadust"?: string | number;
+      "stroke-dashcorner"?: string | number;
+      "stroke-dashoffset"?: string | number;
+      "stroke-linecap"?: "butt" | "round" | "square";
+      "stroke-linejoin"?: "arcs" | "bevel" | "miter" | "miter-clip" | "round";
+      "stroke-miterlimit"?: string | number;
+      "stroke-opacity"?: number | string;
+      "stroke-width"?: number | string;
+      style?: string | { [key: string]: string | number };
+      surfaceScale?: number | string;
+      systemLanguage?: number | string;
+      tabindex?: number | string;
+      tableValues?: number | string;
+      target?: "_self" | "_parent" | "_top" | "_blank" | (string & {});
+      targetX?: number | string;
+      targetY?: number | string;
+      "text-anchor"?: "start" | "middle" | "end";
+      "text-decoration"?: number | string;
+      "text-rendering"?:
+        | "auto"
+        | "optimizeSpeed"
+        | "optimizeLegibility"
+        | "geometricPrecision";
+      textLength?: number | string;
+      to?: number | string;
+      transform?: string;
+      "transform-origin"?: string;
+      type?: string;
+      /**@deprecated */
+      u1?: number | string;
+      /**@deprecated */
+      u2?: number | string;
+      "underline-position"?: number | string;
+      "underline-thickness"?: number | string;
+      /**@deprecated */
+      unicode?: number | string;
+      "unicode-bidi"?: number | string;
+      /**@deprecated */
+      "unicode-range"?: number | string;
+      /**@deprecated */
+      "units-per-em"?: number | string;
+      /**@deprecated */
+      "v-alphabetic"?: number | string;
+      /**@deprecated */
+      "v-hanging"?: number | string;
+      /**@deprecated */
+      "v-ideographic"?: number | string;
+      /**@deprecated */
+      "v-mathematical"?: number | string;
+      values?: string;
+      "vector-effect"?:
+        | "none"
+        | "non-scaling-stroke"
+        | "non-scaling-size"
+        | "non-rotation"
+        | "fixed-position";
+      /**@deprecated */
+      version?: string;
+      /**@deprecated */
+      "vert-adv-y"?: number | string;
+      /**@deprecated */
+      "vert-origin-x"?: number | string;
+      /**@deprecated */
+      "vert-origin-y"?: number | string;
+      viewBox?: string | undefined;
+      visibility?: "visible" | "hidden" | "collapse";
+      width?: number | string;
+      /**@deprecated */
+      widths?: number | string;
+      "word-spacing"?: number | "normal" | (string & {});
+      "writing-mode"?: "horizontal-tb" | "vertical-rl" | "vertical-lr";
+      x?: number | string;
+      /**@deprecated */
+      "x-height"?: number | string;
+      x1?: number | string;
+      x2?: number | string;
+      xChannelSelector?: "R" | "G" | "B" | "A";
+      /**@deprecated */
+      "xlink:actuate"?: string;
+      /**@deprecated */
+      "xlink:arcrole"?: string;
+      /**@deprecated */
+      "xlink:href"?: string;
+      /**@deprecated */
+      "xlink:show"?: "new" | "replace" | "embed" | "other" | "none";
+      /**@deprecated */
+      "xlink:title"?: string;
+      /**@deprecated */
+      "xlink:type"?: string;
+      /**@deprecated */
+      "xml:lang"?: string;
+      /**@deprecated */
+      "xml:space"?: string;
+      xmlns?: string;
+      "xmlns:xlink"?: string;
+      y?: number | string;
+      y1?: number | string;
+      y2?: number | string;
+      yChannelSelector?: "R" | "G" | "B" | "A";
+      z?: number | string;
+      /**@deprecated */
+      zoomAndPan?: "disable" | "magnify";
+    }
+
     interface IntrinsicElements {
       // Allow unknown elements
       [key: string]: unknown;
@@ -1364,6 +1775,91 @@ declare global {
       wbr: HTMLAttributes;
       /** @deprecated */
       xmp: HTMLAttributes;
+
+      /* SVG */
+      animate: SVGAttributes;
+      animateMotion: SVGAttributes;
+      animateTransform: SVGAttributes;
+      circle: SVGAttributes;
+      clipPath: SVGAttributes;
+      /** @deprecated */
+      cursor: SVGAttributes;
+      defs: SVGAttributes;
+      desc: SVGAttributes;
+      ellipse: SVGAttributes;
+      feBlend: SVGAttributes;
+      feColorMatrix: SVGAttributes;
+      feComponentTransfer: SVGAttributes;
+      feComposite: SVGAttributes;
+      feConvolveMatrix: SVGAttributes;
+      feDiffuseLighting: SVGAttributes;
+      feDisplacementMap: SVGAttributes;
+      feDistantLight: SVGAttributes;
+      feDropShadow: SVGAttributes;
+      feFlood: SVGAttributes;
+      feFuncA: SVGAttributes;
+      feFuncB: SVGAttributes;
+      feFuncG: SVGAttributes;
+      feFuncR: SVGAttributes;
+      feGaussianBlur: SVGAttributes;
+      feImage: SVGAttributes;
+      feMerge: SVGAttributes;
+      feMergeNode: SVGAttributes;
+      feMorphology: SVGAttributes;
+      feOffset: SVGAttributes;
+      fePointLight: SVGAttributes;
+      feSpecularLighting: SVGAttributes;
+      feSpotLight: SVGAttributes;
+      feTile: SVGAttributes;
+      feTurbulence: SVGAttributes;
+      filter: SVGAttributes;
+      /** @deprecated */
+      "font-face-format": SVGAttributes;
+      /** @deprecated */
+      "font-face-name": SVGAttributes;
+      /** @deprecated */
+      "font-face-src": SVGAttributes;
+      /** @deprecated */
+      "font-face-uri": SVGAttributes;
+      /** @deprecated */
+      "font-face": SVGAttributes;
+      /** @deprecated */
+      foreignObject: SVGAttributes;
+      g: SVGAttributes;
+      /** @deprecated */
+      glyph: SVGAttributes;
+      /** @deprecated */
+      glyphRef: SVGAttributes;
+      /** @deprecated */
+      hkern: SVGAttributes;
+      image: SVGAttributes;
+      line: SVGAttributes;
+      linearGradient: SVGAttributes;
+      marker: SVGAttributes;
+      mask: SVGAttributes;
+      metadata: SVGAttributes;
+      /** @deprecated */
+      "missing-glyph": SVGAttributes;
+      mpath: SVGAttributes;
+      path: SVGAttributes;
+      pattern: SVGAttributes;
+      polygon: SVGAttributes;
+      polyline: SVGAttributes;
+      radialGradient: SVGAttributes;
+      rect: SVGAttributes;
+      set: SVGAttributes;
+      stop: SVGAttributes;
+      svg: SVGAttributes;
+      switch: SVGAttributes;
+      symbol: SVGAttributes;
+      text: SVGAttributes;
+      textPath: SVGAttributes;
+      /** @deprecated */
+      tref: SVGAttributes;
+      tspan: SVGAttributes;
+      use: SVGAttributes;
+      view: SVGAttributes;
+      vkern: SVGAttributes;
     }
   }
 }
