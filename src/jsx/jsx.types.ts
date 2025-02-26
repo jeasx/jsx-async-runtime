@@ -28,7 +28,7 @@ declare global {
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
-    interface GlobalAttributes {
+    type GlobalAttributes = {
       accesskey?: string;
       anchor?: string;
       autocapitalize?:
@@ -182,9 +182,9 @@ declare global {
       translate?: "" | "yes" | "no" | boolean;
       virtualkeyboardpolicy?: "auto" | "manual" | "none";
       writingsuggestions?: "" | "true" | "false" | boolean;
-    }
+    };
 
-    interface EventHandlerAttributes {
+    type EventHandlerAttributes = {
       onabort?: string;
       onautocomplete?: string;
       onautocompleteerror?: string;
@@ -247,9 +247,9 @@ declare global {
       ontoggle?: string;
       onvolumechange?: string;
       onwaiting?: string;
-    }
+    };
 
-    interface AriaAttributes {
+    type AriaAttributes = {
       "aria-activedescendant"?: string;
       "aria-atomic"?: "false" | "true" | boolean;
       "aria-autocomplete"?: "none" | "inline" | "list" | "both";
@@ -335,7 +335,7 @@ declare global {
       "aria-valuemin"?: number | string;
       "aria-valuenow"?: number | string;
       "aria-valuetext"?: string;
-    }
+    };
 
     type RelAttributes =
       | "about"
@@ -482,7 +482,7 @@ declare global {
         [key: string]: string | number | boolean | object;
       };
 
-    interface SVGAttributes {
+    type SVGAttributes = {
       /**@deprecated */
       accelerate?: number | string;
       /**@deprecated */
@@ -780,21 +780,21 @@ declare global {
       /**@deprecated */
       stemv?: number | string;
       stitchTiles?: "noStitch" | "stitch";
-      "stop-color"?: string;
+      "stop-color"?: number | string;
       "stop-opacity"?: number | string;
       "strikethrough-position"?: number | string;
       "strikethrough-thickness"?: number | string;
       /**@deprecated */
       string?: number | string;
-      stroke?: string;
-      "stroke-align"?: string | number;
-      "stroke-dasharray"?: string | number;
-      "stroke-dashadust"?: string | number;
-      "stroke-dashcorner"?: string | number;
-      "stroke-dashoffset"?: string | number;
+      stroke?: number | string;
+      "stroke-align"?: number | string;
+      "stroke-dasharray"?: number | string;
+      "stroke-dashadust"?: number | string;
+      "stroke-dashcorner"?: number | string;
+      "stroke-dashoffset"?: number | string;
       "stroke-linecap"?: "butt" | "round" | "square";
       "stroke-linejoin"?: "arcs" | "bevel" | "miter" | "miter-clip" | "round";
-      "stroke-miterlimit"?: string | number;
+      "stroke-miterlimit"?: number | string;
       "stroke-opacity"?: number | string;
       "stroke-width"?: number | string;
       style?: string | { [key: string]: string | number };
@@ -891,9 +891,11 @@ declare global {
       z?: number | string;
       /**@deprecated */
       zoomAndPan?: "disable" | "magnify";
-    }
+    } & {
+      [key: string]: string | number | boolean | object;
+    };
 
-    interface IntrinsicElements {
+    type IntrinsicElements = {
       // Allow unknown elements
       [key: string]: unknown;
 
@@ -1860,6 +1862,6 @@ declare global {
       use: SVGAttributes;
       view: SVGAttributes;
       vkern: SVGAttributes;
-    }
+    };
   }
 }
