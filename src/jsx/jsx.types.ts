@@ -28,7 +28,7 @@ declare global {
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
-    type GlobalAttributes = {
+    interface GlobalAttributes {
       accesskey?: string;
       anchor?: string;
       autocapitalize?:
@@ -182,9 +182,9 @@ declare global {
       translate?: "" | "yes" | "no" | boolean;
       virtualkeyboardpolicy?: "auto" | "manual" | "none";
       writingsuggestions?: "" | "true" | "false" | boolean;
-    };
+    }
 
-    type EventHandlerAttributes = {
+    interface EventHandlerAttributes {
       onabort?: string;
       onautocomplete?: string;
       onautocompleteerror?: string;
@@ -247,9 +247,9 @@ declare global {
       ontoggle?: string;
       onvolumechange?: string;
       onwaiting?: string;
-    };
+    }
 
-    type AriaAttributes = {
+    interface AriaAttributes {
       "aria-activedescendant"?: string;
       "aria-atomic"?: "false" | "true" | boolean;
       "aria-autocomplete"?: "none" | "inline" | "list" | "both";
@@ -335,7 +335,7 @@ declare global {
       "aria-valuemin"?: number | string;
       "aria-valuenow"?: number | string;
       "aria-valuetext"?: string;
-    };
+    }
 
     type RelAttributes =
       | "about"
@@ -476,13 +476,15 @@ declare global {
       | "strict-origin-when-cross-origin"
       | "unsafe-url";
 
-    type HTMLAttributes = GlobalAttributes &
-      EventHandlerAttributes &
-      AriaAttributes & {
-        [key: string]: string | number | boolean | object;
-      };
+    interface HTMLAttributes
+      extends GlobalAttributes,
+        EventHandlerAttributes,
+        AriaAttributes {
+      [key: string]: unknown; // Allow unknown attributes
+    }
 
-    type SVGAttributes = {
+    interface SVGAttributes {
+      [key: string]: unknown; // Allow unknown attributes
       /**@deprecated */
       accelerate?: number | string;
       /**@deprecated */
@@ -891,14 +893,10 @@ declare global {
       z?: number | string;
       /**@deprecated */
       zoomAndPan?: "disable" | "magnify";
-    } & {
-      [key: string]: string | number | boolean | object;
-    };
+    }
 
-    type IntrinsicElements = {
-      // Allow unknown elements
-      [key: string]: unknown;
-
+    interface IntrinsicElements {
+      [key: string]: unknown; // Allow unknown elements
       // HTML
       a: {
         attributionsrc?: string;
@@ -1862,6 +1860,6 @@ declare global {
       use: SVGAttributes;
       view: SVGAttributes;
       vkern: SVGAttributes;
-    };
+    }
   }
 }
