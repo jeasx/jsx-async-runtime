@@ -30,10 +30,14 @@ test("boolean attributes", () =>
       autocapitalize="off"
       contenteditable={true}
       spellcheck={false}
+      defer=""
       autofocus="autofocus"
     />,
-    `<div hidden autocapitalize="off" contenteditable autofocus="autofocus"></div>`
+    `<div hidden autocapitalize="off" contenteditable defer="" autofocus="autofocus"></div>`
   ));
+
+test("null or undefined attributes", () =>
+  equal(<div id={null} title={undefined} />, `<div></div>`));
 
 test("void tags", () =>
   equal(
@@ -41,8 +45,10 @@ test("void tags", () =>
       <hr />
       <br />
       <img src="src" alt="" />
+      <link href="/" />
+      <input type="text" />
     </>,
-    `<hr><br><img src="src" alt="">`
+    `<hr><br><img src="src" alt=""><link href="/"><input type="text">`
   ));
 
 test("empty fragment", () => equal(<></>, ``));
