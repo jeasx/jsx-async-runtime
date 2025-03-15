@@ -1,8 +1,10 @@
 # jsx-async-runtime
 
-An asynchronous JSX runtime without dependencies to be used as html template engine.
+An asynchronous JSX runtime without dependencies to be used as html template engine for server or browser.
 
 This runtime was initially developed for [Jeasx](https://www.jeasx.dev), but has a value of its own. Its main focus is to keep things simple, reliable and fast.
+
+You can find more information about using this runtime as template engine in the [Jeasx documentation](https://www.jeasx.dev/jsx).
 
 ## Getting started
 
@@ -12,11 +14,11 @@ This runtime was initially developed for [Jeasx](https://www.jeasx.dev), but has
 npm i jsx-async-runtime
 ```
 
-### Building
+### Configuration
 
 To make use of the `jsx-async-runtime`, you need to configure your transpiler to utilize this package for transforming the JSX syntax.
 
-If you are using TypeScript for transpiling, simply set these options in the tsconfig file:
+If you are using TypeScript for transpiling your code base, simply set these options in your `tsconfig.json`:
 
 ```json
 {
