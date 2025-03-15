@@ -4,7 +4,7 @@
  * @param {string} input - The input string to escape.
  * @return {string} The input string with special HTML entities escaped.
  */
-export function escapeEntities(input: string) {
+export function escapeEntities(input: string): string {
   return typeof input === "string"
     ? input
         .replaceAll("&amp;", "&")

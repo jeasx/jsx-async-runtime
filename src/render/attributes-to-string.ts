@@ -39,6 +39,6 @@ function attributeToString([key, value]: [string, any]): string {
   return `${key}="${escapeQuotes(value.toString())}"`;
 }
 
-function escapeQuotes(str: string) {
+function escapeQuotes(str: string): string {
   return str.replaceAll('"', "&quot;");
 }
