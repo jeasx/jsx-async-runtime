@@ -142,9 +142,10 @@ test("quote escape with json attribute", () =>
   ));
 
 test("true conditional", () =>
-  equal("1" === String(1) && <div></div>, `<div></div>`));
+  equal(<>{"1" === String(1) && <div></div>}</>, `<div></div>`));
 
-test("false conditional", () => equal("1" !== String(1) && <div></div>, ``));
+test("false conditional", () =>
+  equal(<>{"1" !== String(1) && <div></div>}</>, ``));
 
 await test("component with children", () =>
   equal(
