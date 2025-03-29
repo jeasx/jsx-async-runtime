@@ -4,9 +4,11 @@
   "scripts": {
     "start": "tsx watch src/index.jsx"
   },
+  "dependencies": {
+    "jsx-async-runtime": "file:.."
+  },
   "devDependencies": {
-    "@types/node": "latest",
-    "jsx-async-runtime": "file:..",
+    "@types/node": "22.13.14",
     "tsx": "4.19.3"
   }
 }
