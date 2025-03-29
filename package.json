@@ -40,14 +40,13 @@
     }
   },
   "scripts": {
-    "start": "nodemon -w src -e 'js,jsx,ts,tsx' --exec npm run build",
+    "start": "npm run build:esm -- --watch",
     "build": "rm -r dist ; npm run build:types && npm run build:esm",
     "build:esm": "esbuild --platform=neutral --format=esm --outdir=./dist/esm --bundle ./src/*.ts",
     "build:types": "tsc --emitDeclarationOnly --outDir ./dist/types"
   },
   "devDependencies": {
     "esbuild": "0.25.1",
-    "nodemon": "3.1.9",
     "typescript": "5.8.2"
   }
 }
