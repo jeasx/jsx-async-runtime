@@ -41,9 +41,10 @@
   },
   "scripts": {
     "start": "npm run build:esm -- --watch",
-    "build": "rm -r dist ; npm run build:types && npm run build:esm",
+    "build": "npm run build:types && npm run build:esm",
     "build:esm": "esbuild --platform=neutral --format=esm --outdir=./dist/esm --bundle ./src/*.ts",
-    "build:types": "tsc --emitDeclarationOnly --outDir ./dist/types"
+    "build:types": "tsc --emitDeclarationOnly --outDir ./dist/types",
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
     "esbuild": "0.25.2",
