@@ -9,7 +9,7 @@
     "jsx-async-runtime": "file:.."
   },
   "devDependencies": {
-    "@types/node": "22.15.2",
+    "@types/node": "22.15.3",
     "tsx": "4.19.3"
   }
 }
