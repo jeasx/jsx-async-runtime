@@ -73,15 +73,15 @@ export async function jsxToString(
         return `<${element.tag}${separator}${attributes}>`;
       }
 
-      const children: string[] = [];
+      const result: string[] = [];
       for (const child of element.children) {
         const str = await $jsxToString.call(this, child);
         if (str.length > 0) {
-          children.push(str);
+          result.push(str);
         }
       }
 
-      return `<${element.tag}${separator}${attributes}>${children.join("")}</${
+      return `<${element.tag}${separator}${attributes}>${result.join("")}</${
         element.tag
       }>`;
     }
