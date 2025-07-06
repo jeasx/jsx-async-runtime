@@ -1560,6 +1560,7 @@ declare global {
         required?: "" | "required" | boolean;
         size?: number | string;
       } & HTMLAttributes;
+      selectedcontent: HTMLAttributes;
       slot: {
         name?: string;
       } & HTMLAttributes;
