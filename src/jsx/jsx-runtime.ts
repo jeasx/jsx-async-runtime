@@ -25,10 +25,9 @@ export function createElement(
 
   return {
     type: "tag",
-    //@ts-expect-error
     tag,
     props,
-  };
+  } as JSX.Element;
 }
 
 function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
