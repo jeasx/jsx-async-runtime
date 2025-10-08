@@ -1,7 +1,5 @@
 # Changelog
 
-<https://github.com/jeasx/jsx-async-runtime/commits/main/>
-
 | Version | Date | Notes |
 | :-      | :-   | :-    |
 | 1.0.4 | 2025/08/13 | dep. update to typescript@5.9.2 => proper fix for typing error (previously surpressed with ts-expect-error). esbuild@0.25.9 |
