@@ -35,7 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 const reHtmlEntity = /["&'<>]/;
-function escapeHTML(str: string) {
+export function escapeHTML(str: string) {
   const match = reHtmlEntity.exec(str);
 
   if (match === null) {

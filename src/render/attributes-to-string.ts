@@ -1,5 +1,5 @@
 import type { Attributes } from "./create-element";
-import { escapeEntities } from "./escape-entities";
+import { escapeHTML } from "./escape-entities";
 
 export function attributesToString(attributes: Attributes): string {
   const result: string[] = [];
@@ -23,7 +23,7 @@ function attributeToString([key, value]: [string, any]): string {
     switch (key) {
       case "style":
         const styles = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
-        return `style="${escapeEntities(styles.join("; "))}"`;
+        return `style="${escapeHTML(styles.join("; "))}"`;
       case "class":
         const classes = Array.isArray(value)
           ? value.filter((v) => v)
@@ -31,11 +31,11 @@ function attributeToString([key, value]: [string, any]): string {
               .filter(([_, v]) => v)
               .map(([k]) => k);
         return classes.length > 0
-          ? `class="${escapeEntities(classes.join(" "))}"`
+          ? `class="${escapeHTML(classes.join(" "))}"`
           : "";
       default:
-        return `${key}="${escapeEntities(JSON.stringify(value))}"`;
+        return `${key}="${escapeHTML(JSON.stringify(value))}"`;
     }
   }
-  return `${key}="${escapeEntities(value.toString())}"`;
+  return `${key}="${escapeHTML(value.toString())}"`;
 }
