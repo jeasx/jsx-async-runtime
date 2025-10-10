@@ -1,4 +1,4 @@
-import { escapeEntities, jsxToString } from "jsx-async-runtime";
+import { jsxToString } from "jsx-async-runtime";
 
 export default function App({ url = "/" }) {
   // In the given setup you can use "this" as context
@@ -12,7 +12,7 @@ export default function App({ url = "/" }) {
   // This serves as an example of how to modify or replace existing markup
   // which can't be controlled by your application (e.g. 3rd-party components).
   if (this.customTheme) {
-    const $jsxToString = this.jsxToString || jsxToString;
+    const $jsxToString = this.jsxToString ?? jsxToString;
     this.jsxToString = (jsxElement) => {
       // '$jsx' is used as marker prop for processed elements
       // to avoid endless recursion
@@ -40,7 +40,7 @@ export default function App({ url = "/" }) {
                     $jsx
                     style="background-color: orange; border-radius: 25px;"
                   >
-                    <h1>* {escapeEntities(title)} *</h1>
+                    <h1>* {title} *</h1>
                     <h2>powered by jsx-async-runtime</h2>
                   </div>
                 );
@@ -55,18 +55,18 @@ export default function App({ url = "/" }) {
 
   return (
     <>
-      {"<!DOCTYPE html>"}
+      {{ __html: "<!DOCTYPE html>" }}
       <html lang="en">
         <head>
           <meta charset="utf-8" />
           <meta name="description" content="Default description" />
           <title>Default title</title>
           <style>
-            {
-              /* css */ `body {font-family: sans-serif; line-height: 1.5;}
+            {{
+              __html: /* css */ `body {font-family: sans-serif; line-height: 1.5;}
 input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
-.striped tr:nth-child(odd) {background-color: orange; padding: 4px;}`
-            }
+.striped tr:nth-child(odd) {background-color: orange; padding: 4px;}`,
+            }}
           </style>
         </head>
         <body>
@@ -76,6 +76,13 @@ input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
           </Layout>
           <hr />
           <ThemeSwitch />
+          <hr />
+          <h2>Escape example</h2>
+          {`<p>&copy; Just some <b>"escaped"</b> markup (default behaviour)<p>`}
+          <h2>Unescape example</h2>
+          {{
+            __html: /*html*/ `<p>&copy; Just some <b>"unescaped" </b> markup created with <i>__html</i> object.<p>`,
+          }}
         </body>
       </html>
     </>
@@ -87,12 +94,12 @@ function Layout({ title, children = [] }) {
   return (
     <main style="text-align: center">
       <head>
-        <title>{escapeEntities(title)}</title>
+        <title>{title}</title>
         <meta
           name="description"
-          content={`This is the description for ${escapeEntities(title)}`}
+          content={`This is the description for ${title}`}
         />
-        <style>{/* css */ `h1 {background-color: red;}`}</style>
+        <style>{{ __html: /* css */ `h1 {background-color: red;}` }}</style>
       </head>
       <Logo title={title} />
       {children}
@@ -129,7 +136,7 @@ function Logo({ title }) {
           stroke-linejoin="round"
         />
       </svg>
-      {escapeEntities(title)}
+      {title}
     </h1>
   );
 }
@@ -171,7 +178,7 @@ async function Todos({ quantity }) {
                     id={`todo-${index}`}
                     type="text"
                     readonly
-                    value={escapeEntities(todo)}
+                    value={todo}
                   />
                 </label>
               </td>
@@ -180,10 +187,7 @@ async function Todos({ quantity }) {
                   <input
                     id={`status-${index}`}
                     type="checkbox"
-                    checked={
-                      /* Property comes from an untrusted source, so don't use it directly */
-                      String(completed) === "true"
-                    }
+                    checked={completed}
                   />
                 </label>
               </td>
@@ -192,7 +196,7 @@ async function Todos({ quantity }) {
         </tbody>
         <tfoot>
           <tr>
-            <td colspan={3}>
+            <td colspan={2}>
               <p>
                 <i>The current time is {this.timestamp.toLocaleTimeString()}</i>
               </p>
@@ -215,3 +219,6 @@ function ThemeSwitch() {
     </div>
   );
 }
+
+// Use jsxToString#call with {} to create 'this' context
+// console.log(await jsxToString.call({}, <App />));

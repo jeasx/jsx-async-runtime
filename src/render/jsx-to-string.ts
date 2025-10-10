@@ -1,5 +1,6 @@
 import { attributesToString } from "./attributes-to-string";
 import { createElement } from "./create-element";
+import { escapeHTML } from "./escape-entities";
 
 const VOID_TAGS = new Set([
   "area",
@@ -29,7 +30,10 @@ export async function jsxToString(
   this: any,
   jsxElement: JSX.Element
 ): Promise<string> {
-  const $jsxToString = this?.jsxToString || jsxToString;
+  assertSync(jsxElement);
+
+  const $jsxToString = this?.jsxToString ?? jsxToString;
+  const $jsxEscapeHTML = this?.jsxEscapeHTML ?? true;
 
   if (jsxElement === null) {
     return "";
@@ -37,7 +41,7 @@ export async function jsxToString(
 
   switch (typeof jsxElement) {
     case "string":
-      return jsxElement;
+      return $jsxEscapeHTML ? escapeHTML(jsxElement) : jsxElement;
     case "bigint":
     case "number":
       return String(jsxElement);
@@ -48,10 +52,12 @@ export async function jsxToString(
       return "";
   }
 
-  assertSync(jsxElement);
+  if ("__html" in jsxElement) {
+    return jsxElement.__html;
+  }
 
   if (jsxElement.type === "textNode") {
-    return jsxElement.text;
+    return $jsxEscapeHTML ? escapeHTML(jsxElement.text) : jsxElement.text;
   }
 
   if (typeof jsxElement.tag === "string") {

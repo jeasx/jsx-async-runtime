@@ -14,12 +14,17 @@ type TextNode = {
   text: string;
 };
 
+type Html = {
+  __html: string;
+};
+
 declare global {
   namespace JSX {
     type AsyncElement = Promise<SyncElement>;
     type SyncElement =
       | Tag
       | TextNode
+      | Html
       | null
       | undefined
       | boolean

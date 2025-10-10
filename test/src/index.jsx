@@ -1,9 +1,10 @@
-import { escapeEntities, jsxToString } from "jsx-async-runtime";
+import { jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import Headline from "./components/Headline";
 import Layout from "./components/Layout";
 import Timeout from "./components/Timeout";
+import Unescaped from "./components/Unescaped";
 
 async function equal(jsx, str) {
   assert.strictEqual(await jsxToString.call({}, jsx), str);
@@ -121,7 +122,7 @@ test("style as object", () =>
 test("doctype declaration", () =>
   equal(
     <>
-      {"<!DOCTYPE html>"}
+      {{ __html: "<!DOCTYPE html>" }}
       <html lang="en">
         <head>
           <meta charset="utf-8" />
@@ -131,15 +132,49 @@ test("doctype declaration", () =>
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"></head></html>`
   ));
 
-test("boolean value", () => equal(false, ``));
+test("escape enabled", () =>
+  equal(
+    <div>
+      <h1>"Hello & World"</h1>
+      {`<p>"Escaped & text"</p>`}
+      {{ __html: `<p>"Unescaped & text"</p>` }}
+    </div>,
+    `<div><h1>&quot;Hello &amp; World&quot;</h1>&lt;p&gt;&quot;Escaped &amp; text&quot;&lt;/p&gt;<p>"Unescaped & text"</p></div>`
+  ));
 
-test("number value", () => equal(5, `5`));
+test("escape disbaled", () =>
+  equal(
+    <div>
+      <h1>{`"Hello World"`}</h1>
+      <Unescaped>
+        <section>{`<p>"Unescaped & text"</p>`}</section>
+      </Unescaped>
+      <h2>{`"Hello World"`}</h2>
+    </div>,
+    `<div><h1>&quot;Hello World&quot;</h1><section><p>"Unescaped & text"</p></section><h2>&quot;Hello World&quot;</h2></div>`
+  ));
 
-test("quote escape with json attribute", () =>
+test("escape attribute", () =>
+  equal(
+    <div data-props={`\"><script>alert("help");</script>&amp;`}></div>,
+    `<div data-props="&quot;&gt;&lt;script&gt;alert(&quot;help&quot;);&lt;/script&gt;&amp;amp;"></div>`
+  ));
+
+test("escape json attribute", () =>
   equal(
     <h1 data-props={{ hello: "world" }}>Hello</h1>,
     `<h1 data-props="{&quot;hello&quot;:&quot;world&quot;}">Hello</h1>`
   ));
+
+test("escape string", () =>
+  equal(
+    `<h1>"Hell<span>'o'</span> &amp;& World"</h1>`,
+    "&lt;h1&gt;&quot;Hell&lt;span&gt;&#39;o&#39;&lt;/span&gt; &amp;amp;&amp; World&quot;&lt;/h1&gt;"
+  ));
+
+test("boolean value", () => equal(false, ``));
+
+test("number value", () => equal(5, `5`));
 
 test("true conditional", () =>
   equal(<>{"1" === String(1) && <div></div>}</>, `<div></div>`));
@@ -165,12 +200,6 @@ test("component with props and children", () =>
       </section>
     </Layout>,
     "<main><h1>Hello</h1><section><p>World</p></section></main>"
-  ));
-
-test("escape entities", () =>
-  equal(
-    escapeEntities(`<h1>"Hell<span>'o'</span> &amp;& World"</h1>`),
-    "&lt;h1&gt;&quot;Hell&lt;span&gt;&#39;o&#39;&lt;/span&gt; &amp;&amp; World&quot;&lt;/h1&gt;"
   ));
 
 test("with 'this' as context", () =>
