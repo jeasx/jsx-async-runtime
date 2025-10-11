@@ -1,7 +1,7 @@
-export default function Unescaped({ children }) {
+export default function Html({ children }) {
   const $jsxEscapeHTML = this.jsxEscapeHTML;
 
-  const EscapeHTML = () => {
+  const RestoreEscape = () => {
     this.jsxEscapeHTML = $jsxEscapeHTML;
     return null;
   };
@@ -11,7 +11,7 @@ export default function Unescaped({ children }) {
   return (
     <>
       {children}
-      <EscapeHTML />
+      <RestoreEscape />
     </>
   );
 }

@@ -55,7 +55,7 @@ export default function App({ url = "/" }) {
 
   return (
     <>
-      {{ __html: "<!DOCTYPE html>" }}
+      {{ html: "<!DOCTYPE html>" }}
       <html lang="en">
         <head>
           <meta charset="utf-8" />
@@ -63,7 +63,7 @@ export default function App({ url = "/" }) {
           <title>Default title</title>
           <style>
             {{
-              __html: /* css */ `body {font-family: sans-serif; line-height: 1.5;}
+              html: /* css */ `body {font-family: sans-serif; line-height: 1.5;}
 input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
 .striped tr:nth-child(odd) {background-color: orange; padding: 4px;}`,
             }}
@@ -81,7 +81,7 @@ input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
           {`<p>&copy; Just some <b>"escaped"</b> markup (default behaviour)<p>`}
           <h2>Unescape example</h2>
           {{
-            __html: /*html*/ `<p>&copy; Just some <b>"unescaped" </b> markup created with <i>__html</i> object.<p>`,
+            html: /*html*/ `<p>&copy; Just some <b>"unescaped"</b> markup created with <code>{ html: "..." }</code> object.<p>`,
           }}
         </body>
       </html>
@@ -99,7 +99,7 @@ function Layout({ title, children = [] }) {
           name="description"
           content={`This is the description for ${title}`}
         />
-        <style>{{ __html: /* css */ `h1 {background-color: red;}` }}</style>
+        <style>{{ html: /* css */ `h1 {background-color: red;}` }}</style>
       </head>
       <Logo title={title} />
       {children}

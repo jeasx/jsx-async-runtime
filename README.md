@@ -35,10 +35,10 @@ If you're using `jsx-async-runtime` as template engine, you might want to includ
 
 ## HTML escaping as default (breaking change for >= v2.x.x)
 
-`jsx-async-runtime >= v2.x.x` escapes all HTML entities for texts per default to prevent cross site scripting. If you want or need to opt out this security feature to include literal HTML snippets in your template (e.g. WYSIWYG content from a CMS), you can provide an object with a single key called `__html` containing the code snippet as a string in your JSX template:
+`jsx-async-runtime >= v2.x.x` escapes all HTML entities for texts per default to prevent cross site scripting. If you want or need to opt out this security feature to include literal HTML snippets in your template (e.g. WYSIWYG content from a CMS), you can provide an object with a single key called `html` containing the code snippet as a string in your JSX template:
 
 ```jsx
-<div>{{__html: "<p>Some <b>HTML</b> from a CMS</p>"}}</div>
+<div>{{ html: "<p>Some <b>HTML</b> from a CMS</p>"}}</div>
 ```
 
 If you want to disable the automatic escaping of HTML completely to restore the behaviour of `jsx-async-runtime < v2.x.x`, you can turn off text escaping with a compatibilty switch via the `this` context:
@@ -60,7 +60,7 @@ import { jsxToString } from "jsx-async-runtime";
 export default function App() {
   return (
     <>
-      {{__html: `<!DOCTYPE html>`}}
+      {{ html: `<!DOCTYPE html>`}}
       <html>
         <head>
           <meta charset="utf-8" />
@@ -115,6 +115,6 @@ async function TodoList({ quantity }) {
   );
 }
 
-// Use jsxToString#call with {} to create 'this' context
+// Use jsxToString#call with {} to create a 'this' context
 console.log(await jsxToString.call({}, <App />));
 ```

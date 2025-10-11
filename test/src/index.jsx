@@ -2,9 +2,9 @@ import { jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import Headline from "./components/Headline";
+import Html from "./components/Html";
 import Layout from "./components/Layout";
 import Timeout from "./components/Timeout";
-import Unescaped from "./components/Unescaped";
 
 async function equal(jsx, str) {
   assert.strictEqual(await jsxToString.call({}, jsx), str);
@@ -122,7 +122,7 @@ test("style as object", () =>
 test("doctype declaration", () =>
   equal(
     <>
-      {{ __html: "<!DOCTYPE html>" }}
+      {{ html: "<!DOCTYPE html>" }}
       <html lang="en">
         <head>
           <meta charset="utf-8" />
@@ -137,7 +137,7 @@ test("escape enabled", () =>
     <div>
       <h1>"Hello & World"</h1>
       {`<p>"Escaped & text"</p>`}
-      {{ __html: `<p>"Unescaped & text"</p>` }}
+      {{ html: `<p>"Unescaped & text"</p>` }}
     </div>,
     `<div><h1>&quot;Hello &amp; World&quot;</h1>&lt;p&gt;&quot;Escaped &amp; text&quot;&lt;/p&gt;<p>"Unescaped & text"</p></div>`
   ));
@@ -146,9 +146,9 @@ test("escape disbaled", () =>
   equal(
     <div>
       <h1>{`"Hello World"`}</h1>
-      <Unescaped>
+      <Html>
         <section>{`<p>"Unescaped & text"</p>`}</section>
-      </Unescaped>
+      </Html>
       <h2>{`"Hello World"`}</h2>
     </div>,
     `<div><h1>&quot;Hello World&quot;</h1><section><p>"Unescaped & text"</p></section><h2>&quot;Hello World&quot;</h2></div>`

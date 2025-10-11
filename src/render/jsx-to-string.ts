@@ -52,8 +52,8 @@ export async function jsxToString(
       return "";
   }
 
-  if ("__html" in jsxElement) {
-    return jsxElement.__html;
+  if ("html" in jsxElement) {
+    return jsxElement.html;
   }
 
   if (jsxElement.type === "textNode") {

@@ -15,7 +15,7 @@ type TextNode = {
 };
 
 type Html = {
-  __html: string;
+  html: string;
 };
 
 declare global {
