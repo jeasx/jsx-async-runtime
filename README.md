@@ -2,23 +2,23 @@
 
 An asynchronous JSX runtime without dependencies to be used as html template engine for server or browser.
 
+## Breaking change
+
+With `jsx-async-runtime >= v2.x.x` HTML entities are escaped per default. [Read more...](#usage)
+
+## Introduction
+
 This runtime was initially developed for [Jeasx](https://www.jeasx.dev), but has a value of its own. Its main focus is to keep things simple, reliable, secure and fast.
 
 You can find more information about using this runtime as template engine in the [Jeasx documentation](https://www.jeasx.dev/jsx).
 
-## Getting started
-
-### Installation
+## Installation
 
 ```bash
 npm i jsx-async-runtime
 ```
 
-### Configuration
-
-To make use of the `jsx-async-runtime`, you need to configure your transpiler to utilize this package for transforming the JSX syntax.
-
-If you are using TypeScript or esbuild for transpiling your code base, simply set these options in your `tsconfig.json`:
+To make use of the `jsx-async-runtime`, you need to configure your transpiler to utilize this package for transforming the JSX syntax. If you are using TypeScript or esbuild for transpiling your code base, simply add the following options in your `tsconfig.json`:
 
 ```json
 {
@@ -29,11 +29,53 @@ If you are using TypeScript or esbuild for transpiling your code base, simply se
 }
 ```
 
-## Using
+The example project provides a complete [tsconfig.json](https://github.com/jeasx/jsx-async-runtime/tree/main/example/tsconfig.json) with all required options for a proper project setup.
+
+Now you can create a simple test file (e.g. `src/HelloWorld.jsx`) and execute it via `npx tsx src/HelloWorld.jsx`:
+
+```jsx
+import { jsxToString } from "jsx-async-runtime";
+
+export default function HelloWorld({ greeting }) {
+  return (
+    <>
+      {{ html: `<!DOCTYPE html>` }}
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>{greeting}</title>
+        </head>
+        <body>
+          <h1>{greeting}</h1>
+        </body>
+      </html>
+    </>
+  );
+}
+
+// Use jsxToString#call with {} to create a 'this' context
+console.log(await jsxToString.call({}, <HelloWorld greeting="Hello World" />));
+```
+
+## Usage
 
 If you're using `jsx-async-runtime` as template engine, you might want to include data from an asynchronous operation in the resulting markup. To simplify this process, you can make your components asynchronous and send async requests from within them.
 
-## HTML escaping as default (breaking change for >= v2.x.x)
+```jsx
+export default async function Todos() {
+  const { todos } = await (await fetch("https://dummyjson.com/todos")).json();
+
+  return (
+    <ul>
+      {todos.map(({ todo, completed }) => (
+        <li>
+          {todo} ({completed ? "yes" : "no"})
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
 
 `jsx-async-runtime >= v2.x.x` escapes all HTML entities for texts per default to prevent cross site scripting. If you want or need to opt out this security feature to include literal HTML snippets in your template (e.g. WYSIWYG content from a CMS), you can provide an object with a single key called `html` containing the code snippet as a string in your JSX template:
 
@@ -46,7 +88,18 @@ If you want to disable the automatic escaping of HTML completely to restore the 
 ```jsx
 export default function () {
   this.jsxEscapeHTML = false;
-  return <div>{"<p>Some <b>HTML</b> from a CMS</p>"}</div>
+  return <div>{"<p><b>HTML</b> from a trusted CMS</p>"}</div>
+}
+```
+
+If you opt out of automatic escaping, you can use a built-in utility function to escape markup from untrusted external sources:
+
+```jsx
+import { escapeEntities } from "jsx-async-runtime";
+
+export default function () {
+  this.jsxEscapeHTML = false;
+  return <div>{escapeEntities("<p><b>HTML</b> from user input</p>")}</div>
 }
 ```
 
