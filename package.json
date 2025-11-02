@@ -47,7 +47,7 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "esbuild": "0.25.11",
+    "esbuild": "0.25.12",
     "typescript": "5.9.3"
   }
 }
