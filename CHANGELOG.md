@@ -2,6 +2,7 @@
 
  Version | Date       | Release Notes
  :-      | :-         | :-
+ 2.0.2   | 2025/12/21 | updated to esbuild@0.27.2
  2.0.1   | 2025/11/10 | updated tsconfig.json (moduleResolution=bundler); esbuild@0.27.0
  2.0.0   | 2025/10/12 | **Breaking change:** escape all HTML entities per default. Opt out of escaping with `{ html: "<b>Text</b>" }` in JSX or via global context configuration with `this.jsxEscapeHTML=false`. Use faster & more robust `escapeHTML` from `fast-escape-html` internally and for exported utility function `escapeEntities`.
  1.0.4   | 2025/08/13 | dep. update to typescript@5.9.2 => proper fix for typing error (previously surpressed with ts-expect-error). esbuild@0.25.9
