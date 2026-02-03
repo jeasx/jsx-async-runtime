@@ -1,10 +1,6 @@
 import Headline from "./Headline";
 
-export default function Layout({
-  title = "",
-  context = undefined,
-  children = {},
-}) {
+export default function Layout({ title = "", context = undefined, children = {} }) {
   if (context) {
     this.context = { ...context };
   }
