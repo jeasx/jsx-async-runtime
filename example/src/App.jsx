@@ -36,10 +36,7 @@ export default function App({ url = "/" }) {
               case "Logo":
                 // Replace <Logo> components with custom markup
                 jsxElement.tag = ({ title }) => (
-                  <div
-                    $jsx
-                    style="background-color: orange; border-radius: 25px;"
-                  >
+                  <div $jsx style="background-color: orange; border-radius: 25px;">
                     <h1>* {title} *</h1>
                     <h2>powered by jsx-async-runtime</h2>
                   </div>
@@ -95,10 +92,7 @@ function Layout({ title, children = [] }) {
     <main style="text-align: center">
       <head>
         <title>{title}</title>
-        <meta
-          name="description"
-          content={`This is the description for ${title}`}
-        />
+        <meta name="description" content={`This is the description for ${title}`} />
         <style>{{ html: /* css */ `h1 {background-color: red;}` }}</style>
       </head>
       <Logo title={title} />
@@ -174,21 +168,12 @@ async function Todos({ quantity }) {
             <tr>
               <td>
                 <label for={`todo-${index}`}>
-                  <input
-                    id={`todo-${index}`}
-                    type="text"
-                    readonly
-                    value={todo}
-                  />
+                  <input id={`todo-${index}`} type="text" readonly value={todo} />
                 </label>
               </td>
               <td>
                 <label for={`status-${index}`}>
-                  <input
-                    id={`status-${index}`}
-                    type="checkbox"
-                    checked={completed}
-                  />
+                  <input id={`status-${index}`} type="checkbox" checked={completed} />
                 </label>
               </td>
             </tr>
