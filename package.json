@@ -3,24 +3,24 @@
   "version": "2.0.2",
   "description": "An asynchronous JSX runtime without dependencies to be used as html template engine.",
   "keywords": [
-    "jsx",
-    "runtime",
-    "template",
-    "engine",
-    "ssr",
     "async",
+    "engine",
+    "html",
+    "jsx",
     "node",
-    "html"
+    "runtime",
+    "ssr",
+    "template"
   ],
-  "license": "MIT",
   "homepage": "https://www.jeasx.dev/jsx",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jeasx/jsx-async-runtime.git"
-  },
+  "license": "MIT",
   "author": {
     "name": "Maik Jablonski",
     "email": "mail@jeasx.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeasx/jsx-async-runtime.git"
   },
   "type": "module",
   "main": "./dist/esm/index.js",
