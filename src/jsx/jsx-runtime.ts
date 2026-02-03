@@ -1,8 +1,5 @@
 export function createElement(
-  tag:
-    | string
-    | ((props: any) => JSX.Element)
-    | ((props: any) => Promise<JSX.Element>),
+  tag: string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>),
   props?: {
     [k: string]: any;
     children?: JSX.Children;

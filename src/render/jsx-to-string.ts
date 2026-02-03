@@ -26,10 +26,7 @@ const VOID_TAGS = new Set([
  * @param {JSX.Element} jsxElement - The JSX element to render.
  * @return {Promise<string>} The string representation of the rendered JSX element.
  */
-export async function jsxToString(
-  this: any,
-  jsxElement: JSX.Element
-): Promise<string> {
+export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<string> {
   assertSync(jsxElement);
 
   const $jsxToString = this?.jsxToString ?? jsxToString;
@@ -87,9 +84,7 @@ export async function jsxToString(
         }
       }
 
-      return `<${element.tag}${separator}${attributes}>${result.join("")}</${
-        element.tag
-      }>`;
+      return `<${element.tag}${separator}${attributes}>${result.join("")}</${element.tag}>`;
     }
   }
 
@@ -101,4 +96,4 @@ export async function jsxToString(
   return "";
 }
 
-function assertSync(e: JSX.Element): asserts e is JSX.SyncElement {}
+function assertSync(_e: JSX.Element): asserts _e is JSX.SyncElement {}

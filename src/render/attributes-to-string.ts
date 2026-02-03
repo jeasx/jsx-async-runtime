@@ -30,9 +30,7 @@ function attributeToString([key, value]: [string, any]): string {
           : Object.entries(value)
               .filter(([_, v]) => v)
               .map(([k]) => k);
-        return classes.length > 0
-          ? `class="${escapeHTML(classes.join(" "))}"`
-          : "";
+        return classes.length > 0 ? `class="${escapeHTML(classes.join(" "))}"` : "";
       default:
         return `${key}="${escapeHTML(JSON.stringify(value))}"`;
     }

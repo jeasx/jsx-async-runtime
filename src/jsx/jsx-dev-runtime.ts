@@ -1,12 +1,4 @@
-import {
-  Fragment,
-  _Fragment,
-  _jsx,
-  _jsxs,
-  createElement,
-  jsx,
-  jsxs,
-} from "./jsx-runtime";
+import { Fragment, _Fragment, _jsx, _jsxs, createElement, jsx, jsxs } from "./jsx-runtime";
 
 export {
   Fragment,

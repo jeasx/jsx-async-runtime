@@ -21,54 +21,25 @@ type Html = {
 declare global {
   namespace JSX {
     type AsyncElement = Promise<SyncElement>;
-    type SyncElement =
-      | Tag
-      | TextNode
-      | Html
-      | null
-      | undefined
-      | boolean
-      | string
-      | number;
+    type SyncElement = Tag | TextNode | Html | null | undefined | boolean | string | number;
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
     interface GlobalAttributes {
       accesskey?: string;
       anchor?: string;
-      autocapitalize?:
-        | "off"
-        | "none"
-        | "on"
-        | "sentences"
-        | "words"
-        | "characters";
+      autocapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters";
       autofocus?: "" | "autofocus" | boolean;
       class?: string | string[] | { [key: string]: boolean };
       contenteditable?: "" | "true" | "false" | "plaintext-only" | boolean;
       dir?: "auto" | "rtl" | "ltr";
       draggable?: "true" | "false";
-      enterkeyhint?:
-        | "enter"
-        | "done"
-        | "go"
-        | "next"
-        | "previous"
-        | "search"
-        | "send";
+      enterkeyhint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
       exportparts?: string;
       hidden?: "" | "hidden" | "until-found" | boolean;
       id?: string;
       inert?: "" | "inert" | boolean;
-      inputmode?:
-        | "none"
-        | "text"
-        | "tel"
-        | "url"
-        | "email"
-        | "numeric"
-        | "decimal"
-        | "search";
+      inputmode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
       is?: string;
       itemid?: string;
       itemprop?: string;
@@ -267,26 +238,12 @@ declare global {
       "aria-colindextext"?: string;
       "aria-colspan"?: number | string;
       "aria-controls"?: string;
-      "aria-current"?:
-        | "false"
-        | "true"
-        | "page"
-        | "step"
-        | "location"
-        | "date"
-        | "time"
-        | boolean;
+      "aria-current"?: "false" | "true" | "page" | "step" | "location" | "date" | "time" | boolean;
       "aria-describedby"?: string;
       "aria-description"?: string;
       "aria-details"?: string;
       "aria-disabled"?: "false" | "true" | boolean;
-      "aria-dropeffect"?:
-        | "none"
-        | "copy"
-        | "execute"
-        | "link"
-        | "move"
-        | "popup";
+      "aria-dropeffect"?: "none" | "copy" | "execute" | "link" | "move" | "popup";
       "aria-errormessage"?: string;
       "aria-expanded"?: "false" | "true" | boolean;
       "aria-flowto"?: string;
@@ -481,10 +438,7 @@ declare global {
       | "strict-origin-when-cross-origin"
       | "unsafe-url";
 
-    interface HTMLAttributes
-      extends GlobalAttributes,
-        EventHandlerAttributes,
-        AriaAttributes {
+    interface HTMLAttributes extends GlobalAttributes, EventHandlerAttributes, AriaAttributes {
       [key: string]: unknown; // Allow unknown attributes
     }
 
@@ -608,13 +562,7 @@ declare global {
       "font-stretch"?: number | string;
       "font-style"?: "normal" | "italic" | "oblique";
       "font-variant"?: number | string;
-      "font-weight"?:
-        | number
-        | "normal"
-        | "bold"
-        | "bolder"
-        | "lighter"
-        | (string & {});
+      "font-weight"?: number | "normal" | "bold" | "bolder" | "lighter" | (string & {});
       fr?: number | string;
       from?: number | string;
       fx?: number | string;
@@ -768,11 +716,7 @@ declare global {
       ry?: number | "auto" | (string & {});
       scale?: number | string;
       seed?: number | string;
-      "shape-rendering"?:
-        | "auto"
-        | "optimizeSpeed"
-        | "crispEdges"
-        | "geometricPrecision";
+      "shape-rendering"?: "auto" | "optimizeSpeed" | "crispEdges" | "geometricPrecision";
       side?: "left" | "right";
       slope?: number | string;
       spacing?: "auto" | "exact";
@@ -814,11 +758,7 @@ declare global {
       targetY?: number | string;
       "text-anchor"?: "start" | "middle" | "end";
       "text-decoration"?: number | string;
-      "text-rendering"?:
-        | "auto"
-        | "optimizeSpeed"
-        | "optimizeLegibility"
-        | "geometricPrecision";
+      "text-rendering"?: "auto" | "optimizeSpeed" | "optimizeLegibility" | "geometricPrecision";
       textLength?: number | string;
       to?: number | string;
       transform?: string;
@@ -911,10 +851,7 @@ declare global {
         media?: string;
         ping?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?:
-          | RelAttributes
-          | `${RelAttributes} ${RelAttributes}`
-          | (string & {});
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}` | (string & {});
         target?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
         type?: string;
         /** @deprecated */
@@ -941,10 +878,7 @@ declare global {
         media?: string;
         ping?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?:
-          | RelAttributes
-          | `${RelAttributes} ${RelAttributes}`
-          | (string & {});
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}` | (string & {});
         shape?: "default" | "rect" | "circle" | "poly";
         target?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
         type?: string;
@@ -1022,10 +956,7 @@ declare global {
         disabled?: "" | "disabled" | boolean;
         form?: string;
         formaction?: string;
-        formenctype?:
-          | "application/x-www-form-urlencoded"
-          | "multipart/form-data"
-          | "text/plain";
+        formenctype?: "application/x-www-form-urlencoded" | "multipart/form-data" | "text/plain";
         formmethod?: "post" | "get" | "dialog";
         formnovalidate?: "" | "formnovalidate" | boolean;
         formtarget?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
@@ -1139,17 +1070,11 @@ declare global {
         "accept-charset"?: string;
         action?: string;
         autocomplete?: "on" | "off" | string;
-        enctype?:
-          | "application/x-www-form-urlencoded"
-          | "multipart/form-data"
-          | "text/plain";
+        enctype?: "application/x-www-form-urlencoded" | "multipart/form-data" | "text/plain";
         method?: "post" | "get" | "dialog";
         name?: string;
         novalidate?: "" | "novalidate" | boolean;
-        rel?:
-          | RelAttributes
-          | `${RelAttributes} ${RelAttributes}`
-          | (string & {});
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}` | (string & {});
         target?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
       } & HTMLAttributes;
       /** @deprecated */
@@ -1276,25 +1201,14 @@ declare global {
         disabled?: "" | "disabled" | boolean;
         form?: string;
         formaction?: string;
-        formenctype?:
-          | "application/x-www-form-urlencoded"
-          | "multipart/form-data"
-          | "text/plain";
+        formenctype?: "application/x-www-form-urlencoded" | "multipart/form-data" | "text/plain";
         formmethod?: "post" | "get" | "dialog";
         formnovalidate?: "" | "formnovalidate" | boolean;
         formtarget?: "_self" | "_blank" | "_parent" | "_top" | (string & {});
         height?: number | string;
         incremental?: boolean | string;
         id?: string;
-        inputmode?:
-          | "none"
-          | "text"
-          | "tel"
-          | "url"
-          | "email"
-          | "numeric"
-          | "decimal"
-          | "search";
+        inputmode?: "none" | "text" | "tel" | "url" | "email" | "numeric" | "decimal" | "search";
         list?: string;
         max?: number | string;
         maxlength?: number | string;
@@ -1369,10 +1283,7 @@ declare global {
         integrity?: string;
         media?: string;
         referrerpolicy?: ReferrerPolicyAttributes;
-        rel?:
-          | RelAttributes
-          | `${RelAttributes} ${RelAttributes}`
-          | (string & {});
+        rel?: RelAttributes | `${RelAttributes} ${RelAttributes}` | (string & {});
         sizes?: string;
         title?: string;
         type?: string;
@@ -1606,16 +1517,7 @@ declare global {
         /** @deprecated */
         cellspacing?: string | number;
         /** @deprecated */
-        frame?:
-          | "void"
-          | "above"
-          | "below"
-          | "hsides"
-          | "lhs"
-          | "rhs"
-          | "vsides"
-          | "box"
-          | "border";
+        frame?: "void" | "above" | "below" | "hsides" | "lhs" | "rhs" | "vsides" | "box" | "border";
         /** @deprecated */
         rules?: "none" | "groups" | "rows" | "cols" | "all";
         /** @deprecated */
