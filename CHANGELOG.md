@@ -2,6 +2,7 @@
 
  Version | Date       | Release Notes
  :-      | :-         | :-
+ 2.0.3   | 2026/03/05 | updated to esbuild@0.27.3; reformat core code; trusted publishing to npm
  2.0.2   | 2025/12/21 | updated to esbuild@0.27.2
  2.0.1   | 2025/11/10 | updated tsconfig.json (moduleResolution=bundler); esbuild@0.27.0
  2.0.0   | 2025/10/12 | **Breaking change:** escape all HTML entities per default. Opt out of escaping with `{ html: "<b>Text</b>" }` in JSX or via global context configuration with `this.jsxEscapeHTML=false`. Use faster & more robust `escapeHTML` from `fast-escape-html` internally and for exported utility function `escapeEntities`.
