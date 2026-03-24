@@ -1,1 +1,1 @@
-export * from "./dist/types/jsx-runtime";
+export * from "./dist/types/jsx-runtime.js";

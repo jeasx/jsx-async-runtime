@@ -1,5 +1,5 @@
-import type { Attributes } from "./create-element";
-import { escapeHTML } from "./escape-entities";
+import type { Attributes } from "./create-element.js";
+import { escapeHTML } from "./escape-entities.js";
 
 export function attributesToString(attributes: Attributes): string {
   const result: string[] = [];

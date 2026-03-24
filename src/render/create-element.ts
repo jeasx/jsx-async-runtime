@@ -1,4 +1,4 @@
-import type { Tag } from "../jsx/jsx.types";
+import type { Tag } from "../jsx/jsx.types.js";
 
 export type Attributes = [string, string | undefined][];
 

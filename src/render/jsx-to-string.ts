@@ -1,6 +1,6 @@
-import { attributesToString } from "./attributes-to-string";
-import { createElement } from "./create-element";
-import { escapeHTML } from "./escape-entities";
+import { attributesToString } from "./attributes-to-string.js";
+import { createElement } from "./create-element.js";
+import { escapeHTML } from "./escape-entities.js";
 
 const VOID_TAGS = new Set([
   "area",
