@@ -12,6 +12,8 @@ This runtime was initially developed for [Jeasx](https://www.jeasx.dev), but has
 
 You can find more information about using this runtime as template engine in the [Jeasx documentation](https://www.jeasx.dev/jsx).
 
+If you want to use `jsx-async-runtime` as template technology for your project, you can check out a [quickstart repository with Typescript support](https://github.com/jablonski/jsx-async-runtime-quickstart) to get you started quickly.
+
 ## Installation
 
 ```bash
@@ -80,7 +82,7 @@ export default async function Todos() {
 `jsx-async-runtime >= v2.x.x` escapes all HTML entities for texts per default to prevent cross site scripting. If you want or need to opt out this security feature to include literal HTML snippets in your template (e.g. WYSIWYG content from a CMS), you can provide an object with a single key called `html` containing the code snippet as a string in your JSX template:
 
 ```jsx
-<div>{{ html: "<p>Some <b>HTML</b> from a CMS</p>"}}</div>
+<div>{{ html: "<p>Some <b>HTML</b> from a CMS</p>" }}</div>
 ```
 
 If you want to disable the automatic escaping of HTML completely to restore the behaviour of `jsx-async-runtime < v2.x.x`, you can turn off text escaping with a compatibilty switch via the `this` context:
@@ -88,7 +90,7 @@ If you want to disable the automatic escaping of HTML completely to restore the 
 ```jsx
 export default function () {
   this.jsxEscapeHTML = false;
-  return <div>{"<p><b>HTML</b> from a trusted CMS</p>"}</div>
+  return <div>{"<p><b>HTML</b> from a trusted CMS</p>"}</div>;
 }
 ```
 
@@ -99,7 +101,7 @@ import { escapeEntities } from "jsx-async-runtime";
 
 export default function () {
   this.jsxEscapeHTML = false;
-  return <div>{escapeEntities("<p><b>HTML</b> from user input</p>")}</div>
+  return <div>{escapeEntities("<p><b>HTML</b> from user input</p>")}</div>;
 }
 ```
 
@@ -113,7 +115,7 @@ import { jsxToString } from "jsx-async-runtime";
 export default function App() {
   return (
     <>
-      {{ html: `<!DOCTYPE html>`}}
+      {{ html: `<!DOCTYPE html>` }}
       <html>
         <head>
           <meta charset="utf-8" />
