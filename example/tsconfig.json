@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "target": "ESNext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "strict": false,
+    "types": ["*"],
     "rootDir": "src",
     "outDir": "dist",
     "jsx": "react-jsx",
