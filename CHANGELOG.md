@@ -2,7 +2,8 @@
 
  Version | Date       | Release Notes
  :-      | :-         | :-
- 2.1.0.  | 2026/03/24 | Updated all exports and imports to include the `.js` extension, ensuring compatibility with the TypeScript compiler. Updated to esbuild@0.27.4, @types/node@25.5.0, typescript@6.0.2.
+ 2.1.1   | 2026/04/04 | Updated to esbuild@0.28.0, @types/node@25.5.2
+ 2.1.0   | 2026/03/24 | Updated all exports and imports to include the `.js` extension, ensuring compatibility with the TypeScript compiler. Updated to esbuild@0.27.4, @types/node@25.5.0, typescript@6.0.2.
  2.0.3   | 2026/03/05 | updated to esbuild@0.27.3; reformat core code; trusted publishing to npm
  2.0.2   | 2025/12/21 | updated to esbuild@0.27.2
  2.0.1   | 2025/11/10 | updated tsconfig.json (moduleResolution=bundler); esbuild@0.27.0
