@@ -3,7 +3,7 @@
     "module": "esnext",
     "target": "esnext",
     "moduleResolution": "bundler",
-    "types": ["*"],
+    "types": ["node"],
     "strict": false,
     "rootDir": "src",
     "outDir": "dist",

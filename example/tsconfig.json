@@ -4,7 +4,7 @@
     "moduleResolution": "bundler",
     "target": "esnext",
     "strict": false,
-    "types": ["*"],
+    "types": ["node"],
     "rootDir": "src",
     "outDir": "dist",
     "jsx": "react-jsx",
