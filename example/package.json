@@ -12,6 +12,6 @@
     "tsx": "4.22.3"
   },
   "allowScripts": {
-    "esbuild@0.28.0": true
+    "esbuild": true
   }
 }
