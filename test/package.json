@@ -9,8 +9,8 @@
     "jsx-async-runtime": "file:.."
   },
   "devDependencies": {
-    "@types/node": "25.9.1",
-    "tsx": "4.22.3"
+    "@types/node": "25.9.2",
+    "tsx": "4.22.4"
   },
   "allowScripts": {
     "esbuild@0.28.0": true
