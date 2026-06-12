@@ -47,10 +47,10 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "typescript": "6.0.3"
   },
   "allowScripts": {
-    "esbuild@0.28.0": true
+    "esbuild@0.28.1": true
   }
 }
