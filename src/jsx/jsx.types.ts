@@ -1101,6 +1101,10 @@ declare global {
         /** @deprecated */
         rows?: number | string;
       } & HTMLAttributes;
+      geolocation: {
+        autolocate?: "" | "autolocate" | boolean;
+        watch?: "" | "watch" | boolean;
+      } & HTMLAttributes;
       h1: HTMLAttributes;
       h2: HTMLAttributes;
       h3: HTMLAttributes;
