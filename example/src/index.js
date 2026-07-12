@@ -1,7 +1,7 @@
 import { jsxToString } from "jsx-async-runtime";
 import { createServer } from "node:http";
-import App from "./App";
-import unifyHead from "./utils/unifyHead";
+import App from "./App.js";
+import unifyHead from "./unifyHead.js";
 
 const HEAD_MARK = "[[HEAD]]";
 

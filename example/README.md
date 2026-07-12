@@ -2,27 +2,19 @@
 
 This is a simple example that showcases all the features provided by `jsx-async-runtime`.
 
-## Getting started
-
-### Installation
-
-First install dependencies in `jsx-async-runtime` (parent folder):
+First install dependencies in `jsx-async-runtime` (parent folder) and run a build:
 
 ```bash
-cd ..
 npm install
+npm run build
 ```
 
-Then install dependencies in `example` project:
+Then install dependencies in `example` project, run a build and start:
 
 ```bash
 cd example
 npm install
-```
-
-### Starting
-
-```bash
+npm run build
 npm start
 ```
 

@@ -1,10 +1,10 @@
 import { jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
-import Headline from "./components/Headline";
-import Html from "./components/Html";
-import Layout from "./components/Layout";
-import Timeout from "./components/Timeout";
+import Headline from "./components/Headline.js";
+import Html from "./components/Html.js";
+import Layout from "./components/Layout.js";
+import Timeout from "./components/Timeout.js";
 
 async function equal(jsx, str) {
   assert.strictEqual(await jsxToString.call({}, jsx), str);
@@ -145,7 +145,7 @@ test("escape disbaled", () =>
 
 test("escape attribute", () =>
   equal(
-    <div data-props={`\"><script>alert("help");</script>&amp;`}></div>,
+    <div data-props={`"><script>alert("help");</script>&amp;`}></div>,
     `<div data-props="&quot;&gt;&lt;script&gt;alert(&quot;help&quot;);&lt;/script&gt;&amp;amp;"></div>`,
   ));
 

@@ -2,6 +2,7 @@
 
  Version | Date       | Release Notes
  :-      | :-         | :-
+ 2.2.0   | 2026/07/12 | Replaced esbuild with typescript@7 for building, delivering unbundled code in dist. Replaced tsx with typescript for tests and examples. @types/node@26.1.1.
  2.1.3   | 2026/06/12 | Added `geolocation` as new HTMLElement to jsx.types; updated to esbuild@0.28.1, @types/node@25.9.3.
  2.1.2   | 2026/05/04 | Updated to typescript@6.0.3, @types/node@25.6.2; ignore CHANGELOG.md for package release.
  2.1.1   | 2026/04/04 | Updated to esbuild@0.28.0, @types/node@25.5.2

@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "nodenext",
     "target": "esnext",
-    "strict": false,
+    "moduleResolution": "nodenext",
     "types": ["node"],
+    "strict": false,
     "rootDir": "src",
     "outDir": "dist",
     "jsx": "react-jsx",

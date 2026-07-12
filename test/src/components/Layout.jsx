@@ -1,4 +1,4 @@
-import Headline from "./Headline";
+import Headline from "./Headline.js";
 
 export default function Layout({ title = "", context = undefined, children = {} }) {
   if (context) {

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "nodenext",
     "target": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "nodenext",
     "types": ["node"],
     "strict": false,
     "rootDir": "src",
@@ -10,8 +10,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "jsx-async-runtime",
     "allowJs": true,
-    "checkJs": true,
-    "allowSyntheticDefaultImports": true
+    "checkJs": true
   },
   "include": ["src"]
 }

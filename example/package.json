@@ -2,16 +2,16 @@
   "name": "jsx-async-runtime-example",
   "type": "module",
   "scripts": {
-    "start": "tsx watch src/index.jsx"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch & node --watch dist/index.js & wait",
+    "clean": "tsc --build --clean"
   },
   "dependencies": {
     "jsx-async-runtime": "file:.."
   },
   "devDependencies": {
-    "@types/node": "26.1.1",
-    "tsx": "4.23.0"
-  },
-  "allowScripts": {
-    "esbuild": true
+    "@types/node": "file:../node_modules/@types/node",
+    "typescript": "file:../node_modules/typescript"
   }
 }
