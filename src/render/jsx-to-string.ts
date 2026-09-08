@@ -62,10 +62,7 @@ export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<s
     if (element.tag === "") {
       const result: string[] = [];
       for (const child of element.children) {
-        const str = await $jsxToString.call(this, child);
-        if (str.length > 0) {
-          result.push(str);
-        }
+        result.push(await $jsxToString.call(this, child));
       }
       return result.join("");
     } else {
@@ -78,10 +75,7 @@ export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<s
 
       const result: string[] = [];
       for (const child of element.children) {
-        const str = await $jsxToString.call(this, child);
-        if (str.length > 0) {
-          result.push(str);
-        }
+        result.push(await $jsxToString.call(this, child));
       }
 
       return `<${element.tag}${separator}${attributes}>${result.join("")}</${element.tag}>`;
