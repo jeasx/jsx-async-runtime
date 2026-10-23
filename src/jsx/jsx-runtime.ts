@@ -33,6 +33,7 @@ function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
       accumulator.push({ type: "textNode", text: children });
       break;
     case "number":
+    case "bigint":
       accumulator.push({ type: "textNode", text: children.toString() });
       break;
     case "object":

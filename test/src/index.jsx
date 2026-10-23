@@ -1,4 +1,4 @@
-import { jsxToString } from "jsx-async-runtime";
+import { escapeEntities, jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import Headline from "./components/Headline.js";
@@ -62,7 +62,7 @@ test("class as object", () => {
   const className1 = "";
   const className2 = "hidden";
   const className3 = undefined;
-  equal(
+  return equal(
     <div
       class={{
         striped: false,
@@ -210,3 +210,194 @@ test("async execution", async () =>
     </Timeout>,
     "<div><h1>Hello World</h1></div>",
   ));
+
+// --- Edge cases: children ---
+
+test("nested arrays as children", () =>
+  equal(
+    <ul>
+      {[[<li>a</li>], [[<li>b</li>]], []]}
+    </ul>,
+    `<ul><li>a</li><li>b</li></ul>`,
+  ));
+
+test("mapped children", () =>
+  equal(
+    <ul>
+      {[1, 2, 3].map((i) => (
+        <li>{i}</li>
+      ))}
+    </ul>,
+    `<ul><li>1</li><li>2</li><li>3</li></ul>`,
+  ));
+
+test("null, undefined and boolean children are skipped", () =>
+  equal(
+    <p>
+      {null}
+      {undefined}
+      {false}
+      {true}a{1}
+    </p>,
+    `<p>a1</p>`,
+  ));
+
+test("number edge cases", () =>
+  equal(<p>{-1}|{1.5}|{-0}</p>, `<p>-1|1.5|0</p>`));
+
+test("bigint value", () => equal(10n, `10`));
+
+test("undefined value", () => equal(undefined, ``));
+
+test("null value", () => equal(null, ``));
+
+test("function value", () => equal(() => "x", ``));
+
+test("unicode text is not escaped", () => equal(<p>Grüße 🚀 ©</p>, `<p>Grüße 🚀 ©</p>`));
+
+test("empty html object", () => equal(<p>{{ html: "" }}</p>, `<p></p>`));
+
+test("children passed as prop", () => equal(<div {...{ children: "x" }} />, `<div>x</div>`));
+
+// --- Edge cases: attributes ---
+
+test("numeric attributes", () =>
+  equal(<div tabindex={0} data-n={-1} />, `<div tabindex="0" data-n="-1"></div>`));
+
+test("empty string attribute", () => equal(<div title="" />, `<div title=""></div>`));
+
+test("escape single quote in attribute", () =>
+  equal(<div title="it's" />, `<div title="it&#39;s"></div>`));
+
+test("escape class array", () =>
+  equal(<div class={['a"b', "<c>"]} />, `<div class="a&quot;b &lt;c&gt;"></div>`));
+
+test("escape class object keys", () =>
+  equal(<div class={{ 'a"b': true }} />, `<div class="a&quot;b"></div>`));
+
+test("style with numeric values", () =>
+  equal(<div style={{ "z-index": 1, opacity: 0 }} />, `<div style="z-index: 1; opacity: 0"></div>`));
+
+test("json array attribute", () =>
+  equal(<div data-x={[1, "a"]} />, `<div data-x="[1,&quot;a&quot;]"></div>`));
+
+test("custom element with aria and data attributes", () =>
+  equal(
+    <my-element aria-label="x" data-id="1"></my-element>,
+    `<my-element aria-label="x" data-id="1"></my-element>`,
+  ));
+
+// --- Edge cases: components ---
+
+test("component returning null", () => {
+  const Nothing = () => null;
+  return equal(<p><Nothing /></p>, `<p></p>`);
+});
+
+test("component returning undefined", () => {
+  const Undefined = () => undefined;
+  return equal(<Undefined />, ``);
+});
+
+test("component returning string is escaped", () => {
+  const Str = () => "<b>";
+  return equal(<Str />, `&lt;b&gt;`);
+});
+
+test("component returning zero", () => {
+  const Zero = () => 0;
+  return equal(<Zero />, `0`);
+});
+
+test("component returning html object", () => {
+  const Raw = () => ({ html: "<b>raw</b>" });
+  return equal(<Raw />, `<b>raw</b>`);
+});
+
+test("nested async components", () => {
+  const Inner = async ({ children }) => <b>{children}</b>;
+  const Outer = async ({ children }) => <Inner>{children}</Inner>;
+  return equal(<Outer>x</Outer>, `<b>x</b>`);
+});
+
+test("async siblings keep their order", () =>
+  equal(
+    <>
+      <Timeout ms={10}>a</Timeout>
+      <Timeout ms={1}>b</Timeout>
+    </>,
+    `<div>a</div><div>b</div>`,
+  ));
+
+test("sync component error rejects", () => {
+  const Broken = () => {
+    throw new Error("boom");
+  };
+  return assert.rejects(jsxToString.call({}, <Broken />), /boom/);
+});
+
+test("async component error rejects", () => {
+  const Broken = async () => {
+    throw new Error("boom async");
+  };
+  return assert.rejects(jsxToString.call({}, <Broken />), /boom async/);
+});
+
+// --- Edge cases: context ---
+
+test("render without 'this' context", async () =>
+  assert.strictEqual(await jsxToString(<p>{"<b>"}</p>), `<p>&lt;b&gt;</p>`));
+
+test("escaping disabled via context", async () =>
+  assert.strictEqual(
+    await jsxToString.call({ jsxEscapeHTML: false }, <p>{"<b>"}</p>),
+    `<p><b></p>`,
+  ));
+
+test("custom jsxToString via context", async () => {
+  const ctx = {
+    async jsxToString(element) {
+      return element?.tag === "b" ? "[B]" : jsxToString.call(this, element);
+    },
+  };
+  assert.strictEqual(await jsxToString.call(ctx, <p><b /></p>), `<p>[B]</p>`);
+});
+
+// --- escapeEntities ---
+
+test("escapeEntities escapes all special characters", () =>
+  assert.strictEqual(escapeEntities(`<>"'&`), `&lt;&gt;&quot;&#39;&amp;`));
+
+test("escapeEntities leaves plain text untouched", () =>
+  assert.strictEqual(escapeEntities("Hello World"), "Hello World"));
+
+test("escapeEntities with empty string", () => assert.strictEqual(escapeEntities(""), ""));
+
+test("escapeEntities with entities at start and end", () =>
+  assert.strictEqual(escapeEntities("&a<"), "&amp;a&lt;"));
+
+// --- Regression tests ---
+
+test("component returning array", () => {
+  const Items = () => [<li>a</li>, <li>b</li>];
+  return equal(
+    <ul>
+      <Items />
+    </ul>,
+    `<ul><li>a</li><li>b</li></ul>`,
+  );
+});
+
+test("async component returning array", () => {
+  const Items = async () => [<li>a</li>, "b", null, 0];
+  return equal(<Items />, `<li>a</li>b0`);
+});
+
+test("array value", () => equal([<b>a</b>, [<i>b</i>], "<c>"], `<b>a</b><i>b</i>&lt;c&gt;`));
+
+test("empty array value", () => equal([], ``));
+
+test("bigint child", () => equal(<p>{10n}</p>, `<p>10</p>`));
+
+test("array with promises", () =>
+  equal([Promise.resolve(<b>a</b>), Promise.resolve("b")], `<b>a</b>b`));

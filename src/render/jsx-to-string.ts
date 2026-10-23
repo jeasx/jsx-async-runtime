@@ -49,6 +49,14 @@ export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<s
       return "";
   }
 
+  if (Array.isArray(jsxElement)) {
+    const result: string[] = [];
+    for (const child of jsxElement) {
+      result.push(await $jsxToString.call(this, await child));
+    }
+    return result.join("");
+  }
+
   if ("html" in jsxElement) {
     return jsxElement.html;
   }

@@ -21,7 +21,17 @@ type Html = {
 declare global {
   namespace JSX {
     type AsyncElement = Promise<SyncElement>;
-    type SyncElement = Tag | TextNode | Html | null | undefined | boolean | string | number;
+    type SyncElement =
+      | Tag
+      | TextNode
+      | Html
+      | null
+      | undefined
+      | boolean
+      | string
+      | number
+      | bigint
+      | Element[];
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
