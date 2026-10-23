@@ -108,6 +108,8 @@ test("style as object", () =>
     `<h1 style="background-image: url(&quot;url&quot;); background-color: red; color: white; padding-top: 1rem; padding-bottom: 1rem">Hello</h1>`,
   ));
 
+test("style as empty object", () => equal(<h1 style={{}}></h1>, `<h1></h1>`));
+
 test("doctype declaration", () =>
   equal(
     <>

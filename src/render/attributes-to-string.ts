@@ -23,7 +23,7 @@ function attributeToString([key, value]: [string, any]): string {
     switch (key) {
       case "style":
         const styles = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
-        return `style="${escapeHTML(styles.join("; "))}"`;
+        return styles.length > 0 ? `style="${escapeHTML(styles.join("; "))}"` : "";
       case "class":
         const classes = Array.isArray(value)
           ? value.filter((v) => v)
