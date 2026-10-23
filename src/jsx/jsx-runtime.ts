@@ -14,7 +14,7 @@ export function createElement(
     mapChildren(child, finalChildren);
   }
 
-  if (props?.children) {
+  if (props.children != null) {
     mapChildren(props.children, finalChildren);
   }
 

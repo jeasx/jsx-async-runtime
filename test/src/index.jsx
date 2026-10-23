@@ -165,6 +165,12 @@ test("boolean value", () => equal(false, ``));
 
 test("number value", () => equal(5, `5`));
 
+test("zero as only child", () => equal(<h1>{0}</h1>, `<h1>0</h1>`));
+
+test("zero with siblings", () => equal(<h1>{0} items</h1>, `<h1>0 items</h1>`));
+
+test("empty string as only child", () => equal(<h1>{""}</h1>, `<h1></h1>`));
+
 test("true conditional", () => equal(<>{"1" === String(1) && <div></div>}</>, `<div></div>`));
 
 test("false conditional", () => equal(<>{"1" !== String(1) && <div></div>}</>, ``));
