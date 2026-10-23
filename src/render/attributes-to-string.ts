@@ -2,17 +2,20 @@ import type { Attributes } from "./create-element.js";
 import { escapeHTML } from "./escape-entities.js";
 
 export function attributesToString(attributes: Attributes): string {
-  const result: string[] = [];
+  let result = "";
   for (const attribute of attributes) {
-    const str = attributeToString(attribute);
-    if (str.length > 0) {
-      result.push(str);
+    const str = attributeToString(attribute[0], attribute[1]);
+    if (str !== "") {
+      result += result !== "" ? ` ${str}` : str;
     }
   }
-  return result.join(" ");
+  return result;
 }
 
-function attributeToString([key, value]: [string, any]): string {
+function attributeToString(key: string, value: any): string {
+  if (typeof value === "string") {
+    return `${key}="${escapeHTML(value)}"`;
+  }
   if (value === true) {
     return key;
   }
@@ -20,20 +23,46 @@ function attributeToString([key, value]: [string, any]): string {
     return "";
   }
   if (typeof value === "object") {
-    switch (key) {
-      case "style":
-        const styles = Object.entries(value).map(([k, v]) => `${k}: ${v}`);
-        return styles.length > 0 ? `style="${escapeHTML(styles.join("; "))}"` : "";
-      case "class":
-        const classes = Array.isArray(value)
-          ? value.filter((v) => v)
-          : Object.entries(value)
-              .filter(([, v]) => v)
-              .map(([k]) => k);
-        return classes.length > 0 ? `class="${escapeHTML(classes.join(" "))}"` : "";
-      default:
-        return `${key}="${escapeHTML(JSON.stringify(value))}"`;
+    if (key === "style") {
+      const styles = styleToString(value);
+      return styles === "" ? "" : `style="${escapeHTML(styles)}"`;
     }
+    if (key === "class") {
+      const classes = classToString(value);
+      return classes === "" ? "" : `class="${escapeHTML(classes)}"`;
+    }
+    return `${key}="${escapeHTML(JSON.stringify(value))}"`;
   }
   return `${key}="${escapeHTML(value.toString())}"`;
+}
+
+function styleToString(obj: Record<string, unknown>): string {
+  let result = "";
+  let separator = "";
+  for (const key in obj) {
+    result += `${separator}${key}: ${obj[key]}`;
+    separator = "; ";
+  }
+  return result;
+}
+
+function classToString(obj: unknown[] | Record<string, unknown>): string {
+  let result = "";
+  let separator = "";
+  if (Array.isArray(obj)) {
+    for (const value of obj) {
+      if (value) {
+        result += `${separator}${value}`;
+        separator = " ";
+      }
+    }
+  } else {
+    for (const key in obj) {
+      if (obj[key]) {
+        result += `${separator}${key}`;
+        separator = " ";
+      }
+    }
+  }
+  return result;
 }
