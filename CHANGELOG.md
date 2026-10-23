@@ -2,6 +2,7 @@
 
  Version | Date       | Release Notes
  :-      | :-         | :-
+ 2.3.0   | 2026/10/23 | Improved performance of attribute rendering (~1.5x faster) by avoiding intermediate arrays. Skip empty style objects and null, undefined or false style values. Render arrays returned by components (or passed to #jsxToString), awaiting promises inside them. Render bigint children. Render 0 as only child (e.g. `<h1>{0}</h1>`). Added edge case tests. @types/node@26.6.5.
  2.2.1   | 2026/09/08 | Removed unnecessary checks for non-zero string length in #jsxToString. @types/node@26.5.0.
  2.2.0   | 2026/07/12 | Replaced esbuild with typescript@7 for building, delivering unbundled code in dist. Replaced tsx with typescript for tests and examples. @types/node@26.1.1.
  2.1.3   | 2026/06/12 | Added `geolocation` as new HTMLElement to jsx.types; updated to esbuild@0.28.1, @types/node@25.9.3.
