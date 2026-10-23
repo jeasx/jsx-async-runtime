@@ -40,7 +40,11 @@ function styleToString(obj: Record<string, unknown>): string {
   let result = "";
   let separator = "";
   for (const key in obj) {
-    result += `${separator}${key}: ${obj[key]}`;
+    const value = obj[key];
+    if (value === null || value === undefined || value === false) {
+      continue;
+    }
+    result += `${separator}${key}: ${value}`;
     separator = "; ";
   }
   return result;

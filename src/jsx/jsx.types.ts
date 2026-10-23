@@ -162,7 +162,7 @@ declare global {
         | (string & {});
       slot?: string;
       spellcheck?: "" | "true" | "false" | boolean;
-      style?: string | { [key: string]: string | number };
+      style?: string | { [key: string]: string | number | null | undefined | false };
       tabindex?: number | string;
       title?: string;
       translate?: "" | "yes" | "no" | boolean;
@@ -758,7 +758,7 @@ declare global {
       "stroke-miterlimit"?: number | string;
       "stroke-opacity"?: number | string;
       "stroke-width"?: number | string;
-      style?: string | { [key: string]: string | number };
+      style?: string | { [key: string]: string | number | null | undefined | false };
       surfaceScale?: number | string;
       systemLanguage?: number | string;
       tabindex?: number | string;

@@ -280,6 +280,15 @@ test("escape class object keys", () =>
 test("style with numeric values", () =>
   equal(<div style={{ "z-index": 1, opacity: 0 }} />, `<div style="z-index: 1; opacity: 0"></div>`));
 
+test("style skips null, undefined and false values", () =>
+  equal(
+    <div style={{ color: null, margin: undefined, display: false, padding: 0, "font-weight": "" }} />,
+    `<div style="padding: 0; font-weight: "></div>`,
+  ));
+
+test("style with only skipped values", () =>
+  equal(<div style={{ color: null, margin: undefined, display: false }} />, `<div></div>`));
+
 test("json array attribute", () =>
   equal(<div data-x={[1, "a"]} />, `<div data-x="[1,&quot;a&quot;]"></div>`));
 
