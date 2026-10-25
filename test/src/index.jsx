@@ -305,6 +305,23 @@ test("function and symbol attributes are skipped", () => {
 test("json array attribute", () =>
   equal(<div data-x={[1, "a"]} />, `<div data-x="[1,&quot;a&quot;]"></div>`));
 
+test("URL attribute uses its string form", () => {
+  /** @type {any} */
+  const url = new URL("https://x.dev/a?b=1&c=2");
+  return equal(<a href={url} />, `<a href="https://x.dev/a?b=1&amp;c=2"></a>`);
+});
+
+test("Date attribute uses its string form", () => {
+  /** @type {any} */
+  const date = new Date(0);
+  return equal(<time datetime={date} />, `<time datetime="${String(date)}"></time>`);
+});
+
+test("null-prototype object attribute is JSON-encoded", () => {
+  const value = Object.assign(Object.create(null), { a: 1 });
+  return equal(<div data-x={value} />, `<div data-x="{&quot;a&quot;:1}"></div>`);
+});
+
 test("custom element with aria and data attributes", () =>
   equal(
     <my-element aria-label="x" data-id="1"></my-element>,

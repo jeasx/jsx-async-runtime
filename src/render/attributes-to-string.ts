@@ -39,9 +39,12 @@ function attributeToString(key: string, value: any): string {
       const classes = classToString(value);
       return classes && `class="${escapeHTML(classes)}"`;
     }
-    return `${key}="${escapeHTML(JSON.stringify(value))}"`;
+    const prototype = Object.getPrototypeOf(value);
+    if (!prototype || prototype === Object.prototype || Array.isArray(value)) {
+      return `${key}="${escapeHTML(JSON.stringify(value))}"`;
+    }
   }
-  return `${key}="${escapeHTML(value.toString())}"`;
+  return `${key}="${escapeHTML(String(value))}"`;
 }
 
 function styleToString(obj: Record<string, unknown>): string {
