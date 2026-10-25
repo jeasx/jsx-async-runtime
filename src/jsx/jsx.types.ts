@@ -41,7 +41,7 @@ declare global {
       autocapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters";
       autofocus?: "" | "autofocus" | boolean;
       class?: string | string[] | { [key: string]: boolean };
-      contenteditable?: "" | "true" | "false" | "plaintext-only" | boolean;
+      contenteditable?: "" | "true" | "false" | "plaintext-only" | true;
       dir?: "auto" | "rtl" | "ltr";
       draggable?: "true" | "false";
       enterkeyhint?: "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
@@ -161,13 +161,13 @@ declare global {
         | "none presentation"
         | (string & {});
       slot?: string;
-      spellcheck?: "" | "true" | "false" | boolean;
+      spellcheck?: "" | "true" | "false" | true;
       style?: string | { [key: string]: string | number | null | undefined | false };
       tabindex?: number | string;
       title?: string;
-      translate?: "" | "yes" | "no" | boolean;
+      translate?: "" | "yes" | "no" | true;
       virtualkeyboardpolicy?: "auto" | "manual" | "none";
-      writingsuggestions?: "" | "true" | "false" | boolean;
+      writingsuggestions?: "" | "true" | "false" | true;
     }
 
     interface EventHandlerAttributes {
@@ -237,52 +237,44 @@ declare global {
 
     interface AriaAttributes {
       "aria-activedescendant"?: string;
-      "aria-atomic"?: "false" | "true" | boolean;
+      "aria-atomic"?: "false" | "true";
       "aria-autocomplete"?: "none" | "inline" | "list" | "both";
       "aria-braillelabel"?: string;
       "aria-brailleroledescription"?: string;
-      "aria-busy"?: "false" | "true" | boolean;
-      "aria-checked"?: "false" | "mixed" | "true" | boolean;
+      "aria-busy"?: "false" | "true";
+      "aria-checked"?: "false" | "mixed" | "true";
       "aria-colcount"?: number | string;
       "aria-colindex"?: number | string;
       "aria-colindextext"?: string;
       "aria-colspan"?: number | string;
       "aria-controls"?: string;
-      "aria-current"?: "false" | "true" | "page" | "step" | "location" | "date" | "time" | boolean;
+      "aria-current"?: "false" | "true" | "page" | "step" | "location" | "date" | "time";
       "aria-describedby"?: string;
       "aria-description"?: string;
       "aria-details"?: string;
-      "aria-disabled"?: "false" | "true" | boolean;
+      "aria-disabled"?: "false" | "true";
       "aria-dropeffect"?: "none" | "copy" | "execute" | "link" | "move" | "popup";
       "aria-errormessage"?: string;
-      "aria-expanded"?: "false" | "true" | boolean;
+      "aria-expanded"?: "false" | "true";
       "aria-flowto"?: string;
-      "aria-grabbed"?: "false" | "true" | boolean;
-      "aria-haspopup"?:
-        | "false"
-        | "true"
-        | "menu"
-        | "listbox"
-        | "tree"
-        | "grid"
-        | "dialog"
-        | boolean;
-      "aria-hidden"?: "false" | "true" | boolean;
-      "aria-invalid"?: "false" | "true" | "grammar" | "spelling" | boolean;
+      "aria-grabbed"?: "false" | "true";
+      "aria-haspopup"?: "false" | "true" | "menu" | "listbox" | "tree" | "grid" | "dialog";
+      "aria-hidden"?: "false" | "true";
+      "aria-invalid"?: "false" | "true" | "grammar" | "spelling";
       "aria-keyshortcuts"?: string;
       "aria-label"?: string;
       "aria-labelledby"?: string;
       "aria-level"?: number | string;
       "aria-live"?: "off" | "assertive" | "polite";
-      "aria-modal"?: "false" | "true" | boolean;
-      "aria-multiline"?: "false" | "true" | boolean;
-      "aria-multiselectable"?: "false" | "true" | boolean;
+      "aria-modal"?: "false" | "true";
+      "aria-multiline"?: "false" | "true";
+      "aria-multiselectable"?: "false" | "true";
       "aria-orientation"?: "horizontal" | "vertical";
       "aria-owns"?: string;
       "aria-placeholder"?: string;
       "aria-posinset"?: number | string;
-      "aria-pressed"?: "mixed" | "false" | "true" | boolean;
-      "aria-readonly"?: "false" | "true" | boolean;
+      "aria-pressed"?: "mixed" | "false" | "true";
+      "aria-readonly"?: "false" | "true";
       "aria-relevant"?:
         | "additions"
         | "additions removals"
@@ -294,13 +286,13 @@ declare global {
         | "text"
         | "text additions"
         | "text removals";
-      "aria-required"?: "false" | "true" | boolean;
+      "aria-required"?: "false" | "true";
       "aria-roledescription"?: string;
       "aria-rowcount"?: number | string;
       "aria-rowindex"?: number | string;
       "aria-rowindextext"?: string;
       "aria-rowspan"?: number | string;
-      "aria-selected"?: "false" | "true" | boolean;
+      "aria-selected"?: "false" | "true";
       "aria-setsize"?: number | string;
       "aria-sort"?: "none" | "ascending" | "descending" | "other";
       "aria-valuemax"?: number | string;
@@ -680,7 +672,13 @@ declare global {
       overflow?: "visible" | "hidden" | "scroll" | "auto";
       "overline-position"?: number | string;
       "overline-thickness"?: number | string;
-      "paint-order"?: "normal" | "fill" | "stroke" | "markers";
+      "paint-order"?:
+        | "normal"
+        | "fill"
+        | "stroke"
+        | "markers"
+        | `${"fill" | "stroke" | "markers"} ${"fill" | "stroke" | "markers"}`
+        | `${"fill" | "stroke" | "markers"} ${"fill" | "stroke" | "markers"} ${"fill" | "stroke" | "markers"}`;
       /**@deprecated */
       "panose-1"?: number | string;
       path?: number | string;
@@ -750,7 +748,7 @@ declare global {
       stroke?: number | string;
       "stroke-align"?: number | string;
       "stroke-dasharray"?: number | string;
-      "stroke-dashadust"?: number | string;
+      "stroke-dashadjust"?: number | string;
       "stroke-dashcorner"?: number | string;
       "stroke-dashoffset"?: number | string;
       "stroke-linecap"?: "butt" | "round" | "square";
@@ -1745,7 +1743,6 @@ declare global {
       "font-face-uri": SVGAttributes;
       /** @deprecated */
       "font-face": SVGAttributes;
-      /** @deprecated */
       foreignObject: SVGAttributes;
       g: SVGAttributes;
       /** @deprecated */
@@ -1781,6 +1778,7 @@ declare global {
       tspan: SVGAttributes;
       use: SVGAttributes;
       view: SVGAttributes;
+      /** @deprecated */
       vkern: SVGAttributes;
     }
   }

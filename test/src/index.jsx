@@ -1,6 +1,6 @@
 import { escapeEntities, jsxToString } from "jsx-async-runtime";
-import { createElement } from "jsx-async-runtime/jsx-runtime";
 import { jsxDEV } from "jsx-async-runtime/jsx-dev-runtime";
+import { createElement } from "jsx-async-runtime/jsx-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import Headline from "./components/Headline.js";
@@ -32,7 +32,7 @@ test("boolean attributes", () =>
       hidden
       autocapitalize="off"
       contenteditable={true}
-      spellcheck={false}
+      itemscope={false}
       defer=""
       autofocus="autofocus"
     />,
@@ -218,12 +218,7 @@ test("async execution", async () =>
 // --- Edge cases: children ---
 
 test("nested arrays as children", () =>
-  equal(
-    <ul>
-      {[[<li>a</li>], [[<li>b</li>]], []]}
-    </ul>,
-    `<ul><li>a</li><li>b</li></ul>`,
-  ));
+  equal(<ul>{[[<li>a</li>], [[<li>b</li>]], []]}</ul>, `<ul><li>a</li><li>b</li></ul>`));
 
 test("mapped children", () =>
   equal(
@@ -247,7 +242,12 @@ test("null, undefined and boolean children are skipped", () =>
   ));
 
 test("number edge cases", () =>
-  equal(<p>{-1}|{1.5}|{-0}</p>, `<p>-1|1.5|0</p>`));
+  equal(
+    <p>
+      {-1}|{1.5}|{-0}
+    </p>,
+    `<p>-1|1.5|0</p>`,
+  ));
 
 test("bigint value", () => equal(10n, `10`));
 
@@ -280,11 +280,16 @@ test("escape class object keys", () =>
   equal(<div class={{ 'a"b': true }} />, `<div class="a&quot;b"></div>`));
 
 test("style with numeric values", () =>
-  equal(<div style={{ "z-index": 1, opacity: 0 }} />, `<div style="z-index: 1; opacity: 0"></div>`));
+  equal(
+    <div style={{ "z-index": 1, opacity: 0 }} />,
+    `<div style="z-index: 1; opacity: 0"></div>`,
+  ));
 
 test("style skips null, undefined and false values", () =>
   equal(
-    <div style={{ color: null, margin: undefined, display: false, padding: 0, "font-weight": "" }} />,
+    <div
+      style={{ color: null, margin: undefined, display: false, padding: 0, "font-weight": "" }}
+    />,
     `<div style="padding: 0; font-weight: "></div>`,
   ));
 
@@ -304,7 +309,12 @@ test("custom element with aria and data attributes", () =>
 
 test("component returning null", () => {
   const Nothing = () => null;
-  return equal(<p><Nothing /></p>, `<p></p>`);
+  return equal(
+    <p>
+      <Nothing />
+    </p>,
+    `<p></p>`,
+  );
 });
 
 test("component returning undefined", () => {
@@ -373,7 +383,15 @@ test("custom jsxToString via context", async () => {
       return element?.tag === "b" ? "[B]" : jsxToString.call(this, element);
     },
   };
-  assert.strictEqual(await jsxToString.call(ctx, <p><b /></p>), `<p>[B]</p>`);
+  assert.strictEqual(
+    await jsxToString.call(
+      ctx,
+      <p>
+        <b />
+      </p>,
+    ),
+    `<p>[B]</p>`,
+  );
 });
 
 test("override installed by a component applies to later siblings", async () => {
@@ -392,8 +410,20 @@ test("override installed by a component applies to later siblings", async () => 
     installOverride.call(this);
     return <main>app</main>;
   }
-  await equal(<><SyncApp /><Footer /></>, `<main>app</main>[patched]`);
-  await equal(<><AsyncApp /><Footer /></>, `<main>app</main>[patched]`);
+  await equal(
+    <>
+      <SyncApp />
+      <Footer />
+    </>,
+    `<main>app</main>[patched]`,
+  );
+  await equal(
+    <>
+      <AsyncApp />
+      <Footer />
+    </>,
+    `<main>app</main>[patched]`,
+  );
 });
 
 // --- escapeEntities ---
