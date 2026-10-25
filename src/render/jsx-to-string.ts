@@ -1,5 +1,4 @@
 import { attributesToString } from "./attributes-to-string.js";
-import { createElement } from "./create-element.js";
 import { escapeHTML } from "./escape-entities.js";
 
 const VOID_TAGS = new Set([
@@ -63,20 +62,25 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
   }
 
   if (typeof jsxElement.tag === "string") {
-    const element = createElement(jsxElement);
-    if (element.tag === "") {
-      return renderChildren.call(this, element.children);
+    const tag = jsxElement.tag;
+    const children = jsxElement.props.children
+      ? Array.isArray(jsxElement.props.children)
+        ? jsxElement.props.children
+        : [jsxElement.props.children as JSX.Element]
+      : [];
+    if (tag === "") {
+      return renderChildren.call(this, children);
     } else {
-      const attributes = attributesToString(element.attributes);
+      const attributes = attributesToString(jsxElement.props);
       const separator = attributes.length ? " " : "";
 
-      if (element.children.length === 0 && VOID_TAGS.has(element.tag)) {
-        return `<${element.tag}${separator}${attributes}>`;
+      if (children.length === 0 && VOID_TAGS.has(tag)) {
+        return `<${tag}${separator}${attributes}>`;
       }
 
-      const open = `<${element.tag}${separator}${attributes}>`;
-      const close = `</${element.tag}>`;
-      const content = renderChildren.call(this, element.children);
+      const open = `<${tag}${separator}${attributes}>`;
+      const close = `</${tag}>`;
+      const content = renderChildren.call(this, children);
       return isPromise(content)
         ? content.then(($content) => open + $content + close)
         : open + content + close;

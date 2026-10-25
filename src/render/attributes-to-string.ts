@@ -1,10 +1,12 @@
-import type { Attributes } from "./create-element.js";
 import { escapeHTML } from "./escape-entities.js";
 
-export function attributesToString(attributes: Attributes): string {
+export function attributesToString(props: Record<string, unknown>): string {
   let result = "";
-  for (const attribute of attributes) {
-    const str = attributeToString(attribute[0], attribute[1]);
+  for (const key in props) {
+    if (key === "children") {
+      continue;
+    }
+    const str = attributeToString(key, props[key]);
     if (str !== "") {
       result += result !== "" ? ` ${str}` : str;
     }
