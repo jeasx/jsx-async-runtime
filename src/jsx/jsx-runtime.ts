@@ -7,6 +7,9 @@ export function createElement(
   ...children: Array<JSX.Children>
 ): JSX.Element {
   props ??= {};
+  if ("key" in props) {
+    delete props["key"]; // key is not a prop (like React)
+  }
 
   const finalChildren: JSX.Element[] = [];
 
@@ -48,7 +51,17 @@ function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
   }
 }
 
-export const jsx = createElement;
+export function jsx(
+  tag: string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>),
+  props?: {
+    [k: string]: any;
+    children?: JSX.Children;
+  },
+  _key?: unknown,
+): JSX.Element {
+  return createElement(tag, props);
+}
+
 export const jsxs = jsx;
 export const _jsx = jsx;
 export const _jsxs = jsx;

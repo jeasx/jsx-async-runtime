@@ -1,4 +1,6 @@
 import { escapeEntities, jsxToString } from "jsx-async-runtime";
+import { createElement } from "jsx-async-runtime/jsx-runtime";
+import { jsxDEV } from "jsx-async-runtime/jsx-dev-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import Headline from "./components/Headline.js";
@@ -459,3 +461,33 @@ test("promise children", () =>
     </p>,
     `<p><b>a</b>b</p>`,
   ));
+
+test("key is neither rendered as text nor as attribute", () =>
+  equal(
+    <ul>
+      {["a", "b"].map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>,
+    `<ul><li>a</li><li>b</li></ul>`,
+  ));
+
+test("key after spread is not rendered as attribute", () => {
+  const props = { id: "i" };
+  return equal(<li {...props} key="k" />, `<li id="i"></li>`);
+});
+
+test("key is not passed to components", () => {
+  const Props = (props) => JSON.stringify(Object.keys(props)) + props.children.length;
+  return equal(<Props key="k">x</Props>, `[&quot;children&quot;]1`);
+});
+
+test("key with classic createElement", () =>
+  equal(createElement("li", { key: "k", id: "i" }, "x"), `<li id="i">x</li>`));
+
+test("key and source with jsxDEV", async () => {
+  const Children = (props) => String(props.children.length);
+  const source = { fileName: "f.jsx", lineNumber: 1, columnNumber: 1 };
+  await equal(jsxDEV("li", { children: "x" }, "k", false, source, {}), `<li>x</li>`);
+  await equal(jsxDEV(Children, { children: "x" }, "k", false, source, {}), `1`);
+});
