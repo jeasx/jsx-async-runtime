@@ -544,3 +544,10 @@ test("key and source with jsxDEV", async () => {
   await equal(jsxDEV("li", { children: "x" }, "k", false, source, {}), `<li>x</li>`);
   await equal(jsxDEV(Children, { children: "x" }, "k", false, source, {}), `1`);
 });
+
+test("createElement does not change the passed props", async () => {
+  const props = { id: "x", key: "k" };
+  await equal(createElement("li", props, "a"), `<li id="x">a</li>`);
+  await equal(createElement("li", props, "a"), `<li id="x">a</li>`);
+  assert.deepStrictEqual(props, { id: "x", key: "k" });
+});

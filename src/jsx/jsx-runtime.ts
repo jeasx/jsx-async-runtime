@@ -6,7 +6,19 @@ export function createElement(
   },
   ...children: Array<JSX.Children>
 ): JSX.Element {
-  props ??= {};
+  // Copy props, so the caller's object is never changed.
+  return _createElement(tag, { ...props }, children);
+}
+
+/**
+ * Creates the element and changes the given props in place.
+ * jsx() passes props directly, since compiled JSX always creates a fresh object.
+ */
+function _createElement(
+  tag: Parameters<typeof createElement>[0],
+  props: NonNullable<Parameters<typeof createElement>[1]>,
+  children: Array<JSX.Children>,
+): JSX.Element {
   if ("key" in props) {
     delete props["key"]; // key is not a prop (like React)
   }
@@ -57,7 +69,7 @@ export function jsx(
   },
   _key?: unknown,
 ): JSX.Element {
-  return createElement(tag, props);
+  return _createElement(tag, props ?? {}, []);
 }
 
 export const jsxs = jsx;
