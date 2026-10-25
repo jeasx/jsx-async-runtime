@@ -57,10 +57,6 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
     return jsxElement.html;
   }
 
-  if (jsxElement.type === "textNode") {
-    return $jsxEscapeHTML ? escapeHTML(jsxElement.text) : jsxElement.text;
-  }
-
   if (typeof jsxElement.tag === "string") {
     const tag = jsxElement.tag;
     const children = jsxElement.props.children

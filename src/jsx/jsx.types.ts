@@ -9,11 +9,6 @@ type Props = {
   children?: JSX.Children;
 };
 
-type TextNode = {
-  type: "textNode";
-  text: string;
-};
-
 type Html = {
   html: string;
 };
@@ -23,7 +18,6 @@ declare global {
     type AsyncElement = Promise<SyncElement>;
     type SyncElement =
       | Tag
-      | TextNode
       | Html
       | null
       | undefined

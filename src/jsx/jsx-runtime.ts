@@ -33,11 +33,9 @@ export function createElement(
 function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
   switch (typeof children) {
     case "string":
-      accumulator.push({ type: "textNode", text: children });
-      break;
     case "number":
     case "bigint":
-      accumulator.push({ type: "textNode", text: children.toString() });
+      accumulator.push(children);
       break;
     case "object":
       if (Array.isArray(children)) {

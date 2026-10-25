@@ -7,6 +7,7 @@
 - Promises passed as element children (e.g. `<div>{promise}</div>`) are now awaited and rendered instead of being dropped
 - A `this.jsxToString` override installed by a component now also applies to its following siblings (previously only to their descendants)
 - Fixed `key` attribute handling: the key is no longer rendered as text child (automatic runtime), the dev runtime no longer adds its source info as children, and `key` is neither rendered as HTML attribute nor passed to components anymore
+- Text children are kept as plain strings, numbers and bigints instead of being wrapped in `{ type: "textNode", text }` objects. The `textNode` element type was removed and is no longer rendered. Code that creates or inspects text nodes (e.g. in `props.children` or a `this.jsxToString` override) needs to use plain strings instead
 - Function and symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of rendering their source code
 - jsx.types: `aria-*` attributes no longer accept booleans, because `true` renders as an empty attribute (which ARIA treats as unset) and `false` drops the attribute instead of setting `"false"`. Use string values instead (e.g. `aria-hidden="true"`)
 - jsx.types: `contenteditable`, `spellcheck`, `translate` and `writingsuggestions` accept `true` but no longer `false`, because `false` drops the attribute (inheriting from the parent) instead of setting `"false"`/`"no"`
