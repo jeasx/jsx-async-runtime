@@ -33,11 +33,11 @@ function attributeToString(key: string, value: any): string {
   if (typeof value === "object") {
     if (key === "style") {
       const styles = styleToString(value);
-      return styles === "" ? "" : `style="${escapeHTML(styles)}"`;
+      return styles && `style="${escapeHTML(styles)}"`;
     }
     if (key === "class") {
       const classes = classToString(value);
-      return classes === "" ? "" : `class="${escapeHTML(classes)}"`;
+      return classes && `class="${escapeHTML(classes)}"`;
     }
     return `${key}="${escapeHTML(JSON.stringify(value))}"`;
   }
