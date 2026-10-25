@@ -344,7 +344,7 @@ test("sync component error rejects", () => {
   const Broken = () => {
     throw new Error("boom");
   };
-  return assert.rejects(jsxToString.call({}, <Broken />), /boom/);
+  return assert.rejects(async () => jsxToString.call({}, <Broken />), /boom/);
 });
 
 test("async component error rejects", () => {
@@ -372,6 +372,26 @@ test("custom jsxToString via context", async () => {
     },
   };
   assert.strictEqual(await jsxToString.call(ctx, <p><b /></p>), `<p>[B]</p>`);
+});
+
+test("override installed by a component applies to later siblings", async () => {
+  const Footer = () => <footer>f</footer>;
+  function installOverride() {
+    const $jsxToString = this.jsxToString ?? jsxToString;
+    this.jsxToString = function (element) {
+      return element?.tag === Footer ? "[patched]" : $jsxToString.call(this, element);
+    };
+  }
+  function SyncApp() {
+    installOverride.call(this);
+    return <main>app</main>;
+  }
+  async function AsyncApp() {
+    installOverride.call(this);
+    return <main>app</main>;
+  }
+  await equal(<><SyncApp /><Footer /></>, `<main>app</main>[patched]`);
+  await equal(<><AsyncApp /><Footer /></>, `<main>app</main>[patched]`);
 });
 
 // --- escapeEntities ---
@@ -412,3 +432,30 @@ test("bigint child", () => equal(<p>{10n}</p>, `<p>10</p>`));
 
 test("array with promises", () =>
   equal([Promise.resolve(<b>a</b>), Promise.resolve("b")], `<b>a</b>b`));
+
+// Thenables whose then() doesn't return a promise.
+const thenable = (value) => ({ then: (resolve) => void resolve(value) });
+
+test("thenable children", () =>
+  equal(
+    <p>
+      {thenable(<b>a</b>)}
+      {[thenable("b")]}
+    </p>,
+    `<p><b>a</b>b</p>`,
+  ));
+
+test("component returning a thenable", () => {
+  /** @type {any} */
+  const Thenable = () => thenable(<i>t</i>);
+  return equal(<Thenable />, `<i>t</i>`);
+});
+
+test("promise children", () =>
+  equal(
+    <p>
+      {Promise.resolve(<b>a</b>)}
+      {[Promise.resolve("b")]}
+    </p>,
+    `<p><b>a</b>b</p>`,
+  ));

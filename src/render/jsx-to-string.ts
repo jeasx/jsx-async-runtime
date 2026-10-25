@@ -21,15 +21,16 @@ const VOID_TAGS = new Set([
 
 /**
  * Renders a JSX element to a string representation.
+ * This function runs synchronously as long as possible and only returns a promise
+ * when an async component (or promise child) is encountered.
  *
  * @param {any} this - The (optional) 'this' context of the function.
  * @param {JSX.Element} jsxElement - The JSX element to render.
- * @return {Promise<string>} The string representation of the rendered JSX element.
+ * @return {string | Promise<string>} The string representation of the rendered JSX element.
  */
-export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<string> {
+export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
   assertSync(jsxElement);
 
-  const $jsxToString = this?.jsxToString ?? jsxToString;
   const $jsxEscapeHTML = this?.jsxEscapeHTML ?? true;
 
   if (jsxElement === null) {
@@ -50,11 +51,7 @@ export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<s
   }
 
   if (Array.isArray(jsxElement)) {
-    const result: string[] = [];
-    for (const child of jsxElement) {
-      result.push(await $jsxToString.call(this, await child));
-    }
-    return result.join("");
+    return renderChildren.call(this, jsxElement);
   }
 
   if ("html" in jsxElement) {
@@ -68,11 +65,7 @@ export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<s
   if (typeof jsxElement.tag === "string") {
     const element = createElement(jsxElement);
     if (element.tag === "") {
-      const result: string[] = [];
-      for (const child of element.children) {
-        result.push(await $jsxToString.call(this, child));
-      }
-      return result.join("");
+      return renderChildren.call(this, element.children);
     } else {
       const attributes = attributesToString(element.attributes);
       const separator = attributes.length ? " " : "";
@@ -81,21 +74,66 @@ export async function jsxToString(this: any, jsxElement: JSX.Element): Promise<s
         return `<${element.tag}${separator}${attributes}>`;
       }
 
-      const result: string[] = [];
-      for (const child of element.children) {
-        result.push(await $jsxToString.call(this, child));
-      }
-
-      return `<${element.tag}${separator}${attributes}>${result.join("")}</${element.tag}>`;
+      const open = `<${element.tag}${separator}${attributes}>`;
+      const close = `</${element.tag}>`;
+      const content = renderChildren.call(this, element.children);
+      return isPromise(content)
+        ? content.then(($content) => open + $content + close)
+        : open + content + close;
     }
   }
 
   if (typeof jsxElement.tag === "function") {
-    const jsxElementTag = await jsxElement.tag.call(this, jsxElement.props);
-    return await $jsxToString.call(this, jsxElementTag);
+    const jsxElementTag = jsxElement.tag.call(this, jsxElement.props);
+    return isPromise(jsxElementTag)
+      ? Promise.resolve(jsxElementTag).then((tag) => $jsxToString.call(this, tag))
+      : $jsxToString.call(this, jsxElementTag);
   }
 
   return "";
+}
+
+/**
+ * Renders children in order. Stays sync until a child returns a promise,
+ * then continues the remaining children sequentially.
+ */
+function renderChildren(this: any, children: JSX.Element[]): string | Promise<string> {
+  const result = [];
+  for (const child of children) {
+    const pendingChild = isPromise(child)
+      ? Promise.resolve(child).then(($child) => $jsxToString.call(this, $child))
+      : $jsxToString.call(this, child);
+    if (isPromise(pendingChild)) {
+      return renderChildrenAsync.call(this, children, pendingChild, result);
+    }
+    result.push(pendingChild);
+  }
+  return result.join("");
+}
+
+/**
+ * Continues rendering after the first async child. `result` holds one entry
+ * per rendered child, so `result.length` is the index of the next child.
+ */
+async function renderChildrenAsync(
+  this: any,
+  children: JSX.Element[],
+  pendingChild: PromiseLike<string>,
+  result: string[],
+): Promise<string> {
+  result.push(await pendingChild);
+  while (result.length < children.length) {
+    result.push(await $jsxToString.call(this, await children[result.length]));
+  }
+  return result.join("");
+}
+
+function $jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
+  return (this?.jsxToString ?? jsxToString).call(this, jsxElement);
+}
+
+function isPromise(value: unknown): value is PromiseLike<any> {
+  return typeof (value as PromiseLike<unknown> | null)?.then === "function";
 }
 
 function assertSync(_e: JSX.Element): asserts _e is JSX.SyncElement {}
