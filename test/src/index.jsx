@@ -296,6 +296,12 @@ test("style skips null, undefined and false values", () =>
 test("style with only skipped values", () =>
   equal(<div style={{ color: null, margin: undefined, display: false }} />, `<div></div>`));
 
+test("function and symbol attributes are skipped", () => {
+  /** @type {any} */
+  const props = { onclick: () => alert(1), "data-s": Symbol("s") };
+  return equal(<button {...props} type="button" />, `<button type="button"></button>`);
+});
+
 test("json array attribute", () =>
   equal(<div data-x={[1, "a"]} />, `<div data-x="[1,&quot;a&quot;]"></div>`));
 

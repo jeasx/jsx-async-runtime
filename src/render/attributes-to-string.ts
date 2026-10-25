@@ -21,7 +21,13 @@ function attributeToString(key: string, value: any): string {
   if (value === true) {
     return key;
   }
-  if (value === false || value === null || value === undefined) {
+  if (
+    value === false ||
+    value === null ||
+    value === undefined ||
+    typeof value === "function" ||
+    typeof value === "symbol"
+  ) {
     return "";
   }
   if (typeof value === "object") {
