@@ -29,8 +29,13 @@ const CANCELLED = Symbol("cancelled");
 export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
   // Collect all markup in the buffer, nothing is sent early.
   const writer: Writer = { buffer: "", cancelled: false, flush() {} };
-  const pending = renderElement.call(this, jsxElement, writer);
-  return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;
+  try {
+    const pending = renderElement.call(this, jsxElement, writer);
+    return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;
+  } catch (error) {
+    // Report errors the same way, whether rendering was sync or async.
+    return Promise.reject(error);
+  }
 }
 
 /**
@@ -226,10 +231,16 @@ async function renderChildrenAsync(
   await pendingChild;
   for (; index < children.length; index++) {
     const child = children[index]!;
+    let element: JSX.Element = child;
     if (isPromise(child)) {
       writer.flush();
+      element = await child;
     }
-    await $renderElement.call(this, await child, writer);
+    // Only wait when the child has to, so sync siblings don't cost extra microtasks.
+    const pending = $renderElement.call(this, element, writer);
+    if (isPromise(pending)) {
+      await pending;
+    }
   }
 }
 

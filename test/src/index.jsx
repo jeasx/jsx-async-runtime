@@ -440,6 +440,15 @@ test("sync component error rejects", () => {
   return assert.rejects(async () => jsxToString.call({}, <Broken />), /boom/);
 });
 
+test("sync component error is returned as rejected promise", () => {
+  const Broken = () => {
+    throw new Error("boom");
+  };
+  const result = jsxToString.call({}, <Broken />);
+  assert.ok(result instanceof Promise);
+  return assert.rejects(result, /boom/);
+});
+
 test("async component error rejects", () => {
   const Broken = async () => {
     throw new Error("boom async");

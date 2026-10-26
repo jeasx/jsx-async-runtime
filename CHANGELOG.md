@@ -3,9 +3,7 @@
 ## Unreleased
 
 - Added #jsxToStream, which renders to a `ReadableStream<string>` and sends the markup rendered so far whenever rendering waits for an async component or promise child
-- #jsxToString and #jsxToStream share one renderer that appends all markup to a single buffer instead of joining strings per element
 - #jsxToString returns `string | Promise<string>` instead of `Promise<string>`. It renders synchronously as long as possible and only returns a promise when an async component or promise child is encountered
-- Render elements directly from their props without building an intermediate element object
 - Promises passed as element children (e.g. `<div>{promise}</div>`) are now awaited and rendered instead of being dropped
 - A `this.jsxToString` override installed by a component now also applies to its following siblings (previously only to their descendants)
 - Fixed `key` attribute handling: the key is no longer rendered as text child (automatic runtime), the dev runtime no longer adds its source info as children, and `key` is no longer rendered as HTML attribute. `key` is skipped when attributes are rendered instead of being removed from props, so element creation doesn't need to copy props. Compiled JSX passes `key` separately, so components don't receive it; via #createElement (classic runtime or `key` after a spread) it stays in the props passed to components
