@@ -13,6 +13,11 @@ type Html = {
   html: string;
 };
 
+type ClassValue =
+  | string
+  | Array<string | false | null | undefined>
+  | { [key: string]: boolean | null | undefined };
+
 declare global {
   namespace JSX {
     type AsyncElement = Promise<SyncElement>;
@@ -34,7 +39,7 @@ declare global {
       anchor?: string;
       autocapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters";
       autofocus?: "" | "autofocus" | boolean;
-      class?: string | string[] | { [key: string]: boolean };
+      class?: ClassValue;
       contenteditable?: "" | "true" | "false" | "plaintext-only" | true;
       dir?: "auto" | "rtl" | "ltr";
       draggable?: "true" | "false";
@@ -486,7 +491,7 @@ declare global {
       calcMode?: "discrete" | "linear" | "paced" | "spline";
       /** @deprecated */
       "cap-height"?: number | string;
-      class?: string | string[] | { [key: string]: boolean };
+      class?: ClassValue;
       /** @deprecated */
       clip?: "auto" | (string & {});
       "clip-path"?: "none" | (string & {});
