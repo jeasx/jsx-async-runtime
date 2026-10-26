@@ -2,22 +2,36 @@
 
 ## Unreleased
 
-- Added #jsxToStream, which renders to a `ReadableStream<string>` and sends the markup rendered so far whenever rendering waits for an async component or promise child
-- #jsxToString returns `string | Promise<string>` instead of `Promise<string>`. It renders synchronously as long as possible and only returns a promise when an async component or promise child is encountered
-- Promises passed as element children (e.g. `<div>{promise}</div>`) are now awaited and rendered instead of being dropped
-- A `this.jsxToString` override installed by a component now also applies to its following siblings (previously only to their descendants)
-- Fixed `key` attribute handling: the key is no longer rendered as text child (automatic runtime), the dev runtime no longer adds its source info as children, and `key` is no longer rendered as HTML attribute. `key` is skipped when attributes are rendered instead of being removed from props, so element creation doesn't need to copy props. Compiled JSX passes `key` separately, so components don't receive it; via #createElement (classic runtime or `key` after a spread) it stays in the props passed to components
-- Text children are kept as plain strings, numbers and bigints instead of being wrapped in `{ type: "textNode", text }` objects. The `textNode` element type was removed and is no longer rendered. Code that creates or inspects text nodes (e.g. in `props.children` or a `this.jsxToString` override) needs to use plain strings instead
-- Function and symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of rendering their source code
-- Non-plain object attribute values (e.g. `href={new URL(...)}`, `datetime={new Date()}`) are rendered via their string form instead of being JSON-encoded with surrounding quotes. Only plain objects and arrays are still JSON-encoded
-- BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as JSON strings instead of failing the render
-- #createElement no longer changes the props object passed to it. Previously it removed `key` and wrote `children` back into it, so reusing the same props object duplicated children
+### Breaking changes
+
+- #jsxToString now returns `string | Promise<string>` instead of always returning a promise. It renders synchronously and only returns a promise once it hits an async component or a promise child. `await jsxToString(...)` keeps working unchanged
+- Text children are now plain strings, numbers and bigints instead of `{ type: "textNode", text }` objects, and the `textNode` type was removed. If you read or create text nodes (e.g. in `props.children` or a `this.jsxToString` override), use plain strings instead
+- A `this.jsxToString` override set by a component now also applies to the siblings that follow it, not only to its children
+
+### New features
+
+- Added #jsxToStream, which renders to a `ReadableStream<string>`. It sends the markup rendered so far each time rendering has to wait for an async component or promise, so the browser can start displaying the page earlier
+- Promises can be used directly as children (e.g. `<div>{promise}</div>`). They are awaited and rendered instead of being silently dropped
+
+### Fixes
+
+- `key` is no longer rendered as text or as an HTML attribute, and the dev runtime no longer adds its source info as children. Components using compiled JSX don't receive `key` in their props; with #createElement (classic runtime, or `key` placed after a spread) it is still passed through
+- Event handlers and other function or symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of printing their source code into the HTML
+- Objects like `URL` or `Date` used as attribute values (e.g. `href={new URL(...)}`) render as their string value, e.g. `href="https://..."`, instead of quoted JSON. Plain objects and arrays are still JSON-encoded
+- BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail
+- #createElement no longer modifies the props object you pass in. Reusing the same props object for several elements previously duplicated their children
+
+### Security
+
 - Attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so object keys from untrusted input can't inject attributes or markup
-- Tag names that don't start with an ASCII letter or contain whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped together with their children, so tag names from untrusted input (e.g. `createElement(props.as)`) can't inject attributes or markup
-- jsx.types: `Tag.tag` is typed as `string | ((props) => JSX.Element)` instead of a function only, matching what the runtime passes
-- jsx.types: `aria-*` attributes no longer accept booleans, because `true` renders as an empty attribute (which ARIA treats as unset) and `false` drops the attribute instead of setting `"false"`. Use string values instead (e.g. `aria-hidden="true"`)
-- jsx.types: `contenteditable`, `spellcheck`, `translate` and `writingsuggestions` accept `true` but no longer `false`, because `false` drops the attribute (inheriting from the parent) instead of setting `"false"`/`"no"`
-- jsx.types: `stroke-dashadust` typo (now `stroke-dashadjust`), `foreignObject` is no longer marked as deprecated, `vkern` is marked as deprecated, `paint-order` accepts keyword combinations (e.g. `"stroke fill"`)
+- Invalid tag names (not starting with an ASCII letter, or containing the characters above) are skipped together with their children, so dynamic tags from untrusted input (e.g. `createElement(props.as)`) can't inject markup
+
+### Types (jsx.types)
+
+- `Tag.tag` is typed as `string | ((props) => JSX.Element)`, matching what the runtime actually passes
+- `aria-*` attributes only accept strings. Booleans didn't work as expected: `true` renders an empty attribute (which ARIA treats as unset) and `false` removes it. Use e.g. `aria-hidden="true"`
+- `contenteditable`, `spellcheck`, `translate` and `writingsuggestions` no longer accept `false`, because it removes the attribute (so the parent's value applies) instead of turning the feature off. Use the string value instead (e.g. `spellcheck="false"` or `translate="no"`)
+- Fixed the `stroke-dashadust` typo (now `stroke-dashadjust`), `foreignObject` is no longer marked as deprecated, `vkern` is marked as deprecated, and `paint-order` accepts keyword combinations (e.g. `"stroke fill"`)
 
 ## 2.3.0 - 2026-10-23
 
