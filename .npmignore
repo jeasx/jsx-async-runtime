@@ -1,9 +1,0 @@
-.github
-.gitignore
-.prettierrc
-.vscode
-src
-example
-test
-tsconfig.json
-CHANGELOG.md
