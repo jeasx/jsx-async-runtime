@@ -9,7 +9,8 @@ const isValidAttributeName = createNameValidator(/^[^\s"'<>/=&\x00-\x1f\x7f-\x9f
 export function attributesToString(props: Record<string, unknown>): string {
   let result = "";
   for (const key in props) {
-    if (key === "children" || !isValidAttributeName(key)) {
+    // key is not an attribute (like React).
+    if (key === "children" || key === "key" || !isValidAttributeName(key)) {
       continue;
     }
     const str = attributeToString(key, props[key]);

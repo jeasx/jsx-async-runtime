@@ -10,14 +10,13 @@ export function createElement(
   props?: Props,
   ...children: Array<JSX.Children>
 ): JSX.Element {
-  // Copy props without key, so the caller's object is never changed.
-  const { key: _key, ...propsWithoutKey } = props ?? {};
+  // Copy props, so the caller's object is never changed.
+  const $props = { ...props };
   if (children.length) {
     // Positional children come before props.children.
-    propsWithoutKey.children =
-      propsWithoutKey.children != null ? [...children, propsWithoutKey.children] : children;
+    $props.children = $props.children != null ? [...children, $props.children] : children;
   }
-  return jsx(tag, propsWithoutKey);
+  return jsx(tag, $props);
 }
 
 /**
@@ -27,18 +26,11 @@ export function createElement(
 export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
   props ??= {};
 
-  if ("key" in props) {
-    // key is not a prop (like React).
-    // Copy instead of delete, because delete makes V8 use slow objects.
-    const { key: _key, ...propsWithoutKey } = props;
-    props = propsWithoutKey;
-  }
-
-  const finalChildren: JSX.Element[] = [];
+  const $children: JSX.Element[] = [];
   if (props.children != null) {
-    mapChildren(props.children, finalChildren);
+    mapChildren(props.children, $children);
   }
-  props.children = finalChildren;
+  props.children = $children;
 
   return {
     type: "tag",
