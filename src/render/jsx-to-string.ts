@@ -177,9 +177,9 @@ function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void
       return pending.then(() => {
         writer.buffer += closeTag;
       });
-    } else {
-      writer.buffer += closeTag;
     }
+    writer.buffer += closeTag;
+    return;
   }
 
   if (typeof jsxElement.tag === "function") {
