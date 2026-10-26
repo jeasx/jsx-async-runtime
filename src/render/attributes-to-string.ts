@@ -1,4 +1,10 @@
 import { escapeHTML } from "./escape-entities.js";
+import { createNameValidator } from "./name-validator.js";
+
+// An attribute name must not be empty and must not contain characters
+// that end or break the name.
+// eslint-disable-next-line no-control-regex
+const isValidAttributeName = createNameValidator(/^[^\s"'<>/=&\x00-\x1f\x7f-\x9f]+$/);
 
 export function attributesToString(props: Record<string, unknown>): string {
   let result = "";
@@ -80,24 +86,4 @@ function classToString(obj: unknown[] | Record<string, unknown>): string {
     }
   }
   return result;
-}
-
-// Characters that end or break an HTML attribute name.
-// eslint-disable-next-line no-control-regex
-const INVALID_ATTRIBUTE_NAME = /[\s"'<>/=&\x00-\x1f\x7f-\x9f]/;
-
-const VALID_ATTRIBUTE_NAMES = new Set<string>();
-
-function isValidAttributeName(key: string): boolean {
-  if (VALID_ATTRIBUTE_NAMES.has(key)) {
-    return true;
-  }
-  if (key === "" || INVALID_ATTRIBUTE_NAME.test(key)) {
-    return false;
-  }
-  // Limit the cache (count and key length), so keys from untrusted objects can't grow it without bound
-  if (key.length <= 128 && VALID_ATTRIBUTE_NAMES.size < 1024) {
-    VALID_ATTRIBUTE_NAMES.add(key);
-  }
-  return true;
 }

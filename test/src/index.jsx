@@ -357,6 +357,26 @@ test("custom element with aria and data attributes", () =>
     `<my-element aria-label="x" data-id="1"></my-element>`,
   ));
 
+test("invalid tag names are skipped", () =>
+  equal(
+    <p>
+      {["div onmouseover=alert(1)", "div>", "x/y", "1div", "<script", "a\nb", "a\u0000"].map(
+        (tag) => createElement(tag, { id: "x" }, "child"),
+      )}
+    </p>,
+    `<p></p>`,
+  ));
+
+test("valid tag names are kept", () =>
+  equal(
+    <>
+      <my-element />
+      <my-élément />
+      <foreignObject />
+    </>,
+    `<my-element></my-element><my-élément></my-élément><foreignObject></foreignObject>`,
+  ));
+
 // --- Edge cases: components ---
 
 test("component returning null", () => {

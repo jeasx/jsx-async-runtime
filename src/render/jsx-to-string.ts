@@ -1,5 +1,6 @@
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
+import { createNameValidator } from "./name-validator.js";
 
 const VOID_TAGS = new Set([
   "area",
@@ -17,6 +18,11 @@ const VOID_TAGS = new Set([
   "track",
   "wbr",
 ]);
+
+// A tag must start with an ASCII letter and must not contain characters
+// that end the tag name or break the markup.
+// eslint-disable-next-line no-control-regex
+const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
 
 /**
  * Renders a JSX element to a string representation.
@@ -67,6 +73,9 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
     if (tag === "") {
       return renderChildren.call(this, children);
     } else {
+      if (!isValidTagName(tag)) {
+        return "";
+      }
       const attributes = attributesToString(jsxElement.props);
       const separator = attributes.length ? " " : "";
 
