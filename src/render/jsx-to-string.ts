@@ -125,6 +125,12 @@ const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x
  * when an async component (or promise child) is encountered.
  */
 function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void | Promise<void> {
+  // E.g. a promise passed directly to jsxToString.
+  if (isPromise(jsxElement)) {
+    writer.flush();
+    return Promise.resolve(jsxElement).then((element) => renderElement.call(this, element, writer));
+  }
+
   assertSync(jsxElement);
 
   if (jsxElement === null) {
@@ -151,7 +157,9 @@ function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void
   }
 
   if ("html" in jsxElement) {
-    writer.buffer += jsxElement.html;
+    if (isRawHtml(jsxElement)) {
+      writer.buffer += jsxElement.html;
+    }
     return;
   }
 
@@ -261,6 +269,23 @@ function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): voi
     });
   }
   writer.buffer += result;
+}
+
+/**
+ * Only an object with a string `html` as its single key is raw markup. Other
+ * objects that happen to have an `html` key (e.g. a record from a database)
+ * render nothing, so their content is never output unescaped by accident.
+ */
+function isRawHtml(value: object): value is { html: string } {
+  if (!Object.hasOwn(value, "html") || typeof (value as { html: unknown }).html !== "string") {
+    return false;
+  }
+  for (const key in value) {
+    if (key !== "html") {
+      return false;
+    }
+  }
+  return true;
 }
 
 function isPromise(value: unknown): value is PromiseLike<any> {
