@@ -89,7 +89,6 @@ const INVALID_ATTRIBUTE_NAME = /[\s"'<>/=&\x00-\x1f\x7f-\x9f]/;
 const VALID_ATTRIBUTE_NAMES = new Set<string>();
 
 function isValidAttributeName(key: string): boolean {
-  console.log(key);
   if (VALID_ATTRIBUTE_NAMES.has(key)) {
     return true;
   }
