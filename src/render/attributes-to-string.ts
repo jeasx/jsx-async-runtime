@@ -48,10 +48,14 @@ function attributeToString(key: string, value: any): string {
     }
     const prototype = Object.getPrototypeOf(value);
     if (!prototype || prototype === Object.prototype || Array.isArray(value)) {
-      return `${key}="${escapeHTML(JSON.stringify(value))}"`;
+      return `${key}="${escapeHTML(JSON.stringify(value, valueToStringTransformer))}"`;
     }
   }
   return `${key}="${escapeHTML(String(value))}"`;
+}
+
+function valueToStringTransformer(_key: string, value: unknown): unknown {
+  return typeof value === "bigint" ? String(value) : value;
 }
 
 function styleToString(obj: Record<string, unknown>): string {

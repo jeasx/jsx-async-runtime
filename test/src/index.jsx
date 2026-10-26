@@ -314,6 +314,14 @@ test("function and symbol attributes are skipped", () => {
 test("json array attribute", () =>
   equal(<div data-x={[1, "a"]} />, `<div data-x="[1,&quot;a&quot;]"></div>`));
 
+test("bigint in json attribute is encoded as string", () =>
+  equal(
+    <div data-x={{ id: 9007199254740993n, list: [1n] }} />,
+    `<div data-x="{&quot;id&quot;:&quot;9007199254740993&quot;,&quot;list&quot;:[&quot;1&quot;]}"></div>`,
+  ));
+
+test("bigint attribute", () => equal(<div data-n={10n} />, `<div data-n="10"></div>`));
+
 test("URL attribute uses its string form", () => {
   /** @type {any} */
   const url = new URL("https://x.dev/a?b=1&c=2");
