@@ -1,4 +1,10 @@
-import { escapeEntities, jsxToStream, jsxToString } from "jsx-async-runtime";
+import {
+  createElement as classicCreateElement,
+  escapeEntities,
+  Fragment,
+  jsxToStream,
+  jsxToString,
+} from "jsx-async-runtime";
 import { jsxDEV } from "jsx-async-runtime/jsx-dev-runtime";
 import { createElement } from "jsx-async-runtime/jsx-runtime";
 import { strict as assert } from "node:assert";
@@ -269,6 +275,24 @@ test("function value", () => equal(() => "x", ``));
 test("unicode text is not escaped", () => equal(<p>Grüße 🚀 ©</p>, `<p>Grüße 🚀 ©</p>`));
 
 test("empty html object", () => equal(<p>{{ html: "" }}</p>, `<p></p>`));
+
+test("object with html and other keys is not rendered", () =>
+  equal(<p>{{ html: "<script>x</script>", title: "Post" }}</p>, `<p></p>`));
+
+test("object with inherited html key is not rendered", () =>
+  equal(<p>{Object.create({ html: "<b>x</b>" })}</p>, `<p></p>`));
+
+test("html object with non-string value is not rendered", () =>
+  equal(
+    <p>
+      {{ html: null }}
+      {{ html: undefined }}
+      {{ html: 5 }}
+      {{ html: ["<b>", "x"] }}
+      {{ html: { toString: () => "<b>x</b>" } }}
+    </p>,
+    `<p></p>`,
+  ));
 
 test("children passed as prop", () => equal(<div {...{ children: "x" }} />, `<div>x</div>`));
 
@@ -657,7 +681,6 @@ test("array with promises", () =>
   equal([Promise.resolve(<b>a</b>), Promise.resolve("b")], `<b>a</b>b`));
 
 // Thenables whose then() doesn't return a promise.
-// eslint-disable-next-line unicorn/no-thenable
 const thenable = (value) => ({ then: (resolve) => void resolve(value) });
 
 test("thenable children", () =>
@@ -684,6 +707,19 @@ test("promise children", () =>
     `<p><b>a</b>b</p>`,
   ));
 
+test("promise as top-level element", () => equal(Promise.resolve(<p>a</p>), `<p>a</p>`));
+
+test("thenable as top-level element", () => equal(thenable(<p>a</p>), `<p>a</p>`));
+
+test("promise resolving to a promise", () =>
+  equal(
+    <p>{Promise.resolve({ then: (resolve) => resolve(Promise.resolve("a")) })}</p>,
+    `<p>a</p>`,
+  ));
+
+test("rejected top-level promise", () =>
+  assert.rejects(() => jsxToString.call({}, Promise.reject(new Error("boom"))), /boom/));
+
 test("key is neither rendered as text nor as attribute", () =>
   equal(
     <ul>
@@ -703,6 +739,12 @@ test("key is not passed to components", () => {
   const Props = (props) => JSON.stringify(Object.keys(props)) + props.children.length;
   return equal(<Props key="k">x</Props>, `[&quot;children&quot;]1`);
 });
+
+test("Fragment from main entry with createElement", () =>
+  equal(
+    classicCreateElement(Fragment, null, classicCreateElement("b", null, "a"), "b"),
+    `<b>a</b>b`,
+  ));
 
 test("key with classic createElement", () =>
   equal(createElement("li", { key: "k", id: "i" }, "x"), `<li id="i">x</li>`));
