@@ -26,7 +26,6 @@
 ### Security
 
 - Only objects with `html` as their single key are rendered as raw markup. Other objects that happen to have an `html` key (e.g. a database record like `{ html, title }` passed as child) render nothing instead of outputting their `html` value unescaped. `html` values that aren't strings (e.g. `null`, `undefined`, numbers, arrays or objects) render nothing instead of their string form
-
 - Attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so object keys from untrusted input can't inject attributes or markup
 - Invalid tag names (not starting with an ASCII letter, or containing the characters above) are skipped together with their children, so dynamic tags from untrusted input (e.g. `createElement(props.as)`) can't inject markup
 
