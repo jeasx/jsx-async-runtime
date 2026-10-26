@@ -12,6 +12,7 @@
 
 - Added #jsxToStream, which renders to a `ReadableStream<string>`. It sends the markup rendered so far each time rendering has to wait for an async component or promise, so the browser can start displaying the page earlier
 - Promises can be used directly as children (e.g. `<div>{promise}</div>`). They are awaited and rendered instead of being silently dropped
+- `Fragment` is exported from the main entry, next to #createElement, so the classic runtime can be used with a single import (e.g. `import { createElement, Fragment } from "jsx-async-runtime"`)
 
 ### Fixes
 
@@ -19,9 +20,12 @@
 - Event handlers and other function or symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of printing their source code into the HTML
 - Objects like `URL` or `Date` used as attribute values (e.g. `href={new URL(...)}`) render as their string value, e.g. `href="https://..."`, instead of quoted JSON. Plain objects and arrays are still JSON-encoded
 - BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail
+- A promise passed directly to #jsxToString or #jsxToStream (e.g. `jsxToString(loadPage())`) is awaited and rendered instead of rendering an empty string
 - #createElement no longer modifies the props object you pass in. Reusing the same props object for several elements previously duplicated their children
 
 ### Security
+
+- Only objects with `html` as their single key are rendered as raw markup. Other objects that happen to have an `html` key (e.g. a database record like `{ html, title }` passed as child) render nothing instead of outputting their `html` value unescaped. `html` values that aren't strings (e.g. `null`, `undefined`, numbers, arrays or objects) render nothing instead of their string form
 
 - Attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so object keys from untrusted input can't inject attributes or markup
 - Invalid tag names (not starting with an ASCII letter, or containing the characters above) are skipped together with their children, so dynamic tags from untrusted input (e.g. `createElement(props.as)`) can't inject markup
@@ -29,6 +33,7 @@
 ### Types (jsx.types)
 
 - `Tag.tag` is typed as `string | ((props) => JSX.Element)`, matching what the runtime actually passes
+- `class` accepts falsy values, matching what the runtime already skips: arrays may contain `false`, `null` and `undefined` (e.g. `class={["a", cond && "b"]}`), and object values may be `null` or `undefined` (e.g. `class={{ active: user?.isActive }}`)
 - `aria-*` attributes only accept strings. Booleans didn't work as expected: `true` renders an empty attribute (which ARIA treats as unset) and `false` removes it. Use e.g. `aria-hidden="true"`
 - `contenteditable`, `spellcheck`, `translate` and `writingsuggestions` no longer accept `false`, because it removes the attribute (so the parent's value applies) instead of turning the feature off. Use the string value instead (e.g. `spellcheck="false"` or `translate="no"`)
 - Fixed the `stroke-dashadust` typo (now `stroke-dashadjust`), `foreignObject` is no longer marked as deprecated, `vkern` is marked as deprecated, and `paint-order` accepts keyword combinations (e.g. `"stroke fill"`)
