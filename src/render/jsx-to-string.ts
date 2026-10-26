@@ -2,6 +2,74 @@ import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
 import { createNameValidator } from "./name-validator.js";
 
+/**
+ * Receives the rendered markup. Markup is appended to `buffer`.
+ * `flush` is called before rendering waits for a promise, so a writer
+ * can send the markup rendered so far (or ignore it to collect a string).
+ */
+type Writer = {
+  buffer: string;
+  flush(): void;
+};
+
+/**
+ * Renders a JSX element to a string.
+ * Runs synchronously as long as possible and only returns a promise
+ * when an async component (or promise child) is encountered.
+ *
+ * @param this - Optional context passed to all components (e.g. `jsxToString.call({}, jsx)`).
+ * @param jsxElement - The JSX element to render.
+ * @return The rendered markup, or a promise of it when rendering had to wait.
+ */
+export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
+  // Collect all markup in the buffer, nothing is sent early.
+  const writer: Writer = { buffer: "", flush() {} };
+  const pending = renderElement.call(this, jsxElement, writer);
+  return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;
+}
+
+/**
+ * Renders a JSX element to a stream of strings.
+ * Markup rendered so far is sent as a chunk whenever rendering waits
+ * for an async component (or promise child).
+ *
+ * @param this - Optional context passed to all components (e.g. `jsxToStream.call({}, jsx)`).
+ * @param jsxElement - The JSX element to render.
+ * @return A stream of markup chunks. It errors if a component throws.
+ */
+export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<string> {
+  // eslint-disable-next-line typescript/no-this-alias
+  const context = this;
+  return new ReadableStream<string>({
+    start(controller) {
+      const writer: Writer = {
+        buffer: "",
+        flush() {
+          if (this.buffer !== "") {
+            controller.enqueue(this.buffer);
+            this.buffer = "";
+          }
+        },
+      };
+      const done = () => {
+        writer.flush();
+        controller.close();
+      };
+      const fail = (error: unknown) => controller.error(error);
+      try {
+        const pending = renderElement.call(context, jsxElement, writer);
+        if (isPromise(pending)) {
+          pending.then(done, fail);
+        } else {
+          done();
+        }
+      } catch (error) {
+        fail(error);
+      }
+    },
+  });
+}
+
 const VOID_TAGS = new Set([
   "area",
   "base",
@@ -25,42 +93,39 @@ const VOID_TAGS = new Set([
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
 
 /**
- * Renders a JSX element to a string representation.
- * This function runs synchronously as long as possible and only returns a promise
+ * Renders a JSX element into the writer.
+ * Runs synchronously as long as possible and only returns a promise
  * when an async component (or promise child) is encountered.
- *
- * @param {any} this - The (optional) 'this' context of the function.
- * @param {JSX.Element} jsxElement - The JSX element to render.
- * @return {string | Promise<string>} The string representation of the rendered JSX element.
  */
-export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
+function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void | Promise<void> {
   assertSync(jsxElement);
 
-  const $jsxEscapeHTML = this?.jsxEscapeHTML ?? true;
-
   if (jsxElement === null) {
-    return "";
+    return;
   }
 
   switch (typeof jsxElement) {
     case "string":
-      return $jsxEscapeHTML ? escapeHTML(jsxElement) : jsxElement;
+      writer.buffer += (this?.jsxEscapeHTML ?? true) ? escapeHTML(jsxElement) : jsxElement;
+      return;
     case "bigint":
     case "number":
-      return String(jsxElement);
+      writer.buffer += String(jsxElement);
+      return;
     case "boolean":
     case "function":
     case "symbol":
     case "undefined":
-      return "";
+      return;
   }
 
   if (Array.isArray(jsxElement)) {
-    return renderChildren.call(this, jsxElement);
+    return renderChildren.call(this, jsxElement, writer);
   }
 
   if ("html" in jsxElement) {
-    return jsxElement.html;
+    writer.buffer += jsxElement.html;
+    return;
   }
 
   if (typeof jsxElement.tag === "string") {
@@ -71,74 +136,94 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
         : [jsxElement.props.children as JSX.Element]
       : [];
     if (tag === "") {
-      return renderChildren.call(this, children);
+      return renderChildren.call(this, children, writer);
+    }
+    if (!isValidTagName(tag)) {
+      return;
+    }
+    const attributes = attributesToString(jsxElement.props);
+    const openTag = attributes.length ? `<${tag} ${attributes}>` : `<${tag}>`;
+    writer.buffer += openTag;
+
+    if (children.length === 0 && VOID_TAGS.has(tag)) {
+      return;
+    }
+
+    const closeTag = `</${tag}>`;
+    const pending = renderChildren.call(this, children, writer);
+    if (isPromise(pending)) {
+      return pending.then(() => {
+        writer.buffer += closeTag;
+      });
     } else {
-      if (!isValidTagName(tag)) {
-        return "";
-      }
-      const attributes = attributesToString(jsxElement.props);
-      const separator = attributes.length ? " " : "";
-
-      if (children.length === 0 && VOID_TAGS.has(tag)) {
-        return `<${tag}${separator}${attributes}>`;
-      }
-
-      const open = `<${tag}${separator}${attributes}>`;
-      const close = `</${tag}>`;
-      const content = renderChildren.call(this, children);
-      return isPromise(content)
-        ? content.then(($content) => open + $content + close)
-        : open + content + close;
+      writer.buffer += closeTag;
     }
   }
 
   if (typeof jsxElement.tag === "function") {
     const jsxElementTag = jsxElement.tag.call(this, jsxElement.props);
-    return isPromise(jsxElementTag)
-      ? Promise.resolve(jsxElementTag).then((tag) => $jsxToString.call(this, tag))
-      : $jsxToString.call(this, jsxElementTag);
+    if (isPromise(jsxElementTag)) {
+      writer.flush();
+      return Promise.resolve(jsxElementTag).then((tag) => $renderElement.call(this, tag, writer));
+    }
+    return $renderElement.call(this, jsxElementTag, writer);
   }
-
-  return "";
 }
 
 /**
- * Renders children in order. Stays sync until a child returns a promise,
+ * Renders children in order. Stays sync until a child has to wait,
  * then continues the remaining children sequentially.
  */
-function renderChildren(this: any, children: JSX.Element[]): string | Promise<string> {
-  const result = [];
-  for (const child of children) {
-    const pendingChild = isPromise(child)
-      ? Promise.resolve(child).then(($child) => $jsxToString.call(this, $child))
-      : $jsxToString.call(this, child);
-    if (isPromise(pendingChild)) {
-      return renderChildrenAsync.call(this, children, pendingChild, result);
+function renderChildren(this: any, children: JSX.Element[], writer: Writer): void | Promise<void> {
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i]!;
+    let pending: void | Promise<void>;
+    if (isPromise(child)) {
+      writer.flush();
+      pending = Promise.resolve(child).then(($child) => $renderElement.call(this, $child, writer));
+    } else {
+      pending = $renderElement.call(this, child, writer);
     }
-    result.push(pendingChild);
+    if (isPromise(pending)) {
+      return renderChildrenAsync.call(this, children, i + 1, pending, writer);
+    }
   }
-  return result.join("");
 }
 
-/**
- * Continues rendering after the first async child. `result` holds one entry
- * per rendered child, so `result.length` is the index of the next child.
- */
 async function renderChildrenAsync(
   this: any,
   children: JSX.Element[],
-  pendingChild: PromiseLike<string>,
-  result: string[],
-): Promise<string> {
-  result.push(await pendingChild);
-  while (result.length < children.length) {
-    result.push(await $jsxToString.call(this, await children[result.length]));
+  index: number,
+  pendingChild: Promise<void>,
+  writer: Writer,
+): Promise<void> {
+  await pendingChild;
+  for (; index < children.length; index++) {
+    const child = children[index]!;
+    if (isPromise(child)) {
+      writer.flush();
+    }
+    await $renderElement.call(this, await child, writer);
   }
-  return result.join("");
 }
 
-function $jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
-  return (this?.jsxToString ?? jsxToString).call(this, jsxElement);
+/**
+ * Renders a nested element, honoring a `this.jsxToString` override.
+ * The override returns a string, which is appended to the writer.
+ */
+function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void | Promise<void> {
+  const $jsxToString = this?.jsxToString;
+  if (!$jsxToString) {
+    return renderElement.call(this, jsxElement, writer);
+  }
+  const result = $jsxToString.call(this, jsxElement);
+  if (isPromise(result)) {
+    writer.flush();
+    return Promise.resolve(result).then(($result) => {
+      writer.buffer += $result;
+    });
+  }
+  writer.buffer += result;
 }
 
 function isPromise(value: unknown): value is PromiseLike<any> {

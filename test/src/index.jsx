@@ -1,4 +1,4 @@
-import { escapeEntities, jsxToString } from "jsx-async-runtime";
+import { escapeEntities, jsxToStream, jsxToString } from "jsx-async-runtime";
 import { jsxDEV } from "jsx-async-runtime/jsx-dev-runtime";
 import { createElement } from "jsx-async-runtime/jsx-runtime";
 import { strict as assert } from "node:assert";
@@ -10,6 +10,15 @@ import Timeout from "./components/Timeout.js";
 
 async function equal(jsx, str) {
   assert.strictEqual(await jsxToString.call({}, jsx), str);
+  assert.strictEqual((await streamToChunks(jsxToStream.call({}, jsx))).join(""), str);
+}
+
+async function streamToChunks(stream) {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return chunks;
 }
 
 test("fragments", () =>
@@ -498,6 +507,64 @@ test("override installed by a component applies to later siblings", async () => 
   );
 });
 
+// --- jsxToStream ---
+
+test("stream sends sync markup as one chunk", async () =>
+  assert.deepStrictEqual(
+    await streamToChunks(
+      jsxToStream(
+        <p>
+          <b>a</b>
+          {"b"}
+        </p>,
+      ),
+    ),
+    [`<p><b>a</b>b</p>`],
+  ));
+
+test("stream flushes before waiting for async components", async () =>
+  assert.deepStrictEqual(
+    await streamToChunks(
+      jsxToStream.call(
+        {},
+        <main>
+          <h1>Title</h1>
+          <Timeout>a</Timeout>
+          <hr />
+          {Promise.resolve("b")}
+          <footer />
+        </main>,
+      ),
+    ),
+    [`<main><h1>Title</h1>`, `<div>a</div><hr>`, `b<footer></footer></main>`],
+  ));
+
+test("stream of empty element closes without chunks", async () =>
+  assert.deepStrictEqual(await streamToChunks(jsxToStream(<></>)), []));
+
+test("stream errors on sync component error", () => {
+  const Broken = () => {
+    throw new Error("boom");
+  };
+  return assert.rejects(streamToChunks(jsxToStream.call({}, <Broken />)), /boom/);
+});
+
+test("stream errors after sending markup rendered before an async error", async () => {
+  const Broken = async () => {
+    throw new Error("boom async");
+  };
+  const reader = jsxToStream
+    .call(
+      {},
+      <p>
+        a<Broken />
+      </p>,
+    )
+    .getReader();
+  assert.deepStrictEqual(await reader.read(), { done: false, value: "<p>a" });
+  await assert.rejects(reader.read(), /boom async/);
+});
+
 // --- escapeEntities ---
 
 test("escapeEntities escapes all special characters", () =>
@@ -538,6 +605,7 @@ test("array with promises", () =>
   equal([Promise.resolve(<b>a</b>), Promise.resolve("b")], `<b>a</b>b`));
 
 // Thenables whose then() doesn't return a promise.
+// eslint-disable-next-line unicorn/no-thenable
 const thenable = (value) => ({ then: (resolve) => void resolve(value) });
 
 test("thenable children", () =>

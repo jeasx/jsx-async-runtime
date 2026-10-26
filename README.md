@@ -105,6 +105,28 @@ export default function () {
 }
 ```
 
+## Streaming
+
+Instead of waiting for the complete document, you can stream the markup with `jsxToStream`. It renders in the same order as `jsxToString`, but returns a `ReadableStream<string>`. Markup rendered so far is sent as a chunk whenever rendering waits for an async component, so the browser can start loading styles and scripts from the `<head>` while slow data is still being fetched.
+
+```jsx
+import { jsxToStream } from "jsx-async-runtime";
+import { createServer } from "node:http";
+import { Readable } from "node:stream";
+
+createServer((request, response) => {
+  response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  // Use jsxToStream#call with {} to create a 'this' context
+  Readable.fromWeb(jsxToStream.call({}, <App />)).pipe(response);
+}).listen(3000);
+```
+
+Things to keep in mind:
+
+- Once a chunk is sent, it can't be changed. If a component throws, the stream ends with an error after the chunks already sent, so the response can't switch to an error page anymore.
+- Patterns that change the markup after rendering (like the head unification in the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example)) don't work with streaming.
+- A `this.jsxToString` override is still honored, but returns a string, so everything it renders is sent as one chunk.
+
 ## Example project
 
 You can study the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) to learn more about all existing features. Here is a shortened version to give you the idea:
