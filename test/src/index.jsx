@@ -322,6 +322,35 @@ test("null-prototype object attribute is JSON-encoded", () => {
   return equal(<div data-x={value} />, `<div data-x="{&quot;a&quot;:1}"></div>`);
 });
 
+test("invalid attribute names are skipped", () => {
+  /** @type {any} */
+  const props = {
+    "x onclick": "1",
+    'a b="c" onload': "1",
+    "x/onclick": "1",
+    "x\nonclick": "1",
+    "x\tonclick": "1",
+    'x"><script>': "1",
+    "x'": "1",
+    "x<": "1",
+    "x&": "1",
+    "x=": "1",
+    "x\u0000": "1",
+    "": "1",
+    id: "ok",
+  };
+  return equal(<img {...props} />, `<img id="ok">`);
+});
+
+test("framework attribute names are kept", () => {
+  /** @type {any} */
+  const props = { "@click": "f()", "x-on:click": "g()", ":class": "c", "hx-get": "/" };
+  return equal(
+    <div {...props} />,
+    `<div @click="f()" x-on:click="g()" :class="c" hx-get="/"></div>`,
+  );
+});
+
 test("custom element with aria and data attributes", () =>
   equal(
     <my-element aria-label="x" data-id="1"></my-element>,
