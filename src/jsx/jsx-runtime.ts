@@ -1,38 +1,43 @@
+type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
+
+type Props = {
+  [k: string]: any;
+  children?: JSX.Children;
+};
+
 export function createElement(
-  tag: string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>),
-  props?: {
-    [k: string]: any;
-    children?: JSX.Children;
-  },
+  tag: Tag,
+  props?: Props,
   ...children: Array<JSX.Children>
 ): JSX.Element {
-  // Copy props, so the caller's object is never changed.
-  return _createElement(tag, { ...props }, children);
+  // Copy props without key, so the caller's object is never changed.
+  const { key: _key, ...propsWithoutKey } = props ?? {};
+  if (children.length) {
+    // Positional children come before props.children.
+    propsWithoutKey.children =
+      propsWithoutKey.children != null ? [...children, propsWithoutKey.children] : children;
+  }
+  return jsx(tag, propsWithoutKey);
 }
 
 /**
- * Creates the element and changes the given props in place.
- * jsx() passes props directly, since compiled JSX always creates a fresh object.
+ * Creates the element and changes the given props in place,
+ * since compiled JSX always creates a fresh object.
  */
-function _createElement(
-  tag: Parameters<typeof createElement>[0],
-  props: NonNullable<Parameters<typeof createElement>[1]>,
-  children: Array<JSX.Children>,
-): JSX.Element {
+export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
+  props ??= {};
+
   if ("key" in props) {
-    delete props["key"]; // key is not a prop (like React)
+    // key is not a prop (like React).
+    // Copy instead of delete, because delete makes V8 use slow objects.
+    const { key: _key, ...propsWithoutKey } = props;
+    props = propsWithoutKey;
   }
 
   const finalChildren: JSX.Element[] = [];
-
-  for (const child of children) {
-    mapChildren(child, finalChildren);
-  }
-
   if (props.children != null) {
     mapChildren(props.children, finalChildren);
   }
-
   props.children = finalChildren;
 
   return {
@@ -59,17 +64,6 @@ function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
       }
       break;
   }
-}
-
-export function jsx(
-  tag: string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>),
-  props?: {
-    [k: string]: any;
-    children?: JSX.Children;
-  },
-  _key?: unknown,
-): JSX.Element {
-  return _createElement(tag, props ?? {}, []);
 }
 
 export const jsxs = jsx;
