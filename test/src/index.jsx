@@ -565,6 +565,41 @@ test("stream errors after sending markup rendered before an async error", async 
   await assert.rejects(reader.read(), /boom async/);
 });
 
+test("stream cancelled while waiting doesn't crash and stops rendering", async () => {
+  let calls = 0;
+  const Slow = async () => {
+    calls++;
+    await new Promise((res) => setTimeout(res, 10));
+    return "x";
+  };
+  const reader = jsxToStream
+    .call(
+      {},
+      <p>
+        a<Slow />b<Slow />c
+      </p>,
+    )
+    .getReader();
+  assert.deepStrictEqual(await reader.read(), { done: false, value: "<p>a" });
+  await reader.cancel();
+  await new Promise((res) => setTimeout(res, 50));
+  assert.strictEqual(calls, 1);
+});
+
+test("stream cancelled before the last async component finishes doesn't crash", async () => {
+  const reader = jsxToStream
+    .call(
+      {},
+      <p>
+        a<Timeout ms={10}>x</Timeout>b
+      </p>,
+    )
+    .getReader();
+  await reader.read();
+  await reader.cancel();
+  await new Promise((res) => setTimeout(res, 50));
+});
+
 // --- escapeEntities ---
 
 test("escapeEntities escapes all special characters", () =>

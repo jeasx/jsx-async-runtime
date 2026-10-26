@@ -9,8 +9,13 @@ import { createNameValidator } from "./name-validator.js";
  */
 type Writer = {
   buffer: string;
+  /** Set when the stream reader cancels; rendering stops at the next component. */
+  cancelled: boolean;
   flush(): void;
 };
+
+/** Thrown to stop rendering after the stream was cancelled. */
+const CANCELLED = Symbol("cancelled");
 
 /**
  * Renders a JSX element to a string.
@@ -23,7 +28,7 @@ type Writer = {
  */
 export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
   // Collect all markup in the buffer, nothing is sent early.
-  const writer: Writer = { buffer: "", flush() {} };
+  const writer: Writer = { buffer: "", cancelled: false, flush() {} };
   const pending = renderElement.call(this, jsxElement, writer);
   return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;
 }
@@ -40,22 +45,35 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
 export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<string> {
   // eslint-disable-next-line typescript/no-this-alias
   const context = this;
+  const writer: Writer = {
+    buffer: "",
+    cancelled: false,
+    flush() {},
+  };
   return new ReadableStream<string>({
     start(controller) {
-      const writer: Writer = {
-        buffer: "",
-        flush() {
-          if (this.buffer !== "") {
-            controller.enqueue(this.buffer);
-            this.buffer = "";
-          }
-        },
+      writer.flush = () => {
+        if (writer.cancelled) {
+          throw CANCELLED;
+        }
+        if (writer.buffer !== "") {
+          controller.enqueue(writer.buffer);
+          writer.buffer = "";
+        }
       };
       const done = () => {
+        // The reader is gone, so the stream must not be written or closed anymore.
+        if (writer.cancelled) {
+          return;
+        }
         writer.flush();
         controller.close();
       };
-      const fail = (error: unknown) => controller.error(error);
+      const fail = (error: unknown) => {
+        if (!writer.cancelled) {
+          controller.error(error);
+        }
+      };
       try {
         const pending = renderElement.call(context, jsxElement, writer);
         if (isPromise(pending)) {
@@ -66,6 +84,10 @@ export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<
       } catch (error) {
         fail(error);
       }
+    },
+    cancel() {
+      writer.cancelled = true;
+      writer.buffer = "";
     },
   });
 }
@@ -161,6 +183,10 @@ function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void
   }
 
   if (typeof jsxElement.tag === "function") {
+    // Don't call more components once the stream reader is gone.
+    if (writer.cancelled) {
+      throw CANCELLED;
+    }
     const jsxElementTag = jsxElement.tag.call(this, jsxElement.props);
     if (isPromise(jsxElementTag)) {
       writer.flush();
