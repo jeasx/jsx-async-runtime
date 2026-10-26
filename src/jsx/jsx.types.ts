@@ -1,6 +1,6 @@
 export type Tag = {
   type: "tag";
-  tag: (props: Props) => JSX.Element;
+  tag: string | ((props: Props) => JSX.Element);
   props: Props;
 };
 
