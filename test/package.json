@@ -11,7 +11,7 @@
     "jsx-async-runtime": "file:.."
   },
   "devDependencies": {
-    "@types/node": "file:../node_modules/types/node",
+    "@types/node": "file:../node_modules/@types/node",
     "typescript": "file:../node_modules/typescript"
   }
 }
