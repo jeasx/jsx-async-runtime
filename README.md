@@ -1,18 +1,26 @@
 # jsx-async-runtime
 
-An asynchronous JSX runtime without dependencies to be used as html template engine for server or browser.
+An asynchronous JSX runtime without dependencies, to be used as an HTML template engine on the server or in the browser.
 
-## Breaking change
+- **Async components**: `await` data right inside your components.
+- **Secure by default**: text and attribute values are escaped, invalid tag and attribute names are skipped.
+- **Fast**: renders synchronously until it hits an async component, and only then returns a promise.
+- **Streaming**: send the markup rendered so far while slow components are still loading.
+- **No dependencies**, no virtual DOM, no hooks. Just functions that return markup.
 
-With `jsx-async-runtime >= v2.x.x` HTML entities are escaped per default. [Read more...](#usage)
+This runtime was initially developed for [Jeasx](https://www.jeasx.dev), but has a value of its own. Its main focus is to keep things simple, reliable, secure and fast. More information about using it as a template engine can be found in the [Jeasx documentation](https://www.jeasx.dev/jsx).
 
-## Introduction
+## Contents
 
-This runtime was initially developed for [Jeasx](https://www.jeasx.dev), but has a value of its own. Its main focus is to keep things simple, reliable, secure and fast.
-
-You can find more information about using this runtime as template engine in the [Jeasx documentation](https://www.jeasx.dev/jsx).
-
-If you want to use `jsx-async-runtime` as template technology for your project, you can check out a [quickstart repository with Typescript support](https://github.com/jablonski/jsx-async-runtime-quickstart) to get you started quickly.
+- [Installation](#installation)
+- [Async components](#async-components)
+- [Escaping HTML](#escaping-html)
+- [Attributes](#attributes)
+- [The `this` context](#the-this-context)
+- [Streaming](#streaming)
+- [Customizing rendering](#customizing-rendering)
+- [API](#api)
+- [Example project](#example-project)
 
 ## Installation
 
@@ -20,7 +28,7 @@ If you want to use `jsx-async-runtime` as template technology for your project, 
 npm i jsx-async-runtime
 ```
 
-To make use of the `jsx-async-runtime`, you need to configure your transpiler to utilize this package for transforming the JSX syntax. If you are using TypeScript or esbuild for transpiling your code base, simply add the following options in your `tsconfig.json`:
+Configure your transpiler to use this package for JSX. With TypeScript or esbuild, add the following options to your `tsconfig.json`:
 
 ```json
 {
@@ -31,9 +39,9 @@ To make use of the `jsx-async-runtime`, you need to configure your transpiler to
 }
 ```
 
-The example project provides a complete [tsconfig.json](https://github.com/jeasx/jsx-async-runtime/tree/main/example/tsconfig.json) with all required options for a proper project setup.
+The example project provides a complete [tsconfig.json](https://github.com/jeasx/jsx-async-runtime/tree/main/example/tsconfig.json) with all required options. For a ready-made setup, check out the [quickstart repository with TypeScript support](https://github.com/jablonski/jsx-async-runtime-quickstart).
 
-Now you can create a simple test file (e.g. `src/HelloWorld.jsx`) and execute it via `npx tsx src/HelloWorld.jsx`:
+Now create a test file (e.g. `src/HelloWorld.jsx`) and run it via `npx tsx src/HelloWorld.jsx`:
 
 ```jsx
 import { jsxToString } from "jsx-async-runtime";
@@ -59,9 +67,9 @@ export default function HelloWorld({ greeting }) {
 console.log(await jsxToString.call({}, <HelloWorld greeting="Hello World" />));
 ```
 
-## Usage
+## Async components
 
-If you're using `jsx-async-runtime` as template engine, you might want to include data from an asynchronous operation in the resulting markup. To simplify this process, you can make your components asynchronous and send async requests from within them.
+Components can be `async`, so you can load data right where you need it:
 
 ```jsx
 export default async function Todos() {
@@ -79,13 +87,19 @@ export default async function Todos() {
 }
 ```
 
-`jsx-async-runtime >= v2.x.x` escapes all HTML entities for texts per default to prevent cross site scripting. If you want or need to opt out this security feature to include literal HTML snippets in your template (e.g. WYSIWYG content from a CMS), you can provide an object with a single key called `html` containing the code snippet as a string in your JSX template:
+Promises passed as children are awaited as well, e.g. `<div>{loadGreeting()}</div>`. The output order always matches the order in your JSX.
+
+`jsxToString` returns a plain `string` as long as no component had to wait, and a `Promise<string>` otherwise. Using `await` works in both cases.
+
+## Escaping HTML
+
+All text and attribute values are HTML-escaped by default to prevent cross-site scripting. To include a literal HTML snippet (e.g. the doctype or WYSIWYG content from a CMS), pass an object with a single `html` key:
 
 ```jsx
 <div>{{ html: "<p>Some <b>HTML</b> from a CMS</p>" }}</div>
 ```
 
-If you want to disable the automatic escaping of HTML completely to restore the behaviour of `jsx-async-runtime < v2.x.x`, you can turn off text escaping with a compatibilty switch via the `this` context:
+To restore the behaviour of `jsx-async-runtime < v2.x.x` and turn off text escaping completely, set `jsxEscapeHTML` on the `this` context:
 
 ```jsx
 export default function () {
@@ -94,7 +108,7 @@ export default function () {
 }
 ```
 
-If you opt out of automatic escaping, you can use a built-in utility function to escape markup from untrusted external sources:
+With escaping turned off, use `escapeEntities` for markup from untrusted sources:
 
 ```jsx
 import { escapeEntities } from "jsx-async-runtime";
@@ -104,6 +118,43 @@ export default function () {
   return <div>{escapeEntities("<p><b>HTML</b> from user input</p>")}</div>;
 }
 ```
+
+Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so names from untrusted input can't inject markup.
+
+## Attributes
+
+Attributes use their HTML names (`class`, `for`, `onclick`), not the React names (`className`, `htmlFor`, `onClick`).
+
+| Value                                     | Renders as                                                                       |
+| ----------------------------------------- | -------------------------------------------------------------------------------- |
+| `"text"`                                  | `name="text"` (escaped)                                                          |
+| `true`                                    | `name`                                                                           |
+| `false`, `null`, `undefined`              | nothing                                                                          |
+| function or symbol                        | nothing                                                                          |
+| `style={{ "padding-top": "1rem" }}`       | `style="padding-top: 1rem"` (`null`, `undefined` and `false` values are skipped) |
+| `class={{ active: true, hidden: false }}` | `class="active"`                                                                 |
+| `class={["a", cond && "b"]}`              | `class="a b"` (falsy entries are skipped)                                        |
+| plain object or array                     | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                                     |
+| anything else (`URL`, `Date`, numbers)    | its string form, e.g. `href={new URL("https://example.com")}`                    |
+
+Style properties use CSS names (`background-color`, not `backgroundColor`). `key` is never rendered as an attribute.
+
+## The `this` context
+
+When you call `jsxToString.call(context, jsx)`, every component receives `context` as `this`. Use it to share data with deeply nested components instead of passing props through every level:
+
+```jsx
+function App({ user }) {
+  this.user = user;
+  return <Layout />;
+}
+
+function Greeting() {
+  return <p>Hello {this.user.name}</p>;
+}
+```
+
+Components using `this` must be regular `function`s, not arrow functions. Create a new context object for each render (e.g. per request), so data doesn't leak between them.
 
 ## Streaming
 
@@ -127,9 +178,46 @@ Things to keep in mind:
 - Patterns that change the markup after rendering (like the head unification in the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example)) don't work with streaming.
 - A `this.jsxToString` override is still honored, but returns a string, so everything it renders is sent as one chunk.
 
+## Customizing rendering
+
+Set `this.jsxToString` to intercept the rendering of every nested element. The override receives the element (`{ tag, props }`) and returns a string or a promise of one. Call the original `jsxToString` to fall back to the default rendering:
+
+```jsx
+import { jsxToString } from "jsx-async-runtime";
+
+const context = {
+  jsxToString(jsxElement) {
+    if (jsxElement?.tag === "script") {
+      return ""; // drop all scripts
+    }
+    return jsxToString.call(this, jsxElement);
+  },
+};
+
+const html = await jsxToString.call(context, <App />);
+```
+
+This lets you patch markup you don't control (e.g. third-party components) or collect elements during rendering. The [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) uses it to replace components for a custom theme and to merge all `<head>` elements into one.
+
+## API
+
+| Export                                   | Description                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.           |
+| `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits. |
+| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a string.                                 |
+| `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                        |
+
+Context properties read by the runtime:
+
+| Property        | Description                                                                                  |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| `jsxEscapeHTML` | Set to `false` to turn off escaping of text. Defaults to `true`.                             |
+| `jsxToString`   | Override for rendering nested elements. See [Customizing rendering](#customizing-rendering). |
+
 ## Example project
 
-You can study the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) to learn more about all existing features. Here is a shortened version to give you the idea:
+The [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) shows all features in a small web server. Here is a shortened version:
 
 ```jsx
 import { jsxToString } from "jsx-async-runtime";
@@ -195,3 +283,7 @@ async function TodoList({ quantity }) {
 // Use jsxToString#call with {} to create a 'this' context
 console.log(await jsxToString.call({}, <App />));
 ```
+
+## License
+
+MIT
