@@ -91,7 +91,41 @@ export default async function Todos() {
 
 Promises passed as children are awaited as well, e.g. `<div>{loadGreeting()}</div>`. The output order always matches the order in your JSX.
 
+Async components run one after another: a component is only called once everything before it has finished rendering. Two sibling components that each wait one second take two seconds in total. To load data in parallel, start the work first and pass the promises down, either as children or as props:
+
+```jsx
+function Page() {
+  // Both requests start right away and run in parallel.
+  const user = loadUser();
+  const todos = loadTodos();
+
+  return (
+    <main>
+      <UserCard user={user} />
+      <section>{todos.then((todos) => <TodoList todos={todos} />)}</section>
+    </main>
+  );
+}
+
+async function UserCard({ user }) {
+  const { name } = await user;
+  return <h2>{name}</h2>;
+}
+```
+
 `jsxToString` returns a plain `string` as long as no component had to wait, and a `Promise<string>` otherwise. Using `await` works in both cases.
+
+`jsxToString` never throws. If a component throws (sync or async), it returns a rejected promise, so one `try`/`catch` around `await` handles all errors:
+
+```jsx
+try {
+  const html = await jsxToString.call({}, <App />);
+} catch (error) {
+  // Handle errors from any component, e.g. render an error page.
+}
+```
+
+Without `await` (e.g. `jsxToString(...).catch(...)`), check for a string first: a successful sync render returns a string, which has no `.catch()`.
 
 ## Escaping HTML
 
@@ -99,6 +133,19 @@ All text and attribute values are HTML-escaped by default to prevent cross-site 
 
 ```jsx
 <div>{{ html: "<p>Some <b>HTML</b> from a CMS</p>" }}</div>
+```
+
+This also applies to `<script>` and `<style>`: their text content is escaped like any other text, so `<script>{"if (a < b) {}"}</script>` renders `if (a &lt; b) {}`, which breaks the code. Wrap inline scripts and styles in `{{ html: ... }}`:
+
+```jsx
+<script>{{ html: `if (a < b) { console.log("ok"); }` }}</script>
+<style>{{ html: `a > span { color: red; }` }}</style>
+```
+
+Never put untrusted input into an inline script this way. To pass data to a script, use JSON with `<` escaped, so a value containing `</script>` can't end the script early:
+
+```jsx
+<script>{{ html: `const data = ${JSON.stringify(data).replaceAll("<", "\\u003c")};` }}</script>
 ```
 
 To restore the behaviour of `jsx-async-runtime < v2.x.x` and turn off text escaping completely, set `jsxEscapeHTML` on the `this` context:
@@ -122,6 +169,8 @@ export default function () {
 ```
 
 Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so names from untrusted input can't inject markup.
+
+Escaping doesn't check what a value means. URLs are not validated, so `href={userInput}` can still contain a `javascript:` link. Check URLs from untrusted sources yourself (e.g. allow only `http:` and `https:`).
 
 ## Attributes
 
@@ -209,6 +258,7 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 | `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits. |
 | `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a string.                                 |
 | `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                        |
+| `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.   |
 
 Context properties read by the runtime:
 
