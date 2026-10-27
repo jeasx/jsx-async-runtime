@@ -7,6 +7,7 @@
 - #jsxToString now returns `string | Promise<string>` instead of always returning a promise. It renders synchronously and only returns a promise once it hits an async component or a promise child. `await jsxToString(...)` keeps working unchanged
 - Text children are now plain strings, numbers and bigints instead of `{ type: "textNode", text }` objects, and the `textNode` type was removed. If you read or create text nodes (e.g. in `props.children` or a `this.jsxToString` override), use plain strings instead
 - A `this.jsxToString` override set by a component now also applies to the siblings that follow it, not only to its children
+- Only elements created by JSX, #createElement or `jsx()` are rendered. Element objects built by hand (e.g. `{ type: "tag", tag: "b", props }`) render nothing; create them with #createElement instead. Copies of real elements (e.g. `{ ...element, tag: "i" }`) still render
 
 ### New features
 
@@ -31,6 +32,7 @@
 - Only objects with `html` as their single key are rendered as raw markup. Other objects that happen to have an `html` key (e.g. a database record like `{ html, title }` passed as child) render nothing instead of outputting their `html` value unescaped. `html` values that aren't strings (e.g. `null`, `undefined`, numbers, arrays or objects) render nothing instead of their string form
 - Attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so object keys from untrusted input can't inject attributes or markup
 - Invalid tag names (not starting with an ASCII letter, or containing the characters above) are skipped together with their children, so dynamic tags from untrusted input (e.g. `createElement(props.as)`) can't inject markup
+- Objects that only look like elements, e.g. parsed JSON like `{"type":"tag","tag":"script","props":{...}}` from a request body, render nothing. Elements are marked with a Symbol, which JSON can't contain, so user data passed as a child (e.g. `<p>{comment.text}</p>`) can't inject tags or attributes
 
 ### Types (jsx.types)
 

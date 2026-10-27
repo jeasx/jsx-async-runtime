@@ -39,6 +39,8 @@ const VOID_TAGS = new Set([
 // eslint-disable-next-line no-control-regex
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
 
+const ELEMENT = Symbol.for("jsx-async-runtime.element");
+
 /**
  * Renders a JSX element into the writer.
  * Runs synchronously as long as possible and only returns a promise
@@ -90,6 +92,12 @@ export function renderElement(
     if (Object.keys(jsxElement).length === 1 && typeof jsxElement.html === "string") {
       writer.buffer += jsxElement.html;
     }
+    return;
+  }
+
+  // Only elements created by jsx() or createElement() are rendered. Look-alike objects,
+  // e.g. from JSON.parse(), render nothing, so user data can't inject tags or attributes.
+  if ((jsxElement as Record<symbol, unknown>)[ELEMENT] !== true) {
     return;
   }
 

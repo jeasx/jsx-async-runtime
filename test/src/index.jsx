@@ -332,6 +332,54 @@ test("html object with non-string value is not rendered", () =>
     `<p></p>`,
   ));
 
+test("element look-alikes from JSON are not rendered", () => {
+  const body = JSON.parse(`{
+    "script": { "type": "tag", "tag": "script", "props": { "children": ["alert(1)"] } },
+    "img": { "type": "tag", "tag": "img", "props": { "src": "x", "onerror": "alert(2)" } }
+  }`);
+  return equal(
+    <p>
+      {body.script}
+      {body.img}
+    </p>,
+    `<p></p>`,
+  );
+});
+
+test("JSON element look-alike as top-level element is not rendered", () =>
+  equal(JSON.parse(`{ "type": "tag", "tag": "b", "props": { "children": ["x"] } }`), ``));
+
+test("hand-built element objects are not rendered, createElement ones are", () => {
+  /** @type {any} */
+  const handBuilt = { type: "tag", tag: "b", props: { children: ["x"] } };
+  return equal(
+    <p>
+      {handBuilt}
+      {createElement("b", null, "y")}
+    </p>,
+    `<p><b>y</b></p>`,
+  );
+});
+
+test("copied elements are still rendered", async () => {
+  const ctx = {
+    jsxToString(element) {
+      // A copy with a changed tag keeps the element marker.
+      const $element = element?.tag === "b" ? { ...element, tag: "i" } : element;
+      return jsxToString.call(this, $element);
+    },
+  };
+  assert.strictEqual(
+    await jsxToString.call(
+      ctx,
+      <p>
+        <b>x</b>
+      </p>,
+    ),
+    `<p><i>x</i></p>`,
+  );
+});
+
 test("children passed as prop", () => equal(<div {...{ children: "x" }} />, `<div>x</div>`));
 
 // --- Edge cases: attributes ---

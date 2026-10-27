@@ -174,6 +174,8 @@ export default function () {
 
 Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so names from untrusted input can't inject markup.
 
+Only elements created by JSX or `createElement` are rendered. Objects that merely look like elements, e.g. `{ "tag": "script", ... }` parsed from a request body, render nothing, so user data passed as a child can't inject tags. To build elements in code, use `createElement`.
+
 Escaping doesn't check what a value means. URLs are not validated, so `href={userInput}` can still contain a `javascript:` link. Check URLs from untrusted sources yourself (e.g. allow only `http:` and `https:`).
 
 ## Attributes

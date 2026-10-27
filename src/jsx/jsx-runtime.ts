@@ -22,6 +22,8 @@ export function createElement(
   return jsx(tag, $props);
 }
 
+const ELEMENT = Symbol.for("jsx-async-runtime.element");
+
 /**
  * Creates the element and changes the given props in place,
  * since compiled JSX always creates a fresh object.
@@ -43,6 +45,7 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
   }
 
   return {
+    [ELEMENT]: true,
     type: "tag",
     tag,
     props,
