@@ -219,7 +219,7 @@ Components using `this` must be regular `function`s, not arrow functions. Create
 
 ## Streaming
 
-Instead of waiting for the complete document, you can stream the markup with `jsxToStream`. It renders in the same order as `jsxToString`, but returns a `ReadableStream<string>`. Markup rendered so far is sent as a chunk whenever rendering waits for an async component, so the browser can start loading styles and scripts from the `<head>` while slow data is still being fetched.
+Instead of waiting for the complete document, you can stream the markup with `jsxToStream`. It renders in the same order as `jsxToString`, but returns a `ReadableStream<string>`. Markup rendered so far is sent as a chunk whenever rendering waits for an async component, so the browser can start loading styles and scripts from the `<head>` while slow data is still being fetched. Large pages are also sent in chunks of about 16 KB, even when no component is async, and rendering pauses while the client is slow to read, so the complete page doesn't have to be held in memory.
 
 ```jsx
 import { jsxToStream } from "jsx-async-runtime";

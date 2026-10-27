@@ -1,10 +1,14 @@
 import { isPromise } from "../utils/promises.js";
 import { renderElement, Writer } from "./render-element.js";
 
+// Characters per chunk and queued in the stream before rendering pauses.
+const CHUNK_SIZE = 16 * 1024;
+
 /**
  * Renders a JSX element to a stream of strings.
  * Markup rendered so far is sent as a chunk whenever rendering waits
- * for an async component (or promise child).
+ * for an async component (or promise child), and whenever about 16 KB
+ * of markup has piled up, so large sync pages are streamed as well.
  *
  * @param this - Optional context passed to all components (e.g. `jsxToStream.call({}, jsx)`).
  *   Without one, the render gets a new empty object, so components can always write to `this`.
@@ -16,6 +20,7 @@ export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<
 
   const writer: Writer = {
     buffer: "",
+    chunkSize: CHUNK_SIZE,
     cancelled: false,
     flush() {},
   };
@@ -79,7 +84,7 @@ export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<
   };
 
   return new ReadableStream<string>(source, {
-    highWaterMark: 16 * 1024,
+    highWaterMark: CHUNK_SIZE,
     size: (chunk) => chunk.length,
   });
 }

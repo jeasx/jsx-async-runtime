@@ -13,7 +13,7 @@ import { renderElement, Writer } from "./render-element.js";
  */
 export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
   // Collect all markup in the buffer, nothing is sent early.
-  const writer: Writer = { buffer: "", cancelled: false, flush() {} };
+  const writer: Writer = { buffer: "", chunkSize: Infinity, cancelled: false, flush() {} };
   try {
     const pending = renderElement.call(this ?? {}, jsxElement, writer);
     return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;

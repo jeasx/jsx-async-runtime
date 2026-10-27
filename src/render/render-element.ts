@@ -6,12 +6,15 @@ import { createNameValidator } from "./name-validator.js";
 
 /**
  * Receives the rendered markup. Markup is appended to `buffer`.
- * `flush` is called before rendering waits for a promise, so a writer
- * can send the markup rendered so far (or ignore it to collect a string).
+ * `flush` is called before rendering waits for a promise and whenever the buffer
+ * reaches `chunkSize`, so a writer can send the markup rendered so far
+ * (or ignore it to collect a string).
  * It returns a promise when rendering should pause until the reader catches up.
  */
 export type Writer = {
   buffer: string;
+  /** Buffer length that triggers a flush between elements (`Infinity` to never flush early). */
+  chunkSize: number;
   /** Set when the stream reader cancels; rendering stops at the next component. */
   cancelled: boolean;
   flush(): void | Promise<void>;
@@ -163,6 +166,10 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
         );
       } else {
         pending = $renderElement.call(this, child, writer);
+        if (!pending && writer.buffer.length >= writer.chunkSize) {
+          // Send large sync markup early; continue async if the reader is behind.
+          pending = writer.flush();
+        }
       }
       if (isPromise(pending)) {
         for (let index = i + 1; index < children.length; index++) {
@@ -197,6 +204,9 @@ async function renderChildrenAsync(
     const pending = $renderElement.call(this, element, writer);
     if (isPromise(pending)) {
       await pending;
+    }
+    if (writer.buffer.length >= writer.chunkSize) {
+      await writer.flush();
     }
   }
 }

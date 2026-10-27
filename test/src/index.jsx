@@ -1059,6 +1059,32 @@ test("stream waits for the reader", async () => {
   assert.strictEqual(markup, `<div>${"x".repeat(100 * 1000)}</div>`);
 });
 
+test("stream splits large sync markup into chunks", async () => {
+  const rows = Array.from({ length: 10000 }, (_, i) => <p>row {i}</p>);
+  const chunks = await streamToChunks(jsxToStream(<div>{rows}</div>));
+  assert.ok(chunks.length > 1, `got ${chunks.length} chunk(s)`);
+  for (const chunk of chunks) {
+    // A chunk ends at the first element boundary after 16 KB.
+    assert.ok(chunk.length < 17 * 1024, `chunk of ${chunk.length} characters`);
+  }
+  assert.strictEqual(chunks.join(""), await jsxToString(<div>{rows}</div>));
+});
+
+test("stream pauses large sync markup for the reader", async () => {
+  let calls = 0;
+  const Item = () => {
+    calls++;
+    return "x".repeat(1000);
+  };
+  const items = Array.from({ length: 100 }, () => <Item />);
+  const stream = jsxToStream.call({}, <div>{items}</div>);
+  await delay(20);
+  assert.ok(calls > 0 && calls < 100, `rendered ${calls} components without a read`);
+  const markup = (await streamToChunks(stream)).join("");
+  assert.strictEqual(calls, 100);
+  assert.strictEqual(markup, `<div>${"x".repeat(100 * 1000)}</div>`);
+});
+
 test("stream cancel stops a paused render", async () => {
   let calls = 0;
   const Item = async () => {
