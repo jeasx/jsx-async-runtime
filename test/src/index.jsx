@@ -848,6 +848,36 @@ test("component returns an array with a rejecting promise", () => {
   return rejects(() => <List />, "array");
 });
 
+test("promise prop rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  const User = async ({ user }) => <p>{(await user).name}</p>;
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <User user={rejectAfter(5, "prop")} />
+      </div>
+    ),
+    "prop",
+  );
+});
+
+test("promise prop rejects after an earlier sibling threw", () => {
+  const Boom = () => {
+    throw new Error("first");
+  };
+  const User = async ({ user }) => <p>{(await user).name}</p>;
+  return rejects(
+    () => (
+      <div>
+        <Boom />
+        <User user={rejectAfter(5, "second")} />
+      </div>
+    ),
+    "first",
+  );
+});
+
 test("stream waits for the reader", async () => {
   let calls = 0;
   const Item = async () => {

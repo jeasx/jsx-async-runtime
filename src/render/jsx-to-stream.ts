@@ -1,4 +1,4 @@
-import { isPromise } from "./is-promise.js";
+import { isPromise } from "../utils/promises.js";
 import { renderElement, Writer } from "./render-element.js";
 
 /**

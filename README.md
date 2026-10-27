@@ -113,6 +113,8 @@ async function UserCard({ user }) {
 }
 ```
 
+Starting promises early is safe: if one rejects before rendering gets to it, the error is reported when the promise is rendered or awaited, like any other component error, instead of crashing Node as an unhandled rejection. Promises inside an object or array prop (e.g. `data={{ user }}`) aren't covered, so pass each promise as its own prop.
+
 `jsxToString` returns a plain `string` as long as no component had to wait, and a `Promise<string>` otherwise. Using `await` works in both cases.
 
 `jsxToString` never throws. If a component throws (sync or async), it returns a rejected promise, so one `try`/`catch` around `await` handles all errors:
@@ -215,12 +217,30 @@ Instead of waiting for the complete document, you can stream the markup with `js
 import { jsxToStream } from "jsx-async-runtime";
 import { createServer } from "node:http";
 import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 
-createServer((request, response) => {
+createServer(async (request, response) => {
   response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-  // Use jsxToStream#call with {} to create a 'this' context
-  Readable.fromWeb(jsxToStream.call({}, <App />)).pipe(response);
+  try {
+    // Use jsxToStream#call with {} to create a 'this' context
+    await pipeline(Readable.fromWeb(jsxToStream.call({}, <App />)), response);
+  } catch (error) {
+    // A component threw or the client disconnected; the response is already closed.
+    console.error(error);
+  }
 }).listen(3000);
+```
+
+Use `pipeline` rather than `.pipe()`: it closes the response when a component throws and stops rendering when the client disconnects. `.pipe()` doesn't handle stream errors, so a single failing component would crash the server.
+
+The web `Response` API (e.g. in Deno, Bun, Cloudflare Workers or Hono) expects bytes, so encode the markup with a `TextEncoderStream`:
+
+```jsx
+// e.g. in the fetch handler of your runtime or framework
+const stream = jsxToStream.call({}, <App />).pipeThrough(new TextEncoderStream());
+return new Response(stream, {
+  headers: { "Content-Type": "text/html; charset=utf-8" },
+});
 ```
 
 Things to keep in mind:
@@ -231,7 +251,7 @@ Things to keep in mind:
 
 ## Customizing rendering
 
-Set `this.jsxToString` to intercept the rendering of every nested element. The override receives the element (`{ tag, props }`) and returns a string or a promise of one. Call the original `jsxToString` to fall back to the default rendering:
+Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also strings, numbers, arrays or `null`, so read its properties with optional chaining (`jsxElement?.tag`). It returns a string or a promise of one; `""`, `null` and `undefined` render nothing. Call the original `jsxToString` to fall back to the default rendering:
 
 ```jsx
 import { jsxToString } from "jsx-async-runtime";

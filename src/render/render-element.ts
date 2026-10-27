@@ -1,6 +1,6 @@
+import { handleRejection, isPromise } from "../utils/promises.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
-import { isPromise } from "./is-promise.js";
 import { createNameValidator } from "./name-validator.js";
 
 /**
@@ -155,7 +155,7 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
         for (let index = i + 1; index < children.length; index++) {
           const child = children[index];
           if (child instanceof Promise) {
-            child.then(undefined, () => {});
+            handleRejection(child);
           }
         }
         return renderChildrenAsync.call(this, children, i + 1, pending, writer);
@@ -165,7 +165,7 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
     for (let index = i + 1; index < children.length; index++) {
       const child = children[index];
       if (child instanceof Promise) {
-        child.then(undefined, () => {});
+        handleRejection(child);
       }
     }
     throw error;

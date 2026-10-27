@@ -1,3 +1,5 @@
+import { handleRejection } from "../utils/promises.js";
+
 type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
 
 type Props = {
@@ -32,6 +34,13 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
   }
   props.children = $children;
 
+  if (typeof tag === "function") {
+    // A component awaits its promise props only once earlier siblings have rendered.
+    for (const key in props) {
+      handleRejection(props[key]);
+    }
+  }
+
   return {
     type: "tag",
     tag,
@@ -52,9 +61,7 @@ function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
           mapChildren(child, accumulator);
         }
       } else if (children != null) {
-        if (children instanceof Promise) {
-          children.then(undefined, () => {});
-        }
+        handleRejection(children);
         accumulator.push(children);
       }
       break;

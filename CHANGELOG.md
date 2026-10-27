@@ -16,6 +16,7 @@
 ### Fixes
 
 - A promise passed directly to #jsxToString (e.g. `jsxToString(loadPage())`) is awaited and rendered instead of rendering an empty string
+- A promise passed as a prop to a component (e.g. `<UserCard user={loadUser()} />`) no longer crashes Node with an unhandled rejection when it rejects before the component renders. The component still gets the error when it awaits the promise
 - `key` is no longer rendered as text or as an HTML attribute, and the dev runtime no longer adds its source info as children. Components using compiled JSX don't receive `key` in their props; with #createElement (classic runtime, or `key` placed after a spread) it is still passed through
 - Event handlers and other function or symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of printing their source code into the HTML
 - Objects like `URL` or `Date` used as attribute values (e.g. `href={new URL(...)}`) render as their string value, e.g. `href="https://..."`, instead of quoted JSON. Plain objects and arrays are still JSON-encoded
