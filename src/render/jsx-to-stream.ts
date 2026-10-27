@@ -7,12 +7,12 @@ import { renderElement, Writer } from "./render-element.js";
  * for an async component (or promise child).
  *
  * @param this - Optional context passed to all components (e.g. `jsxToStream.call({}, jsx)`).
+ *   Without one, the render gets a new empty object, so components can always write to `this`.
  * @param jsxElement - The JSX element to render.
  * @return A stream of markup chunks. It errors if a component throws.
  */
 export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<string> {
-  // eslint-disable-next-line typescript/no-this-alias
-  const context = this;
+  const context = this ?? {};
 
   const writer: Writer = {
     buffer: "",

@@ -493,6 +493,26 @@ test("async component error rejects", () => {
 test("render without 'this' context", async () =>
   assert.strictEqual(await jsxToString(<p>{"<b>"}</p>), `<p>&lt;b&gt;</p>`));
 
+test("render without 'this' context gets a new empty context", async () => {
+  function App() {
+    const seen = this.user ?? "none";
+    this.user = "ada";
+    return (
+      <p>
+        {seen} <Greeting />
+      </p>
+    );
+  }
+  function Greeting() {
+    return this.user;
+  }
+  // Each render starts with its own empty context, so nothing leaks between them.
+  for (let i = 0; i < 2; i++) {
+    assert.strictEqual(await jsxToString(<App />), `<p>none ada</p>`);
+    assert.strictEqual((await streamToChunks(jsxToStream(<App />))).join(""), `<p>none ada</p>`);
+  }
+});
+
 test("escaping disabled via context", async () =>
   assert.strictEqual(
     await jsxToString.call({ jsxEscapeHTML: false }, <p>{"<b>"}</p>),

@@ -207,7 +207,7 @@ function Greeting() {
 }
 ```
 
-Components using `this` must be regular `function`s, not arrow functions. Create a new context object for each render (e.g. per request), so data doesn't leak between them.
+Components using `this` must be regular `function`s, not arrow functions. Create a new context object for each render (e.g. per request), so data doesn't leak between them. Without `.call()`, e.g. `jsxToString(<App />)`, each render gets a new empty context.
 
 ## Streaming
 

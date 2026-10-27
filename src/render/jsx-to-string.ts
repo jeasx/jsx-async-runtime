@@ -7,6 +7,7 @@ import { renderElement, Writer } from "./render-element.js";
  * when an async component (or promise child) is encountered.
  *
  * @param this - Optional context passed to all components (e.g. `jsxToString.call({}, jsx)`).
+ *   Without one, the render gets a new empty object, so components can always write to `this`.
  * @param jsxElement - The JSX element to render.
  * @return The rendered markup, or a promise of it when rendering had to wait.
  */
@@ -14,7 +15,7 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
   // Collect all markup in the buffer, nothing is sent early.
   const writer: Writer = { buffer: "", cancelled: false, flush() {} };
   try {
-    const pending = renderElement.call(this, jsxElement, writer);
+    const pending = renderElement.call(this ?? {}, jsxElement, writer);
     return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;
   } catch (error) {
     // Report errors the same way, whether rendering was sync or async.

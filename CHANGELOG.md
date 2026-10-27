@@ -23,6 +23,7 @@
 - BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail
 - #createElement no longer modifies the props object you pass in. Reusing the same props object for several elements previously duplicated their children
 - `Fragment` is exported from the main entry, next to #createElement, so the classic runtime can be used with a single import (e.g. `import { createElement, Fragment } from "jsx-async-runtime"`)
+- Calling #jsxToString or #jsxToStream without a context (e.g. `jsxToString(<App />)` instead of `jsxToString.call({}, <App />)`) gives each render a new empty context, so components that write to `this` no longer fail with "Cannot set properties of undefined"
 
 ### Security
 
