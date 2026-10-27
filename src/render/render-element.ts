@@ -197,6 +197,7 @@ async function renderChildrenAsync(
 /**
  * Renders a nested element, honoring a `this.jsxToString` override.
  * The override returns a string, which is appended to the writer.
+ * `undefined` and `null` render nothing, so `return;` drops an element.
  */
 function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void | Promise<void> {
   const $jsxToString = this?.jsxToString;
@@ -206,10 +207,10 @@ function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): voi
   const result = $jsxToString.call(this, jsxElement);
   if (isPromise(result)) {
     return flushAndAwait(writer, result).then(($result) => {
-      writer.buffer += $result;
+      writer.buffer += $result ?? "";
     });
   }
-  writer.buffer += result;
+  writer.buffer += result ?? "";
 }
 
 /**

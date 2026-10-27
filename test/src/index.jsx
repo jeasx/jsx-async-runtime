@@ -516,6 +516,35 @@ test("custom jsxToString via context", async () => {
   );
 });
 
+test("override returning undefined or null renders nothing", async () => {
+  const ctx = {
+    jsxToString(element) {
+      switch (element?.tag) {
+        case "script":
+          return undefined;
+        case "style":
+          return null;
+        case "noscript":
+          return Promise.resolve(undefined);
+      }
+      return jsxToString.call(this, element);
+    },
+  };
+  const page = (
+    <body>
+      <script />
+      <style />
+      <noscript />
+      <p>hi</p>
+    </body>
+  );
+  assert.strictEqual(await jsxToString.call(ctx, page), `<body><p>hi</p></body>`);
+  assert.strictEqual(
+    (await streamToChunks(jsxToStream.call(ctx, page))).join(""),
+    `<body><p>hi</p></body>`,
+  );
+});
+
 test("override installed by a component applies to later siblings", async () => {
   const Footer = () => <footer>f</footer>;
   function installOverride() {
