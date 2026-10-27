@@ -36,7 +36,7 @@ declare global {
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
     // Attributes allowed on every element and component. `key` is accepted
-    // (e.g. when mapping lists), but never rendered or passed to components.
+    // (e.g. when mapping lists), but never rendered as an attribute.
     interface IntrinsicAttributes {
       key?: string | number | bigint | null;
     }
