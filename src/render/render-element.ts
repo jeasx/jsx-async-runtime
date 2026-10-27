@@ -61,7 +61,7 @@ export function renderElement(
 
   switch (typeof jsxElement) {
     case "string":
-      writer.buffer += (this?.jsxEscapeHTML ?? true) ? escapeHTML(jsxElement) : jsxElement;
+      writer.buffer += (this?.jsxEscapeHTML ?? true) === true ? escapeHTML(jsxElement) : jsxElement;
       return;
     case "bigint":
     case "number":
