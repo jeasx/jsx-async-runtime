@@ -48,7 +48,7 @@ Now create a test file (e.g. `src/HelloWorld.jsx`) and run it via `npx tsx src/H
 ```jsx
 import { html, jsxToString } from "jsx-async-runtime";
 
-export default function HelloWorld({ greeting }) {
+function HelloWorld({ greeting }) {
   return (
     <>
       {html("<!DOCTYPE html>")}
@@ -65,8 +65,7 @@ export default function HelloWorld({ greeting }) {
   );
 }
 
-// Use jsxToString#call with {} to create a 'this' context
-console.log(await jsxToString.call({}, <HelloWorld greeting="Hello World" />));
+console.log(jsxToString(<HelloWorld greeting="Hello World" />));
 ```
 
 ## Async components
@@ -74,7 +73,7 @@ console.log(await jsxToString.call({}, <HelloWorld greeting="Hello World" />));
 Components can be `async`, so you can load data right where you need it:
 
 ```jsx
-export default async function Todos() {
+async function Todos() {
   const { todos } = await (await fetch("https://dummyjson.com/todos")).json();
 
   return (
@@ -87,6 +86,8 @@ export default async function Todos() {
     </ul>
   );
 }
+
+console.log(await jsxToString(<Todos />));
 ```
 
 Promises passed as children are awaited as well, e.g. `<div>{loadGreeting()}</div>`. The output order always matches the order in your JSX.
@@ -104,7 +105,11 @@ function Page() {
   return (
     <main>
       <UserCard user={user} />
-      <section>{todos.then((todos) => <TodoList todos={todos} />)}</section>
+      <section>
+        {todos.then((todos) => (
+          <TodoList todos={todos} />
+        ))}
+      </section>
     </main>
   );
 }
@@ -123,7 +128,7 @@ Starting promises early is safe: if one rejects before rendering gets to it, the
 
 ```jsx
 try {
-  const html = await jsxToString.call({}, <App />);
+  const html = await jsxToString(<App />);
 } catch (error) {
   // Handle errors from any component, e.g. render an error page.
 }
@@ -230,8 +235,7 @@ import { pipeline } from "node:stream/promises";
 createServer(async (request, response) => {
   response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
   try {
-    // Use jsxToStream#call with {} to create a 'this' context
-    await pipeline(Readable.fromWeb(jsxToStream.call({}, <App />)), response);
+    await pipeline(Readable.fromWeb(jsxToStream(<App />)), response);
   } catch (error) {
     // A component threw or the client disconnected; the response is already closed.
     console.error(error);
@@ -245,7 +249,7 @@ The web `Response` API (e.g. in Deno, Bun, Cloudflare Workers or Hono) expects b
 
 ```jsx
 // e.g. in the fetch handler of your runtime or framework
-const stream = jsxToStream.call({}, <App />).pipeThrough(new TextEncoderStream());
+const stream = jsxToStream(<App />).pipeThrough(new TextEncoderStream());
 return new Response(stream, {
   headers: { "Content-Type": "text/html; charset=utf-8" },
 });
@@ -361,8 +365,7 @@ async function TodoList({ quantity }) {
   );
 }
 
-// Use jsxToString#call with {} to create a 'this' context
-console.log(await jsxToString.call({}, <App />));
+console.log(await jsxToString(<App />));
 ```
 
 ## License
