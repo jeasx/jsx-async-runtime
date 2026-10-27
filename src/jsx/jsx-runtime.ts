@@ -1,5 +1,6 @@
-import { isIterable } from "../utils/iterables.js";
-import { handleRejection } from "../utils/promises.js";
+import { handleRejection } from "../utils/handle-rejection.js";
+import { isIterable } from "../utils/is-iterable.js";
+import { JSX_NODE_MARKER } from "./jsx-node-marker.js";
 
 type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
 
@@ -22,11 +23,6 @@ export function createElement(
   return jsx(tag, $props);
 }
 
-// Marks elements and raw markup created here. JSON can't contain Symbols, so parsed data
-// (e.g. a request body) can never pass as either. `Symbol.for` makes the marker work
-// even when two copies of this package are loaded.
-const NODE = Symbol.for("jsx-async-runtime.node");
-
 /**
  * Marks a string as raw markup, which is rendered without escaping,
  * e.g. `{html("<!DOCTYPE html>")}`. Never pass untrusted input.
@@ -34,7 +30,7 @@ const NODE = Symbol.for("jsx-async-runtime.node");
  */
 export function html(markup: string): JSX.Element {
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
-  return { [NODE]: true, html: markup } as unknown as JSX.Element;
+  return { [JSX_NODE_MARKER]: true, html: markup } as unknown as JSX.Element;
 }
 
 /**
@@ -59,7 +55,7 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
 
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
   return {
-    [NODE]: true,
+    [JSX_NODE_MARKER]: true,
     type: "tag",
     tag,
     props,

@@ -1,9 +1,8 @@
+import { createNameValidator } from "./create-name-validator.js";
 import { escapeHTML } from "./escape-entities.js";
-import { createNameValidator } from "./name-validator.js";
 
 // An attribute name must not be empty and
 // must not contain characters that break the name.
-// eslint-disable-next-line no-control-regex
 const isValidAttributeName = createNameValidator(/^[^\s"'<>/=&\x00-\x1f\x7f-\x9f]+$/);
 
 export function attributesToString(props: Record<string, unknown>): string {

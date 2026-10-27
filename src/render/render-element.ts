@@ -1,8 +1,10 @@
-import { isIterable } from "../utils/iterables.js";
-import { handleRejection, isPromise } from "../utils/promises.js";
+import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
+import { handleRejection } from "../utils/handle-rejection.js";
+import { isIterable } from "../utils/is-iterable.js";
+import { isPromise } from "../utils/is-promise.js";
 import { attributesToString } from "./attributes-to-string.js";
+import { createNameValidator } from "./create-name-validator.js";
 import { escapeHTML } from "./escape-entities.js";
-import { createNameValidator } from "./name-validator.js";
 
 /**
  * Receives the rendered markup. Markup is appended to `buffer`.
@@ -39,10 +41,7 @@ const VOID_TAGS = new Set([
 
 // A tag must start with an ASCII letter and must not contain characters
 // that end the tag name or break the markup.
-// eslint-disable-next-line no-control-regex
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
-
-const NODE = Symbol.for("jsx-async-runtime.node");
 
 /**
  * Renders a JSX element into the writer.
@@ -91,7 +90,7 @@ export function renderElement(
 
   // Only nodes created by jsx(), createElement() or html() are rendered. Look-alike objects,
   // e.g. from JSON.parse() or a database record, render nothing, so user data can't inject markup.
-  if ((jsxElement as Record<symbol, unknown>)[NODE] !== true) {
+  if ((jsxElement as Record<symbol, unknown>)[JSX_NODE_MARKER] !== true) {
     return;
   }
 
