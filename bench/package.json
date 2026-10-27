@@ -1,0 +1,17 @@
+{
+  "name": "jsx-async-runtime-bench",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --expose-gc dist/index.js",
+    "clean": "tsc --build --clean"
+  },
+  "dependencies": {
+    "jsx-async-runtime": "file:.."
+  },
+  "devDependencies": {
+    "@types/node": "file:../node_modules/@types/node",
+    "typescript": "file:../node_modules/typescript"
+  }
+}

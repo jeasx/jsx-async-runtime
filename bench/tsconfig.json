@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "esnext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "jsx": "react-jsx",
+    "jsxImportSource": "jsx-async-runtime",
+    "allowJs": true,
+    "checkJs": true
+  },
+  "include": ["src"]
+}
