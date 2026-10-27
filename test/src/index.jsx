@@ -823,7 +823,7 @@ test("stream waits for the reader", async () => {
   let calls = 0;
   const Item = async () => {
     calls++;
-    await null;
+    null;
     return "x".repeat(1000);
   };
   const items = Array.from({ length: 100 }, () => <Item />);
@@ -839,7 +839,7 @@ test("stream cancel stops a paused render", async () => {
   let calls = 0;
   const Item = async () => {
     calls++;
-    await null;
+    null;
     return "x".repeat(1000);
   };
   const items = Array.from({ length: 100 }, () => <Item />);
