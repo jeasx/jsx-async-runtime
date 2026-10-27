@@ -87,6 +87,16 @@ test("void tags ignore children", () => {
   ).then(() => assert.equal(called, false));
 });
 
+test("void tags ignore case", () =>
+  equal(
+    // Capitalized JSX names are components, so build the tags with createElement.
+    <>
+      {classicCreateElement("BR")}
+      {classicCreateElement("Img", { src: "src" }, "text")}
+    </>,
+    `<BR><Img src="src">`,
+  ));
+
 test("empty fragment", () => equal(<></>, ``));
 
 test("class as string", () => equal(<div class="a b c"></div>, `<div class="a b c"></div>`));

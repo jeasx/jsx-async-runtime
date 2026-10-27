@@ -120,7 +120,8 @@ export function renderElement(
     writer.buffer += openTag;
 
     // Void tags can't have content or a closing tag, so their children are ignored.
-    if (VOID_TAGS.has(tag)) {
+    // HTML tag names are case-insensitive, so `<BR>` is void too.
+    if (VOID_TAGS.has(tag) || VOID_TAGS.has(tag.toLowerCase())) {
       return;
     }
 
