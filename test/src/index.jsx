@@ -843,6 +843,32 @@ test("stream cancelled before the last async component finishes doesn't crash", 
   await new Promise((res) => setTimeout(res, 50));
 });
 
+test("stream cancelled while a promise child is pending stops before the next promise child", async () => {
+  // A thenable records whether rendering ever waits for it.
+  // No text between the promise children, so nothing is left to send when the
+  // next one is reached: only the cancel check in flush() can stop the render there.
+  let awaited = false;
+  const next = {
+    then(resolve) {
+      awaited = true;
+      resolve("y");
+    },
+  };
+  const reader = jsxToStream
+    .call(
+      {},
+      <p>
+        a{new Promise((res) => setTimeout(() => res(null), 10))}
+        {next}c
+      </p>,
+    )
+    .getReader();
+  assert.deepStrictEqual(await reader.read(), { done: false, value: "<p>a" });
+  await reader.cancel();
+  await new Promise((res) => setTimeout(res, 50));
+  assert.strictEqual(awaited, false);
+});
+
 // --- escapeEntities ---
 
 test("escapeEntities escapes all special characters", () =>
