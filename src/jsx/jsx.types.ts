@@ -25,7 +25,7 @@ declare global {
       | string
       | number
       | bigint
-      | Element[];
+      | Iterable<Element>;
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 

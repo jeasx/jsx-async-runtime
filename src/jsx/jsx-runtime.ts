@@ -1,3 +1,4 @@
+import { isIterable } from "../utils/iterables.js";
 import { handleRejection } from "../utils/promises.js";
 
 type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
@@ -56,7 +57,8 @@ function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
       accumulator.push(children);
       break;
     case "object":
-      if (Array.isArray(children)) {
+      // Flatten arrays and other iterables (e.g. a Set or map.values()) into the children.
+      if (Array.isArray(children) || isIterable(children)) {
         for (const child of children) {
           mapChildren(child, accumulator);
         }

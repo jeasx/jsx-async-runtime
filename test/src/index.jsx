@@ -245,6 +245,44 @@ test("mapped children", () =>
     `<ul><li>1</li><li>2</li><li>3</li></ul>`,
   ));
 
+test("Set as children", () => equal(<p>{new Set(["a", <b>b</b>])}</p>, `<p>a<b>b</b></p>`));
+
+test("iterator helper as children", () => {
+  const users = new Map([
+    [1, "Ada"],
+    [2, "Linus"],
+  ]);
+  return equal(
+    <ul>{users.values().map((name) => <li>{name}</li>)}</ul>,
+    `<ul><li>Ada</li><li>Linus</li></ul>`,
+  );
+});
+
+test("generator as children", () => {
+  function* items() {
+    yield <li>a</li>;
+    yield [<li>b</li>, "c"];
+  }
+  return equal(<ul>{items()}</ul>, `<ul><li>a</li><li>b</li>c</ul>`);
+});
+
+test("component returning a generator", () => {
+  function* Items() {
+    yield <li>a</li>;
+    yield Promise.resolve(<li>b</li>);
+  }
+  return equal(
+    <ul>
+      <Items />
+    </ul>,
+    `<ul><li>a</li><li>b</li></ul>`,
+  );
+});
+
+test("iterable as top-level element", () => equal(new Set([<b>a</b>, "b"]), `<b>a</b>b`));
+
+test("strings are not split into characters", () => equal(<p>{"abc"}</p>, `<p>abc</p>`));
+
 test("null, undefined and boolean children are skipped", () =>
   equal(
     <p>

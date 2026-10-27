@@ -12,6 +12,7 @@
 
 - Added #jsxToStream, which renders to a `ReadableStream<string>`. It sends the markup rendered so far each time rendering has to wait for an async component or promise, so the browser can start displaying the page earlier
 - Promises can be used directly as children (e.g. `<div>{promise}</div>`). They are awaited and rendered instead of being silently dropped
+- Iterables other than arrays can be used as children or returned by components, e.g. a `Set`, a generator or an iterator helper like `map.values().map((value) => <li>{value}</li>)`. Previously they silently rendered nothing
 
 ### Fixes
 

@@ -91,6 +91,8 @@ export default async function Todos() {
 
 Promises passed as children are awaited as well, e.g. `<div>{loadGreeting()}</div>`. The output order always matches the order in your JSX.
 
+Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well.
+
 Async components run one after another: a component is only called once everything before it has finished rendering. Two sibling components that each wait one second take two seconds in total. To load data in parallel, start the work first and pass the promises down, either as children or as props:
 
 ```jsx

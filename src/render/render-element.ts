@@ -1,3 +1,4 @@
+import { isIterable } from "../utils/iterables.js";
 import { handleRejection, isPromise } from "../utils/promises.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
@@ -75,6 +76,11 @@ export function renderElement(
 
   if (Array.isArray(jsxElement)) {
     return renderChildren.call(this, jsxElement, writer);
+  }
+
+  // Other iterables, e.g. a generator returned by a component.
+  if (isIterable(jsxElement)) {
+    return renderChildren.call(this, Array.from(jsxElement), writer);
   }
 
   if ("html" in jsxElement) {
