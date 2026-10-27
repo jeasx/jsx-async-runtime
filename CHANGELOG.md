@@ -8,6 +8,7 @@
 - Text children are now plain strings, numbers and bigints instead of `{ type: "textNode", text }` objects, and the `textNode` type was removed. If you read or create text nodes (e.g. in `props.children` or a `this.jsxToString` override), use plain strings instead
 - A `this.jsxToString` override set by a component now also applies to the siblings that follow it, not only to its children
 - Only elements created by JSX, #createElement or `jsx()` are rendered. Element objects built by hand (e.g. `{ type: "tag", tag: "b", props }`) render nothing; create them with #createElement instead. Copies of real elements (e.g. `{ ...element, tag: "i" }`) still render
+- Raw markup must be created with the new #html function, e.g. `{html("<!DOCTYPE html>")}` instead of `{{ html: "<!DOCTYPE html>" }}`. Plain `{ html }` objects render nothing. To migrate, replace `{{ html: x }}` with `{html(x)}` and import `html` from `jsx-async-runtime`
 
 ### New features
 
@@ -29,15 +30,17 @@
 
 ### Security
 
-- Only objects with `html` as their single key are rendered as raw markup. Other objects that happen to have an `html` key (e.g. a database record like `{ html, title }` passed as child) render nothing instead of outputting their `html` value unescaped. `html` values that aren't strings (e.g. `null`, `undefined`, numbers, arrays or objects) render nothing instead of their string form
+- Only markup created by #html is rendered raw. Plain objects with an `html` key, e.g. parsed JSON like `{"html":"<img src=x onerror=...>"}` from a request body or a database record, render nothing instead of outputting their `html` value unescaped, so user data passed as a child (e.g. `<p>{comment.text}</p>`) can't inject markup. Values passed to #html that aren't strings (e.g. `null`, `undefined`, numbers, arrays or objects) render nothing instead of their string form
 - Attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so object keys from untrusted input can't inject attributes or markup
 - Invalid tag names (not starting with an ASCII letter, or containing the characters above) are skipped together with their children, so dynamic tags from untrusted input (e.g. `createElement(props.as)`) can't inject markup
 - Objects that only look like elements, e.g. parsed JSON like `{"type":"tag","tag":"script","props":{...}}` from a request body, render nothing. Elements are marked with a Symbol, which JSON can't contain, so user data passed as a child (e.g. `<p>{comment.text}</p>`) can't inject tags or attributes
+- Only `this.jsxEscapeHTML = false` turns off escaping. Other falsy values like `0` or `""` (and strings like `"false"`) keep escaping on instead of turning it off by accident
 
 ### Types (jsx.types)
 
 - `Tag.tag` is typed as `string | ((props) => JSX.Element)`, matching what the runtime actually passes
 - `key` is accepted on components (e.g. `<Item key={id} label={label} />`) via `JSX.IntrinsicAttributes`, instead of failing type checks when the component's props don't declare it
+- `Tag` and raw markup carry a type-only marker, so TypeScript rejects hand-built element objects and plain `{ html }` objects (e.g. returned by a component), matching what the runtime renders. Create them with #createElement and #html instead
 - `class` accepts falsy values, matching what the runtime already skips: arrays may contain `false`, `null` and `undefined` (e.g. `class={["a", cond && "b"]}`), and object values may be `null` or `undefined` (e.g. `class={{ active: user?.isActive }}`)
 - `aria-*` attributes only accept strings. Booleans didn't work as expected: `true` renders an empty attribute (which ARIA treats as unset) and `false` removes it. Use e.g. `aria-hidden="true"`
 - `contenteditable`, `spellcheck`, `translate` and `writingsuggestions` no longer accept `false`, because it removes the attribute (so the parent's value applies) instead of turning the feature off. Use the string value instead (e.g. `spellcheck="false"` or `translate="no"`)

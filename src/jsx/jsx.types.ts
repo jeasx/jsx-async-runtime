@@ -1,4 +1,9 @@
+// Type-only marker, so TypeScript rejects look-alike objects (like the runtime does):
+// elements must come from JSX or createElement(), raw markup from html().
+declare const NODE: unique symbol;
+
 export type Tag = {
+  [NODE]: true;
   type: "tag";
   tag: string | ((props: Props) => JSX.Element);
   props: Props;
@@ -10,6 +15,7 @@ type Props = {
 };
 
 type Html = {
+  [NODE]: true;
   html: string;
 };
 

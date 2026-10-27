@@ -46,12 +46,12 @@ The example project provides a complete [tsconfig.json](https://github.com/jeasx
 Now create a test file (e.g. `src/HelloWorld.jsx`) and run it via `npx tsx src/HelloWorld.jsx`:
 
 ```jsx
-import { jsxToString } from "jsx-async-runtime";
+import { html, jsxToString } from "jsx-async-runtime";
 
 export default function HelloWorld({ greeting }) {
   return (
     <>
-      {{ html: `<!DOCTYPE html>` }}
+      {html("<!DOCTYPE html>")}
       <html>
         <head>
           <meta charset="utf-8" />
@@ -133,23 +133,27 @@ Without `await` (e.g. `jsxToString(...).catch(...)`), check for a string first: 
 
 ## Escaping HTML
 
-All text and attribute values are HTML-escaped by default to prevent cross-site scripting. To include a literal HTML snippet (e.g. the doctype or WYSIWYG content from a CMS), pass an object with a single `html` key:
+All text and attribute values are HTML-escaped by default to prevent cross-site scripting. To include a literal HTML snippet (e.g. the doctype or WYSIWYG content from a CMS), wrap it in `html()`:
 
 ```jsx
-<div>{{ html: "<p>Some <b>HTML</b> from a CMS</p>" }}</div>
+import { html } from "jsx-async-runtime";
+
+<div>{html("<p>Some <b>HTML</b> from a CMS</p>")}</div>;
 ```
 
-This also applies to `<script>` and `<style>`: their text content is escaped like any other text, so `<script>{"if (a < b) {}"}</script>` renders `if (a &lt; b) {}`, which breaks the code. Wrap inline scripts and styles in `{{ html: ... }}`:
+Only markup created by `html()` is rendered raw. Plain objects like `{ html: "..." }` render nothing, so data parsed from JSON (e.g. a request body like `{"text": {"html": "<script>..."}}`) can't inject markup when passed as a child.
+
+This also applies to `<script>` and `<style>`: their text content is escaped like any other text, so `<script>{"if (a < b) {}"}</script>` renders `if (a &lt; b) {}`, which breaks the code. Wrap inline scripts and styles in `html()`:
 
 ```jsx
-<script>{{ html: `if (a < b) { console.log("ok"); }` }}</script>
-<style>{{ html: `a > span { color: red; }` }}</style>
+<script>{html(`if (a < b) { console.log("ok"); }`)}</script>
+<style>{html(`a > span { color: red; }`)}</style>
 ```
 
 Never put untrusted input into an inline script this way. To pass data to a script, use JSON with `<` escaped, so a value containing `</script>` can't end the script early:
 
 ```jsx
-<script>{{ html: `const data = ${JSON.stringify(data).replaceAll("<", "\\u003c")};` }}</script>
+<script>{html(`const data = ${JSON.stringify(data).replaceAll("<", "\\u003c")};`)}</script>
 ```
 
 To restore the behaviour of `jsx-async-runtime < v2.x.x` and turn off text escaping completely, set `jsxEscapeHTML` on the `this` context:
@@ -280,6 +284,7 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 | ---------------------------------------- | ------------------------------------------------------------------------------- |
 | `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.           |
 | `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits. |
+| `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                 |
 | `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a string.                                 |
 | `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                        |
 | `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.   |
@@ -296,12 +301,12 @@ Context properties read by the runtime:
 The [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) shows all features in a small web server. Here is a shortened version:
 
 ```jsx
-import { jsxToString } from "jsx-async-runtime";
+import { html, jsxToString } from "jsx-async-runtime";
 
 export default function App() {
   return (
     <>
-      {{ html: `<!DOCTYPE html>` }}
+      {html("<!DOCTYPE html>")}
       <html>
         <head>
           <meta charset="utf-8" />

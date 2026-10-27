@@ -22,7 +22,20 @@ export function createElement(
   return jsx(tag, $props);
 }
 
-const ELEMENT = Symbol.for("jsx-async-runtime.element");
+// Marks elements and raw markup created here. JSON can't contain Symbols, so parsed data
+// (e.g. a request body) can never pass as either. `Symbol.for` makes the marker work
+// even when two copies of this package are loaded.
+const NODE = Symbol.for("jsx-async-runtime.node");
+
+/**
+ * Marks a string as raw markup, which is rendered without escaping,
+ * e.g. `{html("<!DOCTYPE html>")}`. Never pass untrusted input.
+ * Plain `{ html }` objects (e.g. from JSON.parse()) render nothing.
+ */
+export function html(markup: string): JSX.Element {
+  // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
+  return { [NODE]: true, html: markup } as unknown as JSX.Element;
+}
 
 /**
  * Creates the element and changes the given props in place,
@@ -44,12 +57,13 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
     }
   }
 
+  // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
   return {
-    [ELEMENT]: true,
+    [NODE]: true,
     type: "tag",
     tag,
     props,
-  } as JSX.Element;
+  } as unknown as JSX.Element;
 }
 
 function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {

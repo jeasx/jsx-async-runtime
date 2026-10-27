@@ -2,6 +2,7 @@ import {
   createElement as classicCreateElement,
   escapeEntities,
   Fragment,
+  html,
   jsxToStream,
   jsxToString,
 } from "jsx-async-runtime";
@@ -130,7 +131,7 @@ test("style as empty object", () => equal(<h1 style={{}}></h1>, `<h1></h1>`));
 test("doctype declaration", () =>
   equal(
     <>
-      {{ html: "<!DOCTYPE html>" }}
+      {html("<!DOCTYPE html>")}
       <html lang="en">
         <head>
           <meta charset="utf-8" />
@@ -145,7 +146,7 @@ test("escape enabled", () =>
     <div>
       <h1>"Hello & World"</h1>
       {`<p>"Escaped & text"</p>`}
-      {{ html: `<p>"Unescaped & text"</p>` }}
+      {html(`<p>"Unescaped & text"</p>`)}
     </div>,
     `<div><h1>&quot;Hello &amp; World&quot;</h1>&lt;p&gt;&quot;Escaped &amp; text&quot;&lt;/p&gt;<p>"Unescaped & text"</p></div>`,
   ));
@@ -312,7 +313,24 @@ test("function value", () => equal(() => "x", ``));
 
 test("unicode text is not escaped", () => equal(<p>Grüße 🚀 ©</p>, `<p>Grüße 🚀 ©</p>`));
 
-test("empty html object", () => equal(<p>{{ html: "" }}</p>, `<p></p>`));
+test("empty raw html", () => equal(<p>{html("")}</p>, `<p></p>`));
+
+test("plain html objects are not rendered", () => {
+  const body = JSON.parse(`{ "text": { "html": "<img src=x onerror=alert(1)>" } }`);
+  return equal(
+    <p>
+      {{ html: "<b>x</b>" }}
+      {body.text}
+    </p>,
+    `<p></p>`,
+  );
+});
+
+test("copied raw html is still rendered", () => {
+  /** @type {any} */
+  const raw = html("<b>x</b>");
+  return equal(<p>{{ ...raw }}</p>, `<p><b>x</b></p>`);
+});
 
 test("object with html and other keys is not rendered", () =>
   equal(<p>{{ html: "<script>x</script>", title: "Post" }}</p>, `<p></p>`));
@@ -320,14 +338,14 @@ test("object with html and other keys is not rendered", () =>
 test("object with inherited html key is not rendered", () =>
   equal(<p>{Object.create({ html: "<b>x</b>" })}</p>, `<p></p>`));
 
-test("html object with non-string value is not rendered", () =>
+test("raw html with non-string value is not rendered", () =>
   equal(
     <p>
-      {{ html: null }}
-      {{ html: undefined }}
-      {{ html: 5 }}
-      {{ html: ["<b>", "x"] }}
-      {{ html: { toString: () => "<b>x</b>" } }}
+      {html(/** @type {any} */ (null))}
+      {html(/** @type {any} */ (undefined))}
+      {html(/** @type {any} */ (5))}
+      {html(/** @type {any} */ (["<b>", "x"]))}
+      {html(/** @type {any} */ ({ toString: () => "<b>x</b>" }))}
     </p>,
     `<p></p>`,
   ));
@@ -531,8 +549,8 @@ test("component returning zero", () => {
   return equal(<Zero />, `0`);
 });
 
-test("component returning html object", () => {
-  const Raw = () => ({ html: "<b>raw</b>" });
+test("component returning raw html", () => {
+  const Raw = () => html("<b>raw</b>");
   return equal(<Raw />, `<b>raw</b>`);
 });
 
@@ -604,6 +622,16 @@ test("escaping disabled via context", async () =>
     await jsxToString.call({ jsxEscapeHTML: false }, <p>{"<b>"}</p>),
     `<p><b></p>`,
   ));
+
+test("only an explicit false turns escaping off", async () => {
+  for (const jsxEscapeHTML of [true, undefined, null, "true", "false", 1, 0, ""]) {
+    assert.strictEqual(
+      await jsxToString.call({ jsxEscapeHTML }, <p>{"<b>"}</p>),
+      `<p>&lt;b&gt;</p>`,
+      `jsxEscapeHTML: ${JSON.stringify(jsxEscapeHTML)}`,
+    );
+  }
+});
 
 test("custom jsxToString via context", async () => {
   const ctx = {
@@ -1009,9 +1037,9 @@ test("stream waits for the reader", async () => {
   const stream = jsxToStream.call({}, <div>{items}</div>);
   await delay(20);
   assert.ok(calls > 0 && calls < 100, `rendered ${calls} components without a read`);
-  const html = (await streamToChunks(stream)).join("");
+  const markup = (await streamToChunks(stream)).join("");
   assert.strictEqual(calls, 100);
-  assert.strictEqual(html, `<div>${"x".repeat(100 * 1000)}</div>`);
+  assert.strictEqual(markup, `<div>${"x".repeat(100 * 1000)}</div>`);
 });
 
 test("stream cancel stops a paused render", async () => {

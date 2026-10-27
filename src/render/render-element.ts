@@ -39,7 +39,7 @@ const VOID_TAGS = new Set([
 // eslint-disable-next-line no-control-regex
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
 
-const ELEMENT = Symbol.for("jsx-async-runtime.element");
+const NODE = Symbol.for("jsx-async-runtime.node");
 
 /**
  * Renders a JSX element into the writer.
@@ -63,7 +63,8 @@ export function renderElement(
 
   switch (typeof jsxElement) {
     case "string":
-      writer.buffer += (this?.jsxEscapeHTML ?? true) === true ? escapeHTML(jsxElement) : jsxElement;
+      // Only an explicit `false` turns escaping off, so a wrong value (e.g. "true" or 0) stays safe.
+      writer.buffer += this?.jsxEscapeHTML !== false ? escapeHTML(jsxElement) : jsxElement;
       return;
     case "bigint":
     case "number":
@@ -85,19 +86,16 @@ export function renderElement(
     return renderChildren.call(this, Array.from(jsxElement), writer);
   }
 
-  if ("html" in jsxElement) {
-    // Only an object with a string `html` as its single key is raw markup.
-    // Other objects that happen to have an `html` key (e.g. a record from a database)
-    // render nothing, so their content is never output unescaped by accident.
-    if (Object.keys(jsxElement).length === 1 && typeof jsxElement.html === "string") {
-      writer.buffer += jsxElement.html;
-    }
+  // Only nodes created by jsx(), createElement() or html() are rendered. Look-alike objects,
+  // e.g. from JSON.parse() or a database record, render nothing, so user data can't inject markup.
+  if ((jsxElement as Record<symbol, unknown>)[NODE] !== true) {
     return;
   }
 
-  // Only elements created by jsx() or createElement() are rendered. Look-alike objects,
-  // e.g. from JSON.parse(), render nothing, so user data can't inject tags or attributes.
-  if ((jsxElement as Record<symbol, unknown>)[ELEMENT] !== true) {
+  if ("html" in jsxElement) {
+    if (typeof jsxElement.html === "string") {
+      writer.buffer += jsxElement.html;
+    }
     return;
   }
 

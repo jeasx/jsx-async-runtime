@@ -1,4 +1,4 @@
-import { jsxToString } from "jsx-async-runtime";
+import { html, jsxToString } from "jsx-async-runtime";
 
 export default function App({ url = "/" }) {
   // In the given setup you can use "this" as context
@@ -52,18 +52,16 @@ export default function App({ url = "/" }) {
 
   return (
     <>
-      {{ html: "<!DOCTYPE html>" }}
+      {html("<!DOCTYPE html>")}
       <html lang="en">
         <head>
           <meta charset="utf-8" />
           <meta name="description" content="Default description" />
           <title>Default title</title>
           <style>
-            {{
-              html: /* css */ `body {font-family: sans-serif; line-height: 1.5;}
+            {html(/* css */ `body {font-family: sans-serif; line-height: 1.5;}
 input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
-.striped tr:nth-child(odd) {background-color: orange; padding: 4px;}`,
-            }}
+.striped tr:nth-child(odd) {background-color: orange; padding: 4px;}`)}
           </style>
         </head>
         <body>
@@ -77,9 +75,9 @@ input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
           <h2>Escape example</h2>
           {`<p>&copy; Just some <b>"escaped"</b> markup (default behaviour)<p>`}
           <h2>Unescape example</h2>
-          {{
-            html: /*html*/ `<p>&copy; Just some <b>"unescaped"</b> markup created with <code>{ html: "..." }</code> object.<p>`,
-          }}
+          {html(
+            /*html*/ `<p>&copy; Just some <b>"unescaped"</b> markup created with <code>html("...")</code>.<p>`,
+          )}
         </body>
       </html>
     </>
@@ -93,7 +91,7 @@ function Layout({ title, children = [] }) {
       <head>
         <title>{title}</title>
         <meta name="description" content={`This is the description for ${title}`} />
-        <style>{{ html: /* css */ `h1 {background-color: red;}` }}</style>
+        <style>{html(/* css */ `h1 {background-color: red;}`)}</style>
       </head>
       <Logo title={title} />
       {children}
