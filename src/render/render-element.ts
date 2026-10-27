@@ -64,7 +64,7 @@ export function renderElement(
   switch (typeof jsxElement) {
     case "string":
       // Only an explicit `false` turns escaping off, so a wrong value (e.g. "true" or 0) stays safe.
-      writer.buffer += this?.jsxEscapeHTML !== false ? escapeHTML(jsxElement) : jsxElement;
+      writer.buffer += this?.jsxEscapeHTML === false ? jsxElement : escapeHTML(jsxElement);
       return;
     case "bigint":
     case "number":
