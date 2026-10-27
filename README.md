@@ -204,7 +204,7 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | plain object or array                     | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                                     |
 | anything else (`URL`, `Date`, numbers)    | its string form, e.g. `href={new URL("https://example.com")}`                    |
 
-Style properties use CSS names (`background-color`, not `backgroundColor`). `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
+Style properties use CSS names (`background-color`, not `backgroundColor`). Keys are rendered exactly as written and camelCase isn't converted, so `style={{ fontSize: "1rem" }}` renders `style="fontSize: 1rem"`, which browsers ignore. Custom properties work as written, e.g. `style={{ "--gap": "1rem" }}`. `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
 
 ## The `this` context
 
