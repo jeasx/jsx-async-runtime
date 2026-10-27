@@ -12,16 +12,16 @@
 
 - Added #jsxToStream, which renders to a `ReadableStream<string>`. It sends the markup rendered so far each time rendering has to wait for an async component or promise, so the browser can start displaying the page earlier
 - Promises can be used directly as children (e.g. `<div>{promise}</div>`). They are awaited and rendered instead of being silently dropped
-- `Fragment` is exported from the main entry, next to #createElement, so the classic runtime can be used with a single import (e.g. `import { createElement, Fragment } from "jsx-async-runtime"`)
 
 ### Fixes
 
+- A promise passed directly to #jsxToString (e.g. `jsxToString(loadPage())`) is awaited and rendered instead of rendering an empty string
 - `key` is no longer rendered as text or as an HTML attribute, and the dev runtime no longer adds its source info as children. Components using compiled JSX don't receive `key` in their props; with #createElement (classic runtime, or `key` placed after a spread) it is still passed through
 - Event handlers and other function or symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of printing their source code into the HTML
 - Objects like `URL` or `Date` used as attribute values (e.g. `href={new URL(...)}`) render as their string value, e.g. `href="https://..."`, instead of quoted JSON. Plain objects and arrays are still JSON-encoded
 - BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail
-- A promise passed directly to #jsxToString or #jsxToStream (e.g. `jsxToString(loadPage())`) is awaited and rendered instead of rendering an empty string
 - #createElement no longer modifies the props object you pass in. Reusing the same props object for several elements previously duplicated their children
+- `Fragment` is exported from the main entry, next to #createElement, so the classic runtime can be used with a single import (e.g. `import { createElement, Fragment } from "jsx-async-runtime"`)
 
 ### Security
 

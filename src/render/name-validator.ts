@@ -12,7 +12,8 @@ export function createNameValidator(pattern: RegExp): (name: string) => boolean 
     if (!pattern.test(name)) {
       return false;
     }
-    // Limit the cache (count and name length), so names from untrusted input can't grow it without bound.
+    // Limit the cache (count and name length),
+    // so names from untrusted input can't grow it without bound.
     if (name.length <= 128 && validNames.size < 1024) {
       validNames.add(name);
     }
