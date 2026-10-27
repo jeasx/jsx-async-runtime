@@ -116,7 +116,8 @@ export function renderElement(
     const openTag = attributes.length ? `<${tag} ${attributes}>` : `<${tag}>`;
     writer.buffer += openTag;
 
-    if (children.length === 0 && VOID_TAGS.has(tag)) {
+    // Void tags can't have content or a closing tag, so their children are ignored.
+    if (VOID_TAGS.has(tag)) {
       return;
     }
 

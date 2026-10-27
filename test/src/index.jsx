@@ -70,6 +70,23 @@ test("void tags", () =>
     `<hr><br><img src="src" alt=""><link href="/"><input type="text">`,
   ));
 
+test("void tags ignore children", () => {
+  let called = false;
+  const Child = () => {
+    called = true;
+    return "x";
+  };
+  return equal(
+    <>
+      <br>text</br>
+      <img src="src">
+        <Child />
+      </img>
+    </>,
+    `<br><img src="src">`,
+  ).then(() => assert.equal(called, false));
+});
+
 test("empty fragment", () => equal(<></>, ``));
 
 test("class as string", () => equal(<div class="a b c"></div>, `<div class="a b c"></div>`));
