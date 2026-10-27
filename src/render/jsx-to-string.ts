@@ -6,16 +6,14 @@ import { createNameValidator } from "./name-validator.js";
  * Receives the rendered markup. Markup is appended to `buffer`.
  * `flush` is called before rendering waits for a promise, so a writer
  * can send the markup rendered so far (or ignore it to collect a string).
+ * It returns a promise when rendering should pause until the reader catches up.
  */
 type Writer = {
   buffer: string;
   /** Set when the stream reader cancels; rendering stops at the next component. */
   cancelled: boolean;
-  flush(): void;
+  flush(): void | Promise<void>;
 };
-
-/** Thrown to stop rendering after the stream was cancelled. */
-const CANCELLED = Symbol("cancelled");
 
 /**
  * Renders a JSX element to a string.
@@ -55,15 +53,27 @@ export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<
     cancelled: false,
     flush() {},
   };
-  return new ReadableStream<string>({
+  // Resolves the pause when the reader wants more (or cancels).
+  let resume: (() => void) | undefined;
+  const wakeUp = () => {
+    resume?.();
+    resume = undefined;
+  };
+  const source: UnderlyingDefaultSource<string> = {
     start(controller) {
       writer.flush = () => {
         if (writer.cancelled) {
-          throw CANCELLED;
+          throw new Error("Stream cancelled");
         }
         if (writer.buffer !== "") {
           controller.enqueue(writer.buffer);
           writer.buffer = "";
+        }
+        // Backpressure: wait while the reader has enough queued markup.
+        if ((controller.desiredSize ?? 1) <= 0) {
+          return new Promise<void>((resolve) => {
+            resume = resolve;
+          });
         }
       };
       const done = () => {
@@ -90,10 +100,17 @@ export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<
         fail(error);
       }
     },
+    pull: wakeUp,
     cancel() {
       writer.cancelled = true;
       writer.buffer = "";
+      // Let paused rendering continue, so it stops at the next component.
+      wakeUp();
     },
+  };
+  return new ReadableStream<string>(source, {
+    highWaterMark: 16 * 1024,
+    size: (chunk) => chunk.length,
   });
 }
 
@@ -130,8 +147,9 @@ function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void
   }
 
   if (isPromise(jsxElement)) {
-    writer.flush();
-    return Promise.resolve(jsxElement).then((element) => renderElement.call(this, element, writer));
+    return flushAndAwait(writer, jsxElement).then((element) =>
+      renderElement.call(this, element, writer),
+    );
   }
 
   switch (typeof jsxElement) {
@@ -198,12 +216,13 @@ function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void
   if (typeof jsxElement.tag === "function") {
     // Don't call more components once the stream reader is gone.
     if (writer.cancelled) {
-      throw CANCELLED;
+      throw new Error("Stream cancelled");
     }
     const jsxElementTag = jsxElement.tag.call(this, jsxElement.props);
     if (isPromise(jsxElementTag)) {
-      writer.flush();
-      return Promise.resolve(jsxElementTag).then((tag) => $renderElement.call(this, tag, writer));
+      return flushAndAwait(writer, jsxElementTag).then((tag) =>
+        $renderElement.call(this, tag, writer),
+      );
     }
     return $renderElement.call(this, jsxElementTag, writer);
   }
@@ -214,18 +233,36 @@ function renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void
  * then continues the remaining children sequentially.
  */
 function renderChildren(this: any, children: JSX.Element[], writer: Writer): void | Promise<void> {
-  for (let i = 0; i < children.length; i++) {
-    const child = children[i]!;
-    let pending: void | Promise<void>;
-    if (isPromise(child)) {
-      writer.flush();
-      pending = Promise.resolve(child).then(($child) => $renderElement.call(this, $child, writer));
-    } else {
-      pending = $renderElement.call(this, child, writer);
+  let i = 0;
+  try {
+    for (; i < children.length; i++) {
+      const child = children[i]!;
+      let pending: void | Promise<void>;
+      if (isPromise(child)) {
+        pending = flushAndAwait(writer, child).then(($child) =>
+          $renderElement.call(this, $child, writer),
+        );
+      } else {
+        pending = $renderElement.call(this, child, writer);
+      }
+      if (isPromise(pending)) {
+        for (let index = i + 1; index < children.length; index++) {
+          const child = children[index];
+          if (child instanceof Promise) {
+            child.then(undefined, () => {});
+          }
+        }
+        return renderChildrenAsync.call(this, children, i + 1, pending, writer);
+      }
     }
-    if (isPromise(pending)) {
-      return renderChildrenAsync.call(this, children, i + 1, pending, writer);
+  } catch (error) {
+    for (let index = i + 1; index < children.length; index++) {
+      const child = children[index];
+      if (child instanceof Promise) {
+        child.then(undefined, () => {});
+      }
     }
+    throw error;
   }
 }
 
@@ -241,8 +278,7 @@ async function renderChildrenAsync(
     const child = children[index]!;
     let element: JSX.Element = child;
     if (isPromise(child)) {
-      writer.flush();
-      element = await child;
+      element = await flushAndAwait(writer, child);
     }
     // Only wait when the child has to, so sync siblings don't cost extra microtasks.
     const pending = $renderElement.call(this, element, writer);
@@ -263,8 +299,7 @@ function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): voi
   }
   const result = $jsxToString.call(this, jsxElement);
   if (isPromise(result)) {
-    writer.flush();
-    return Promise.resolve(result).then(($result) => {
+    return flushAndAwait(writer, result).then(($result) => {
       writer.buffer += $result;
     });
   }
@@ -273,4 +308,17 @@ function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): voi
 
 function isPromise(value: unknown): value is PromiseLike<any> {
   return typeof (value as PromiseLike<unknown> | null)?.then === "function";
+}
+
+/**
+ * Sends the markup rendered so far, then waits for `value`
+ * and (when the stream reader is behind) for the reader to catch up.
+ * Both are awaited together, so a rejection of `value` is handled right away.
+ */
+function flushAndAwait<T>(writer: Writer, value: PromiseLike<T>): Promise<T> {
+  const ready = writer.flush();
+  if (!ready) {
+    return Promise.resolve(value);
+  }
+  return Promise.all([value, ready]).then(([$value]) => $value);
 }

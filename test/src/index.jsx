@@ -762,3 +762,91 @@ test("createElement does not change the passed props", async () => {
   await equal(createElement("li", props, "a"), `<li id="x">a</li>`);
   assert.deepStrictEqual(props, { id: "x", key: "k" });
 });
+
+const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));
+const rejectAfter = (ms, message) =>
+  new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms));
+
+// Takes a factory, because promise children start when the JSX is created.
+async function rejects(createJsx, message) {
+  await assert.rejects(async () => jsxToString.call({}, createJsx()), { message });
+  await assert.rejects(streamToChunks(jsxToStream.call({}, createJsx())), { message });
+  // Give rejections that nobody handled the chance to fail the test.
+  await delay(40);
+}
+
+test("promise child rejects while an earlier sibling is pending", () =>
+  rejects(
+    () => (
+      <div>
+        {delay(30, "a")}
+        {rejectAfter(5, "boom")}
+      </div>
+    ),
+    "boom",
+  ));
+
+test("promise child rejects after an earlier sibling threw", () => {
+  const Boom = () => {
+    throw new Error("first");
+  };
+  return rejects(
+    () => (
+      <div>
+        <Boom />
+        {rejectAfter(5, "second")}
+      </div>
+    ),
+    "first",
+  );
+});
+
+test("nested promise child rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <p>{rejectAfter(5, "nested")}</p>
+      </div>
+    ),
+    "nested",
+  );
+});
+
+test("component returns an array with a rejecting promise", () => {
+  const List = () => [delay(30, "a"), rejectAfter(5, "array")];
+  return rejects(() => <List />, "array");
+});
+
+test("stream waits for the reader", async () => {
+  let calls = 0;
+  const Item = async () => {
+    calls++;
+    await null;
+    return "x".repeat(1000);
+  };
+  const items = Array.from({ length: 100 }, () => <Item />);
+  const stream = jsxToStream.call({}, <div>{items}</div>);
+  await delay(20);
+  assert.ok(calls > 0 && calls < 100, `rendered ${calls} components without a read`);
+  const html = (await streamToChunks(stream)).join("");
+  assert.strictEqual(calls, 100);
+  assert.strictEqual(html, `<div>${"x".repeat(100 * 1000)}</div>`);
+});
+
+test("stream cancel stops a paused render", async () => {
+  let calls = 0;
+  const Item = async () => {
+    calls++;
+    await null;
+    return "x".repeat(1000);
+  };
+  const items = Array.from({ length: 100 }, () => <Item />);
+  const stream = jsxToStream.call({}, <div>{items}</div>);
+  await delay(20);
+  const paused = calls;
+  await stream.cancel();
+  await delay(20);
+  assert.ok(calls <= paused + 1, `rendered ${calls - paused} components after cancel`);
+});

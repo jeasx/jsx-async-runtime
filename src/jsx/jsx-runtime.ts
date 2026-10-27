@@ -52,6 +52,9 @@ function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
           mapChildren(child, accumulator);
         }
       } else if (children != null) {
+        if (children instanceof Promise) {
+          children.then(undefined, () => {});
+        }
         accumulator.push(children);
       }
       break;
