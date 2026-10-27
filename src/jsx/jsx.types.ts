@@ -35,6 +35,16 @@ declare global {
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
+    // Class names as a string, an object of `name: condition` pairs,
+    // or a (nested) array of both, e.g. `["a", ["b"], { c: cond }]`.
+    type ClassValue =
+      | string
+      | false
+      | null
+      | undefined
+      | { [key: string]: boolean | null | undefined }
+      | Array<ClassValue>;
+
     // Attributes allowed on every element and component. `key` is accepted
     // (e.g. when mapping lists), but never rendered as an attribute.
     interface IntrinsicAttributes {
@@ -46,10 +56,7 @@ declare global {
       anchor?: string;
       autocapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters";
       autofocus?: "" | "autofocus" | boolean;
-      class?:
-        | string
-        | Array<string | false | null | undefined>
-        | { [key: string]: boolean | null | undefined };
+      class?: ClassValue;
       contenteditable?: "" | "true" | "false" | "plaintext-only" | true;
       dir?: "auto" | "rtl" | "ltr";
       draggable?: "true" | "false";
@@ -501,10 +508,7 @@ declare global {
       calcMode?: "discrete" | "linear" | "paced" | "spline";
       /** @deprecated */
       "cap-height"?: number | string;
-      class?:
-        | string
-        | Array<string | false | null | undefined>
-        | { [key: string]: boolean | null | undefined };
+      class?: ClassValue;
       /** @deprecated */
       clip?: "auto" | (string & {});
       "clip-path"?: "none" | (string & {});

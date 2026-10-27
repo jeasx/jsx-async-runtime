@@ -130,6 +130,18 @@ test("class as array", () =>
 
 test("class as empty array", () => equal(<div class={[]}></div>, `<div></div>`));
 
+test("class as nested array", () =>
+  equal(
+    <div class={["a", ["b", ["c", false]], [], null, "d"]}></div>,
+    `<div class="a b c d"></div>`,
+  ));
+
+test("class as array with objects", () =>
+  equal(
+    <div class={["a", { b: true, c: false }, [{ d: true }], "e"]}></div>,
+    `<div class="a b d e"></div>`,
+  ));
+
 test("class as undefined array", () =>
   equal(<div class={[null, undefined, ""]}></div>, `<div></div>`));
 

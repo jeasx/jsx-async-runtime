@@ -200,6 +200,7 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `style={{ "padding-top": "1rem" }}`       | `style="padding-top: 1rem"` (`null`, `undefined` and `false` values are skipped) |
 | `class={{ active: true, hidden: false }}` | `class="active"`                                                                 |
 | `class={["a", cond && "b"]}`              | `class="a b"` (falsy entries are skipped)                                        |
+| `class={["a", ["b"], { c: true }]}`       | `class="a b c"` (arrays may nest and contain objects)                            |
 | plain object or array                     | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                                     |
 | anything else (`URL`, `Date`, numbers)    | its string form, e.g. `href={new URL("https://example.com")}`                    |
 
