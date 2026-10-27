@@ -187,6 +187,8 @@ Only elements created by JSX or `createElement` are rendered. Objects that merel
 
 Escaping doesn't check what a value means. URLs are not validated, so `href={userInput}` can still contain a `javascript:` link. Check URLs from untrusted sources yourself (e.g. allow only `http:` and `https:`).
 
+The same goes for styles. Style values are escaped for HTML, but not checked as CSS, so `style={{ color: userInput }}` with `"red; background: url(https://evil.example)"` adds a second property. Don't put untrusted input into styles, or allow only known values (e.g. a list of colors).
+
 ## Attributes
 
 Attributes use their HTML names (`class`, `for`, `onclick`), not the React names (`className`, `htmlFor`, `onClick`).
