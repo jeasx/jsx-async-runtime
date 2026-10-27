@@ -49,7 +49,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "tsc --build --clean"
+    "clean": "tsc --build --clean",
+    "test": "npm run build && npm --prefix test ci && npm --prefix test run build && npm --prefix test test"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
