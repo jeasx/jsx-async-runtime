@@ -73,10 +73,10 @@ input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
           <ThemeSwitch />
           <hr />
           <h2>Escape example</h2>
-          {`<p>&copy; Just some <b>"escaped"</b> markup (default behaviour)<p>`}
+          {`<p>&copy; Just some <b>"escaped"</b> markup (default behaviour)</p>`}
           <h2>Unescape example</h2>
           {html(
-            /*html*/ `<p>&copy; Just some <b>"unescaped"</b> markup created with <code>html("...")</code>.<p>`,
+            /*html*/ `<p>&copy; Just some <b>"unescaped"</b> markup created with <code>html("...")</code>.</p>`,
           )}
         </body>
       </html>
