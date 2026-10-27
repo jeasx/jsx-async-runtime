@@ -827,6 +827,20 @@ test("key is not passed to components", () => {
   return equal(<Props key="k">x</Props>, `[&quot;children&quot;]1`);
 });
 
+test("key is allowed on typed components", () => {
+  // The build type-checks this: `key` must be accepted although Item's props don't declare it.
+  /** @param {{ label: string }} props */
+  const Item = ({ label }) => <li>{label}</li>;
+  return equal(
+    <ul>
+      {["a", "b"].map((label) => (
+        <Item key={label} label={label} />
+      ))}
+    </ul>,
+    `<ul><li>a</li><li>b</li></ul>`,
+  );
+});
+
 test("Fragment from main entry with createElement", () =>
   equal(
     classicCreateElement(Fragment, null, classicCreateElement("b", null, "a"), "b"),

@@ -29,6 +29,12 @@ declare global {
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
+    // Attributes allowed on every element and component. `key` is accepted
+    // (e.g. when mapping lists), but never rendered or passed to components.
+    interface IntrinsicAttributes {
+      key?: string | number | bigint | null;
+    }
+
     interface GlobalAttributes {
       accesskey?: string;
       anchor?: string;

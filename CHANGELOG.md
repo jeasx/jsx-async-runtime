@@ -35,6 +35,7 @@
 ### Types (jsx.types)
 
 - `Tag.tag` is typed as `string | ((props) => JSX.Element)`, matching what the runtime actually passes
+- `key` is accepted on components (e.g. `<Item key={id} label={label} />`) via `JSX.IntrinsicAttributes`, instead of failing type checks when the component's props don't declare it
 - `class` accepts falsy values, matching what the runtime already skips: arrays may contain `false`, `null` and `undefined` (e.g. `class={["a", cond && "b"]}`), and object values may be `null` or `undefined` (e.g. `class={{ active: user?.isActive }}`)
 - `aria-*` attributes only accept strings. Booleans didn't work as expected: `true` renders an empty attribute (which ARIA treats as unset) and `false` removes it. Use e.g. `aria-hidden="true"`
 - `contenteditable`, `spellcheck`, `translate` and `writingsuggestions` no longer accept `false`, because it removes the attribute (so the parent's value applies) instead of turning the feature off. Use the string value instead (e.g. `spellcheck="false"` or `translate="no"`)
