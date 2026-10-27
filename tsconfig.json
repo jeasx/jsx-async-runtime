@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "nodenext",
     "target": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "nodenext",
+    "types": [],
     "rootDir": "src",
     "outDir": "dist",
     "skipLibCheck": true,
