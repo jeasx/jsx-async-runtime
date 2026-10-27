@@ -151,7 +151,7 @@ test("escape enabled", () =>
     `<div><h1>&quot;Hello &amp; World&quot;</h1>&lt;p&gt;&quot;Escaped &amp; text&quot;&lt;/p&gt;<p>"Unescaped & text"</p></div>`,
   ));
 
-test("escape disbaled", () =>
+test("escape disabled", () =>
   equal(
     <div>
       <h1>{`"Hello World"`}</h1>
