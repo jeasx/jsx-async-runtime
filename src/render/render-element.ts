@@ -165,20 +165,14 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
       }
       if (isPromise(pending)) {
         for (let index = i + 1; index < children.length; index++) {
-          const child = children[index];
-          if (child instanceof Promise) {
-            handleRejection(child);
-          }
+          handleRejection(children[index]);
         }
         return renderChildrenAsync.call(this, children, i + 1, pending, writer);
       }
     }
   } catch (error) {
     for (let index = i + 1; index < children.length; index++) {
-      const child = children[index];
-      if (child instanceof Promise) {
-        handleRejection(child);
-      }
+      handleRejection(children[index]);
     }
     throw error;
   }
