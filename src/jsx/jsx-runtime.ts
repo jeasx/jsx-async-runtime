@@ -36,7 +36,7 @@ export function html(markup: string): JSX.Element {
 }
 
 /**
- * Creates the element and changes the given props in place,
+ * Creates the element and keeps the given props object without copying it,
  * since compiled JSX always creates a fresh object.
  */
 export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
