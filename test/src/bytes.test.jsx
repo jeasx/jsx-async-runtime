@@ -52,6 +52,40 @@ test("character split between byte chunks", () => {
   return equal(() => <p>{createStream()}</p>, `<p>aüb</p>`);
 });
 
+test("character split between byte children", () =>
+  // "ü" is 0xc3 0xbc in UTF-8, e.g. chunks collected from a stream.
+  equal(<p>{[new Uint8Array([0x61, 0xc3]), new Uint8Array([0xbc, 0x62])]}</p>, `<p>aüb</p>`));
+
+test("character split between byte chunks of a generator", () => {
+  function* chunks() {
+    yield Buffer.from([0xe2, 0x82]);
+    yield Buffer.from([0xac]);
+    yield Buffer.from(" & co");
+  }
+  return equal(() => <p>{chunks()}</p>, `<p>€ &amp; co</p>`);
+});
+
+test("character split between byte children after an async sibling", () =>
+  equal(
+    <p>
+      {Promise.resolve("x")}
+      {new Uint8Array([0xc3])}
+      {new Uint8Array([0xbc])}
+    </p>,
+    `<p>xü</p>`,
+  ));
+
+test("character cut off before a child that isn't bytes", () =>
+  equal(
+    <p>
+      {new Uint8Array([0xc3])}
+      {new Uint8Array([0xbc, 0xc3])}
+      {"y"}
+      {new Uint8Array([0xbc])}
+    </p>,
+    `<p>ü�y�</p>`,
+  ));
+
 test("character cut off at the end of the bytes", () => {
   async function* bytes() {
     yield new Uint8Array([0x61, 0xc3]);

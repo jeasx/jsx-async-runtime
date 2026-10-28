@@ -215,7 +215,12 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
           $renderElement.call(this, $child, writer),
         );
       } else {
-        pending = $renderElement.call(this, child, writer);
+        let element = child;
+        // `typeof` first, so text children skip the byte check.
+        if (typeof child === "object" && isByteRun(children, i)) {
+          [element, i] = decodeByteRun(children, i);
+        }
+        pending = $renderElement.call(this, element, writer);
         if (!pending && writer.buffer.length >= writer.chunkSize) {
           // Send large sync markup early; continue async if the reader is behind.
           pending = writer.flush();
@@ -252,6 +257,8 @@ async function renderChildrenAsync(
       let element: JSX.Element = child;
       if (isPromise(child)) {
         element = await flushAndAwait(writer, child);
+      } else if (typeof child === "object" && isByteRun(children, index)) {
+        [element, index] = decodeByteRun(children, index);
       }
       // Only wait when the child has to, so sync siblings don't cost extra microtasks.
       const pending = $renderElement.call(this, element, writer);
@@ -267,6 +274,29 @@ async function renderChildrenAsync(
     cancelUnreadStreams(children, error, index);
     throw error;
   }
+}
+
+/**
+ * Checks if the child at `index` and the one after it are both bytes,
+ * e.g. chunks collected from a stream or yielded by a generator.
+ */
+function isByteRun(children: JSX.Element[], index: number): boolean {
+  return isByteArray(children[index]) && isByteArray(children[index + 1]);
+}
+
+/**
+ * Decodes the bytes at `index` together with the bytes that follow it as one text,
+ * so a character split between two of them is decoded correctly, like in an async iterable.
+ * Returns the text and the index of the last bytes it decoded.
+ */
+function decodeByteRun(children: JSX.Element[], index: number): [string, number] {
+  const decoder = new TextDecoder();
+  let text = "";
+  for (; index < children.length && isByteArray(children[index]); index++) {
+    text += decoder.decode(children[index] as Uint8Array, { stream: true });
+  }
+  // Bytes of a character cut off at the end render as the replacement character "�".
+  return [text + decoder.decode(), index - 1];
 }
 
 /**
