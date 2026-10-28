@@ -229,7 +229,7 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `false`, `null`, `undefined`              | nothing                                                                          |
 | function or symbol                        | nothing                                                                          |
 | promise, e.g. `title={loadTitle()}`       | awaited, then rendered like its value                                            |
-| `style={{ "padding-top": "1rem" }}`       | `style="padding-top: 1rem"` (`null`, `undefined` and `false` values are skipped) |
+| `style={{ "padding-top": "1rem" }}`       | `style="padding-top: 1rem"` (`null`, `undefined`, `false` and `""` are skipped)  |
 | `class={{ active: true, hidden: false }}` | `class="active"`                                                                 |
 | `class={["a", cond && "b"]}`              | `class="a b"` (falsy entries are skipped)                                        |
 | `class={["a", ["b"], { c: true }]}`       | `class="a b c"` (arrays may nest and contain objects)                            |

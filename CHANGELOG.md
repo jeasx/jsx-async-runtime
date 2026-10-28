@@ -29,6 +29,7 @@
 - `key` is no longer rendered as text or as an HTML attribute, and the dev runtime no longer adds its source info as children. Components using compiled JSX don't receive `key` in their props; with #createElement (classic runtime, or `key` placed after a spread) it is still passed through
 - Children of void tags (e.g. `<br>text</br>`) are ignored, so they always render as a single tag like `<br>` instead of invalid HTML like `<br>text</br>`. Void tags are recognized regardless of case, so `<BR />` renders `<BR>` instead of `<BR></BR>`, which browsers read as two line breaks
 - `class` arrays may nest and contain objects, e.g. `class={["a", ["b"], { c: cond }]}` renders `class="a b c"` instead of `class="a b,[object Object]"`. The new `JSX.ClassValue` type describes all allowed values
+- Empty string style values are skipped like `null`, `undefined` and `false`, as in React, so `style={{ color: "" }}` renders no `style` attribute instead of `style="color: "`
 - Event handlers and other function or symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of printing their source code into the HTML
 - Objects like `URL` or `Date` used as attribute values (e.g. `href={new URL(...)}`) render as their string value, e.g. `href="https://..."`, instead of quoted JSON. Plain objects and arrays are still JSON-encoded
 - BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail

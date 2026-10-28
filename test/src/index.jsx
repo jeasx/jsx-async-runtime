@@ -595,16 +595,19 @@ test("style with numeric values", () =>
     `<div style="z-index: 1; opacity: 0"></div>`,
   ));
 
-test("style skips null, undefined and false values", () =>
+test("style skips null, undefined, false and empty string values", () =>
   equal(
     <div
       style={{ color: null, margin: undefined, display: false, padding: 0, "font-weight": "" }}
     />,
-    `<div style="padding: 0; font-weight: "></div>`,
+    `<div style="padding: 0"></div>`,
   ));
 
 test("style with only skipped values", () =>
-  equal(<div style={{ color: null, margin: undefined, display: false }} />, `<div></div>`));
+  equal(
+    <div style={{ color: null, margin: undefined, display: false, "font-weight": "" }} />,
+    `<div></div>`,
+  ));
 
 test("function and symbol attributes are skipped", () => {
   /** @type {any} */
