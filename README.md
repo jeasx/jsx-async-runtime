@@ -212,7 +212,18 @@ export default function () {
 }
 ```
 
-Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so names from untrusted input can't inject markup.
+Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so a name from untrusted input can't break out of the tag and inject markup.
+
+Valid names are still rendered as written, and some of them run code. Spreading untrusted data onto an element, e.g. `<div {...body} />` with a request body like `{"onmouseover": "alert(1)"}`, adds a working event handler, and `srcdoc` on an `<iframe>` runs any script in its value. Dynamic tags work the same way: `createElement(props.as, null, text)` with `"script"` as the tag runs `text` as code. Pass only the attributes you expect, and allow only known tags:
+
+```jsx
+// Pick known attributes instead of spreading untrusted data.
+<div title={body.title} lang={body.lang} />;
+
+// Allow only known tags for a dynamic tag name.
+const Heading = ["h1", "h2", "h3"].includes(level) ? level : "h2";
+<Heading>{text}</Heading>;
+```
 
 Only elements created by JSX or `createElement` are rendered. Objects that merely look like elements, e.g. `{ "tag": "script", ... }` parsed from a request body, render nothing, so user data passed as a child can't inject tags. To build elements in code, use `createElement`.
 

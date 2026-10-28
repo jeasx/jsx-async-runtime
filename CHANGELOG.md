@@ -49,8 +49,8 @@
 ### Security
 
 - Only markup created by #html is rendered raw. Plain objects with an `html` key, e.g. parsed JSON like `{"html":"<img src=x onerror=...>"}` from a request body or a database record, render nothing instead of outputting their `html` value unescaped, so user data passed as a child (e.g. `<p>{comment.text}</p>`) can't inject markup. Values passed to #html that aren't strings (e.g. `null`, `undefined`, numbers, arrays or objects) render nothing instead of their string form
-- Attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so object keys from untrusted input can't inject attributes or markup
-- Invalid tag names (not starting with an ASCII letter, or containing the characters above) are skipped together with their children, so dynamic tags from untrusted input (e.g. `createElement(props.as)`) can't inject markup
+- Attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so object keys from untrusted input can't break out of the tag and inject markup. Valid names are still rendered, so spreading untrusted data onto an element can still add event handlers like `onmouseover`; pass only the attributes you expect
+- Invalid tag names (not starting with an ASCII letter, or containing the characters above) are skipped together with their children, so dynamic tags from untrusted input (e.g. `createElement(props.as)`) can't inject markup. Valid tags like `script` are still rendered, so allow only known tags for dynamic tag names
 - Objects that only look like elements, e.g. parsed JSON like `{"type":"tag","tag":"script","props":{...}}` from a request body, render nothing. Elements are marked with a Symbol, which JSON can't contain, so user data passed as a child (e.g. `<p>{comment.text}</p>`) can't inject tags or attributes
 - Only `this.jsxEscapeHTML = false` turns off escaping. Other falsy values like `0` or `""` (and strings like `"false"`) keep escaping on instead of turning it off by accident
 
