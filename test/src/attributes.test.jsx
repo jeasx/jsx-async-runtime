@@ -1,0 +1,169 @@
+import { createElement as classicCreateElement } from "jsx-async-runtime";
+import { strict as assert } from "node:assert";
+import test from "node:test";
+import Timeout from "./components/Timeout.js";
+import { delay } from "./helpers/delay.js";
+import { equal } from "./helpers/equal.js";
+import { rejects } from "./helpers/rejects.js";
+
+test("boolean attributes", () =>
+  equal(
+    <div
+      hidden
+      autocapitalize="off"
+      contenteditable={true}
+      itemscope={false}
+      defer=""
+      autofocus="autofocus"
+    />,
+    `<div hidden autocapitalize="off" contenteditable defer="" autofocus="autofocus"></div>`,
+  ));
+
+test("null or undefined attributes", () =>
+  equal(<div id={null} title={undefined} />, `<div></div>`));
+
+test("empty string attribute", () => equal(<div title="" />, `<div title=""></div>`));
+
+test("numeric attributes", () =>
+  equal(<div tabindex={0} data-n={-1} />, `<div tabindex="0" data-n="-1"></div>`));
+
+test("bigint attribute", () => equal(<div data-n={10n} />, `<div data-n="10"></div>`));
+
+test("URL attribute uses its string form", () => {
+  /** @type {any} */
+  const url = new URL("https://x.dev/a?b=1&c=2");
+  return equal(<a href={url} />, `<a href="https://x.dev/a?b=1&amp;c=2"></a>`);
+});
+
+test("Date attribute uses its string form", () => {
+  /** @type {any} */
+  const date = new Date(0);
+  return equal(<time datetime={date} />, `<time datetime="${String(date)}"></time>`);
+});
+
+test("json array attribute", () =>
+  equal(<div data-x={[1, "a"]} />, `<div data-x="[1,&quot;a&quot;]"></div>`));
+
+test("null-prototype object attribute is JSON-encoded", () => {
+  const value = Object.assign(Object.create(null), { a: 1 });
+  return equal(<div data-x={value} />, `<div data-x="{&quot;a&quot;:1}"></div>`);
+});
+
+test("bigint in json attribute is encoded as string", () =>
+  equal(
+    <div data-x={{ id: 9007199254740993n, list: [1n] }} />,
+    `<div data-x="{&quot;id&quot;:&quot;9007199254740993&quot;,&quot;list&quot;:[&quot;1&quot;]}"></div>`,
+  ));
+
+test("escape attribute", () =>
+  equal(
+    <div data-props={`"><script>alert("help");</script>&amp;`}></div>,
+    `<div data-props="&quot;&gt;&lt;script&gt;alert(&quot;help&quot;);&lt;/script&gt;&amp;amp;"></div>`,
+  ));
+
+test("escape single quote in attribute", () =>
+  equal(<div title="it's" />, `<div title="it&#39;s"></div>`));
+
+test("escape json attribute", () =>
+  equal(
+    <h1 data-props={{ hello: "world" }}>Hello</h1>,
+    `<h1 data-props="{&quot;hello&quot;:&quot;world&quot;}">Hello</h1>`,
+  ));
+
+test("function and symbol attributes are skipped", () => {
+  /** @type {any} */
+  const props = { onclick: () => alert(1), "data-s": Symbol("s") };
+  return equal(<button {...props} type="button" />, `<button type="button"></button>`);
+});
+
+test("invalid attribute names are skipped", () => {
+  /** @type {any} */
+  const props = {
+    "x onclick": "1",
+    'a b="c" onload': "1",
+    "x/onclick": "1",
+    "x\nonclick": "1",
+    "x\tonclick": "1",
+    'x"><script>': "1",
+    "x'": "1",
+    "x<": "1",
+    "x&": "1",
+    "x=": "1",
+    "x\u0000": "1",
+    "": "1",
+    id: "ok",
+  };
+  return equal(<img {...props} />, `<img id="ok">`);
+});
+
+test("framework attribute names are kept", () => {
+  /** @type {any} */
+  const props = { "@click": "f()", "x-on:click": "g()", ":class": "c", "hx-get": "/" };
+  return equal(
+    <div {...props} />,
+    `<div @click="f()" x-on:click="g()" :class="c" hx-get="/"></div>`,
+  );
+});
+
+test("custom element with aria and data attributes", () =>
+  equal(
+    <my-element aria-label="x" data-id="1"></my-element>,
+    `<my-element aria-label="x" data-id="1"></my-element>`,
+  ));
+
+test("promise attributes are awaited", () =>
+  equal(
+    <div
+      id="a"
+      title={delay(5, "<t>")}
+      class={Promise.resolve(["b", { c: true }])}
+      style={Promise.resolve({ color: "red" })}
+      hidden={Promise.resolve(true)}
+      data-x={delay(1, { y: 1 })}
+      data-none={Promise.resolve(undefined)}
+    >
+      x
+    </div>,
+    `<div id="a" title="&lt;t&gt;" class="b c" style="color: red" hidden data-x="{&quot;y&quot;:1}">x</div>`,
+  ));
+
+test("promise attribute on void tag and with thenable", () =>
+  equal(
+    // Built with createElement, since the attribute types only allow promises.
+    classicCreateElement("img", { src: { then: (resolve) => resolve("a.png") }, alt: "" }),
+    `<img src="a.png" alt="">`,
+  ));
+
+test("promise attribute waits for earlier siblings", () =>
+  equal(
+    <p>
+      <Timeout ms={10}>a</Timeout>
+      <span title={Promise.resolve("t")}>b</span>
+      <span title={delay(1, "u")}>c</span>
+    </p>,
+    `<p><div>a</div><span title="t">b</span><span title="u">c</span></p>`,
+  ));
+
+test("rejected promise attribute rejects", () =>
+  rejects(() => <div title={delay(5).then(() => Promise.reject(new Error("attr")))} />, "attr"));
+
+test("props that aren't rendered as attributes are not awaited", async () => {
+  const never = Promise.reject(new Error("never awaited"));
+  let thenCalled = false;
+  const thenableFunction = Object.assign(() => {}, {
+    then() {
+      thenCalled = true;
+    },
+  });
+  await equal(
+    // Built with createElement, since the types don't allow these props.
+    classicCreateElement("div", {
+      key: never,
+      "bad name": never,
+      onclick: thenableFunction,
+      title: delay(1, "t"),
+    }),
+    `<div title="t"></div>`,
+  );
+  assert.strictEqual(thenCalled, false);
+});

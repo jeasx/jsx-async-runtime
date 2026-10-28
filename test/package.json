@@ -3,8 +3,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "node dist/index.js",
-    "dev": "tsc --watch & node --watch dist/index.js & wait",
+    "test": "node --test \"dist/**/*.test.js\"",
+    "dev": "tsc && (tsc --watch & node --test --watch \"dist/**/*.test.js\" & wait)",
     "clean": "tsc --build --clean"
   },
   "dependencies": {

@@ -7,6 +7,8 @@
     "strict": false,
     "rootDir": "src",
     "outDir": "dist",
+    "incremental": true,
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "jsx": "react-jsx",
     "jsxImportSource": "jsx-async-runtime",
     "allowJs": true,
