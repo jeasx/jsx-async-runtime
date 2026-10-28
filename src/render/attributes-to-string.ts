@@ -1,3 +1,4 @@
+import { isPromise } from "../utils/is-promise.js";
 import { createNameValidator } from "./create-name-validator.js";
 import { escapeHTML } from "./escape-entities.js";
 
@@ -5,18 +6,49 @@ import { escapeHTML } from "./escape-entities.js";
 // must not contain characters that break the name.
 const isValidAttributeName = createNameValidator(/^[^\s"'<>/=&\x00-\x1f\x7f-\x9f]+$/);
 
-export function attributesToString(props: Record<string, unknown>): string {
+/**
+ * Renders the attributes of a tag. Returns a promise only when an attribute value is a promise:
+ * then all promise values are awaited in parallel and rendered like their resolved values.
+ */
+export function attributesToString(props: Record<string, unknown>): string | Promise<string> {
   let result = "";
   for (const key in props) {
     if (key === "children" || key === "key" || !isValidAttributeName(key)) {
       continue;
     }
-    const str = attributeToString(key, props[key]);
+    const value = props[key];
+    if (typeof value === "object" && isPromise(value)) {
+      return resolveAttributes(props).then((resolved) => attributesToString(resolved) as string);
+    }
+    const str = attributeToString(key, value);
     if (str !== "") {
       result += result !== "" ? ` ${str}` : str;
     }
   }
   return result;
+}
+
+/**
+ * Returns a copy of the props with all promise values awaited.
+ * Rejects with the first error, like a promise child does.
+ */
+async function resolveAttributes(props: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const resolved: Record<string, unknown> = {};
+  const pending: Promise<void>[] = [];
+  for (const key in props) {
+    const value = props[key];
+    // Assigned in prop order, so attributes render in the order they were written.
+    resolved[key] = value;
+    if (key !== "children" && isPromise(value)) {
+      pending.push(
+        Promise.resolve(value).then(($value) => {
+          resolved[key] = $value;
+        }),
+      );
+    }
+  }
+  await Promise.all(pending);
+  return resolved;
 }
 
 function attributeToString(key: string, value: any): string {

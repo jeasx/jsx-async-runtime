@@ -121,24 +121,13 @@ export function renderElement(
       return;
     }
     const attributes = attributesToString(jsxElement.props);
-    const openTag = attributes.length ? `<${tag} ${attributes}>` : `<${tag}>`;
-    writer.buffer += openTag;
-
-    // Void tags can't have content or a closing tag, so their children are ignored.
-    // HTML tag names are case-insensitive, so `<BR>` is void too.
-    if (VOID_TAGS.has(tag) || VOID_TAGS.has(tag.toLowerCase())) {
-      return;
+    if (typeof attributes !== "string") {
+      // Promise attributes: send the markup so far while they load.
+      return flushAndAwait(writer, attributes).then(($attributes) =>
+        renderTag.call(this, tag, $attributes, children, writer),
+      );
     }
-
-    const closeTag = `</${tag}>`;
-    const pending = renderChildren.call(this, children, writer);
-    if (isPromise(pending)) {
-      return pending.then(() => {
-        writer.buffer += closeTag;
-      });
-    }
-    writer.buffer += closeTag;
-    return;
+    return renderTag.call(this, tag, attributes, children, writer);
   }
 
   if (typeof jsxElement.tag === "function") {
@@ -154,6 +143,34 @@ export function renderElement(
     }
     return $renderElement.call(this, jsxElementTag, writer);
   }
+}
+
+/**
+ * Writes a tag with its rendered attributes and children.
+ */
+function renderTag(
+  this: any,
+  tag: string,
+  attributes: string,
+  children: JSX.Element[],
+  writer: Writer,
+): void | Promise<void> {
+  writer.buffer += attributes.length ? `<${tag} ${attributes}>` : `<${tag}>`;
+
+  // Void tags can't have content or a closing tag, so their children are ignored.
+  // HTML tag names are case-insensitive, so `<BR>` is void too.
+  if (VOID_TAGS.has(tag) || VOID_TAGS.has(tag.toLowerCase())) {
+    return;
+  }
+
+  const closeTag = `</${tag}>`;
+  const pending = renderChildren.call(this, children, writer);
+  if (isPromise(pending)) {
+    return pending.then(() => {
+      writer.buffer += closeTag;
+    });
+  }
+  writer.buffer += closeTag;
 }
 
 /**

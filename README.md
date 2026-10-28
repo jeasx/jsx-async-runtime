@@ -90,7 +90,7 @@ async function Todos() {
 console.log(await jsxToString(<Todos />));
 ```
 
-Promises passed as children are awaited as well, e.g. `<div>{loadGreeting()}</div>`. The output order always matches the order in your JSX.
+Promises passed as children or attribute values are awaited as well, e.g. `<div>{loadGreeting()}</div>` or `<img src={loadImageUrl()} />`. All promise attributes of a tag are awaited in parallel. The output order always matches the order in your JSX.
 
 Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well.
 
@@ -215,6 +215,7 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `true`                                    | `name`                                                                           |
 | `false`, `null`, `undefined`              | nothing                                                                          |
 | function or symbol                        | nothing                                                                          |
+| promise, e.g. `title={loadTitle()}`       | awaited, then rendered like its value                                            |
 | `style={{ "padding-top": "1rem" }}`       | `style="padding-top: 1rem"` (`null`, `undefined` and `false` values are skipped) |
 | `class={{ active: true, hidden: false }}` | `class="active"`                                                                 |
 | `class={["a", cond && "b"]}`              | `class="a b"` (falsy entries are skipped)                                        |

@@ -46,11 +46,10 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
   }
   props.children = $children;
 
-  if (typeof tag === "function") {
-    // A component awaits its promise props only once earlier siblings have rendered.
-    for (const key in props) {
-      handleRejection(props[key]);
-    }
+  // Promise props (component props and attributes) are only awaited
+  // once earlier siblings have rendered, so they may reject before that.
+  for (const key in props) {
+    handleRejection(props[key]);
   }
 
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.

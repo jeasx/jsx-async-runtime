@@ -866,7 +866,16 @@ declare global {
       zoomAndPan?: "disable" | "magnify";
     }
 
-    interface IntrinsicElements {
+    // Every attribute also accepts a promise, which is awaited before the tag is rendered.
+    type AwaitableAttributes<T> = T extends object ? { [K in keyof T]: T[K] | Promise<T[K]> } : T;
+    type AwaitableElements = {
+      [E in keyof IntrinsicElementAttributes]: AwaitableAttributes<IntrinsicElementAttributes[E]>;
+    };
+
+    // An interface, so projects can add their own elements by declaration merging.
+    interface IntrinsicElements extends AwaitableElements {}
+
+    interface IntrinsicElementAttributes {
       [key: string]: unknown; // Allow unknown elements
       // HTML
       a: {

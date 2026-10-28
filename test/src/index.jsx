@@ -656,6 +656,65 @@ test("render without 'this' context gets a new empty context", async () => {
   }
 });
 
+test("promise attributes are awaited", () =>
+  equal(
+    <div
+      id="a"
+      title={delay(5, "<t>")}
+      class={Promise.resolve(["b", { c: true }])}
+      style={Promise.resolve({ color: "red" })}
+      hidden={Promise.resolve(true)}
+      data-x={delay(1, { y: 1 })}
+      data-none={Promise.resolve(undefined)}
+    >
+      x
+    </div>,
+    `<div id="a" title="&lt;t&gt;" class="b c" style="color: red" hidden data-x="{&quot;y&quot;:1}">x</div>`,
+  ));
+
+test("promise attribute on void tag and with thenable", () =>
+  equal(
+    // Built with createElement, since the attribute types only allow promises.
+    classicCreateElement("img", { src: { then: (resolve) => resolve("a.png") }, alt: "" }),
+    `<img src="a.png" alt="">`,
+  ));
+
+test("promise attribute waits for earlier siblings", () =>
+  equal(
+    <p>
+      <Timeout ms={10}>a</Timeout>
+      <span title={Promise.resolve("t")}>b</span>
+      <span title={delay(1, "u")}>c</span>
+    </p>,
+    `<p><div>a</div><span title="t">b</span><span title="u">c</span></p>`,
+  ));
+
+test("stream sends markup before a promise attribute", async () => {
+  const chunks = await streamToChunks(
+    jsxToStream(
+      <main>
+        <h1>head</h1>
+        <img src={delay(5, "a.png")} />
+      </main>,
+    ),
+  );
+  assert.deepStrictEqual(chunks, [`<main><h1>head</h1>`, `<img src="a.png"></main>`]);
+});
+
+test("rejected promise attribute rejects", () =>
+  rejects(() => <div title={delay(5).then(() => Promise.reject(new Error("attr")))} />, "attr"));
+
+test("promise attribute rejects while an earlier sibling is pending", () =>
+  rejects(
+    () => (
+      <p>
+        <Timeout ms={10}>a</Timeout>
+        <span title={Promise.reject(new Error("early"))}>b</span>
+      </p>
+    ),
+    "early",
+  ));
+
 test("render via namespace import gets a new empty context", async () => {
   // `runtime.jsxToString(...)` passes the read-only module namespace as `this`.
   const runtime = await import("jsx-async-runtime");
