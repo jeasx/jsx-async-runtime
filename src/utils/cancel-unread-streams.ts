@@ -1,5 +1,5 @@
-import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
 import { handleRejection } from "./handle-rejection.js";
+import { isJsxNode } from "./is-jsx-node.js";
 
 /**
  * Called when rendering failed or the stream reader cancelled. Cancels the `ReadableStream`s
@@ -33,7 +33,7 @@ function walk(value: unknown, reason: unknown, start: number): void {
     if (!value.locked) {
       handleRejection(value.cancel(reason));
     }
-  } else if ((value as Record<symbol, unknown>)[JSX_NODE_MARKER] === true) {
+  } else if (isJsxNode(value)) {
     walk((value as { props?: { children?: unknown } }).props?.children, reason, 0);
   }
 }

@@ -1,5 +1,6 @@
 import { classToString } from "../utils/class-to-string.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
+import { isJsxNode } from "../utils/is-jsx-node.js";
 import { isPromise } from "../utils/is-promise.js";
 import { styleToString } from "../utils/style-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
@@ -78,6 +79,11 @@ function attributeToString(key: string, value: any): string {
     return "";
   }
   if (typeof value === "object") {
+    // Elements and html() markup can't be attribute values, so they render nothing
+    // instead of their internal structure as JSON.
+    if (isJsxNode(value)) {
+      return "";
+    }
     if (key === "style") {
       const styles = styleToString(value);
       return styles && `style="${escapeHTML(styles)}"`;
@@ -95,5 +101,9 @@ function attributeToString(key: string, value: any): string {
 }
 
 function valueToStringTransformer(_key: string, value: unknown): unknown {
-  return typeof value === "bigint" ? String(value) : value;
+  if (typeof value === "bigint") {
+    return String(value);
+  }
+  // Nested elements are left out like functions: dropped from objects, `null` in arrays.
+  return isJsxNode(value) ? undefined : value;
 }

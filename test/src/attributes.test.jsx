@@ -1,4 +1,4 @@
-import { createElement as classicCreateElement } from "jsx-async-runtime";
+import { createElement as classicCreateElement, html } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import Timeout from "./components/Timeout.js";
@@ -26,6 +26,22 @@ test("empty string attribute", () => equal(<div title="" />, `<div title=""></di
 
 test("numeric attributes", () =>
   equal(<div tabindex={0} data-n={-1} />, `<div tabindex="0" data-n="-1"></div>`));
+
+test("elements and html() as attribute values render nothing", () =>
+  equal(
+    // Built with createElement, since the types don't allow these values.
+    classicCreateElement("div", {
+      title: <b>x</b>,
+      "data-raw": html("<b>"),
+      style: html("color: red"),
+      class: <i />,
+      "data-config": { a: 1, el: <b />, list: [<b />, 2] },
+    }),
+    `<div data-config="{&quot;a&quot;:1,&quot;list&quot;:[null,2]}"></div>`,
+  ));
+
+test("promise attribute resolving to an element renders nothing", () =>
+  equal(classicCreateElement("div", { title: delay(1, <b>x</b>), id: "a" }), `<div id="a"></div>`));
 
 test("bigint attribute", () => equal(<div data-n={10n} />, `<div data-n="10"></div>`));
 

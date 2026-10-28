@@ -46,6 +46,7 @@ Read the breaking changes below before upgrading.
 - Empty string style values are skipped like `null`, `undefined` and `false`, as in React, so `style={{ color: "" }}` renders no `style` attribute instead of `style="color: "`.
 - Event handlers and other function or symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of printing their source code into the HTML.
 - BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail.
+- Elements and #html markup used as attribute values (e.g. `title={<b>x</b>}`) render nothing instead of their internal structure as JSON. Inside object or array attributes they are left out like functions.
 - Objects with their own `toString` method used as children (e.g. `<p>{new Date()}</p>`, a `URL`, an `Error` or an instance of your own class) render their string form, escaped like text, as they already did as attribute values. Previously they silently rendered nothing. Plain objects and class instances without their own `toString` still render nothing.
 - #createElement no longer modifies the props object you pass in. Reusing the same props object for several elements previously duplicated their children.
 - Children passed to #createElement as arguments replace `props.children`, like in React, instead of being rendered together with them. Compiled JSX calls #createElement when `key` comes after a spread, so `<Row {...node} key={node.id}>label</Row>` rendered `label` plus `node.children`. It now renders the same as without `key`.

@@ -242,6 +242,7 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `true`                                    | `name`                                                                           |
 | `false`, `null`, `undefined`              | nothing                                                                          |
 | function or symbol                        | nothing                                                                          |
+| element or `html()`, e.g. `title={<b />}` | nothing                                                                          |
 | promise, e.g. `title={loadTitle()}`       | awaited, then rendered like its value                                            |
 | `style={{ "padding-top": "1rem" }}`       | `style="padding-top: 1rem"` (`null`, `undefined`, `false` and `""` are skipped)  |
 | `class={{ active: true, hidden: false }}` | `class="active"`                                                                 |

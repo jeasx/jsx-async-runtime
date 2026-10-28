@@ -1,4 +1,4 @@
-import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
+import { isJsxNode } from "./is-jsx-node.js";
 
 type Container = unknown[] | Set<unknown> | Record<string, unknown>;
 
@@ -24,10 +24,8 @@ export function handleRejection(value: unknown, start = 0): void {
     value.then(undefined, ignore);
   } else if (Array.isArray(value) || value instanceof Set) {
     walk(value, start, undefined);
-  } else if (
-    // Elements had their own props handled when they were created.
-    (value as Record<symbol, unknown>)[JSX_NODE_MARKER] !== true
-  ) {
+  } else if (!isJsxNode(value)) {
+    // Elements are skipped, since their props were handled when they were created.
     const prototype = Object.getPrototypeOf(value);
     if (prototype === Object.prototype || prototype === null) {
       walk(value as Record<string, unknown>, 0, undefined);
