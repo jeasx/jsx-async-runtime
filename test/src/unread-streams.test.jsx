@@ -1,4 +1,4 @@
-import { jsxToStream, jsxToString } from "jsx-async-runtime";
+import { createElement, jsxToStream, jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { delay } from "./helpers/delay.js";
@@ -199,3 +199,48 @@ test("stream passed as a non-children prop is left alone", async () => {
   await delay(5);
   assert.strictEqual(cancelled, false);
 });
+
+// Children of void tags and of tags with an invalid name are never rendered,
+// so their streams are cancelled even when the render succeeds.
+async function cancelsSkippedStream(createJsx, expected, message) {
+  const renders = [
+    (jsx) => jsxToString.call({}, jsx),
+    async (jsx) => (await streamToChunks(jsxToStream.call({}, jsx))).join(""),
+  ];
+  for (const render of renders) {
+    let reason;
+    const stream = new ReadableStream({
+      cancel(r) {
+        reason = r;
+      },
+    });
+    assert.strictEqual(await render(createJsx(stream)), expected);
+    await delay(5);
+    assert.strictEqual(reason?.message, message, "stream was not cancelled");
+  }
+}
+
+test("stream in the children of a void tag is cancelled", () =>
+  cancelsSkippedStream(
+    (stream) => (
+      <div>
+        <br>{stream}</br>
+      </div>
+    ),
+    "<div><br></div>",
+    "Children of <br> are not rendered",
+  ));
+
+test("stream from a promise child of a void tag is cancelled", () =>
+  cancelsSkippedStream(
+    (stream) => <img src="a.png">{delay(1, stream)}</img>,
+    '<img src="a.png">',
+    "Children of <img> are not rendered",
+  ));
+
+test("stream in the children of a tag with an invalid name is cancelled", () =>
+  cancelsSkippedStream(
+    (stream) => <div>{createElement("a b", null, stream)}</div>,
+    "<div></div>",
+    "Children of <a b> are not rendered",
+  ));

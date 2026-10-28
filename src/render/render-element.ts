@@ -134,6 +134,10 @@ export function renderElement(
       return renderChildren.call(this, children, writer);
     }
     if (!isValidTagName(tag)) {
+      // The children are never rendered, so cancel their streams to not keep a connection open.
+      if (children.length) {
+        cancelUnreadStreams(children, new Error(`Children of <${tag}> are not rendered`));
+      }
       return;
     }
     const attributes = attributesToString(jsxElement.props);
@@ -187,6 +191,11 @@ function renderTag(
   // Void tags can't have content or a closing tag, so their children are ignored.
   // HTML tag names are case-insensitive, so `<BR>` is void too.
   if (VOID_TAGS.has(tag) || VOID_TAGS.has(tag.toLowerCase())) {
+    // The children are never rendered, so cancel their streams to not keep a connection open.
+    // Most void tags have no children, so this usually creates no error.
+    if (children.length) {
+      cancelUnreadStreams(children, new Error(`Children of <${tag}> are not rendered`));
+    }
     return;
   }
 
