@@ -838,6 +838,27 @@ test("stream sends markup before a promise attribute", async () => {
 test("rejected promise attribute rejects", () =>
   rejects(() => <div title={delay(5).then(() => Promise.reject(new Error("attr")))} />, "attr"));
 
+test("props that aren't rendered as attributes are not awaited", async () => {
+  const never = Promise.reject(new Error("never awaited"));
+  let thenCalled = false;
+  const thenableFunction = Object.assign(() => {}, {
+    then() {
+      thenCalled = true;
+    },
+  });
+  await equal(
+    // Built with createElement, since the types don't allow these props.
+    classicCreateElement("div", {
+      key: never,
+      "bad name": never,
+      onclick: thenableFunction,
+      title: delay(1, "t"),
+    }),
+    `<div title="t"></div>`,
+  );
+  assert.strictEqual(thenCalled, false);
+});
+
 test("promise attribute rejects while an earlier sibling is pending", () =>
   rejects(
     () => (
