@@ -21,7 +21,9 @@ type Html = {
 
 declare global {
   namespace JSX {
-    type AsyncElement = Promise<SyncElement>;
+    // Async iterables, e.g. an async generator component or a `ReadableStream`.
+    type AsyncIterableElement = AsyncIterable<Element>;
+    type AsyncElement = Promise<SyncElement | AsyncIterableElement> | AsyncIterableElement;
     type SyncElement =
       | Tag
       | Html

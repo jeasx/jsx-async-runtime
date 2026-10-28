@@ -94,6 +94,22 @@ Promises passed as children are awaited as well, e.g. `<div>{loadGreeting()}</di
 
 Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well.
 
+Async iterables work the same way, e.g. an async generator or a `ReadableStream`. Their items are rendered in order as they arrive, and `jsxToStream` sends the markup so far while waiting for each item. An async generator component lets you render rows straight from a paginated API or a database cursor:
+
+```jsx
+async function* Users() {
+  for await (const user of db.users.find()) {
+    yield <li>{user.name}</li>;
+  }
+}
+
+<ul>
+  <Users />
+</ul>;
+```
+
+If rendering fails or the stream reader cancels, the source is stopped like a `for await` loop does on `break`, so an async generator runs its `finally` block and can close the cursor. An async iterable can be read only once, so render each one only once.
+
 Async components run one after another: a component is only called once everything before it has finished rendering. Two sibling components that each wait one second take two seconds in total. To load data in parallel, start the work first and pass the promises down, either as children or as props:
 
 ```jsx

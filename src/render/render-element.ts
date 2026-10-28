@@ -1,5 +1,6 @@
 import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
 import { handleRejection } from "../utils/handle-rejection.js";
+import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
 import { attributesToString } from "./attributes-to-string.js";
@@ -86,6 +87,11 @@ export function renderElement(
   // Other iterables, e.g. a generator returned by a component.
   if (isIterable(jsxElement)) {
     return renderChildren.call(this, Array.from(jsxElement), writer);
+  }
+
+  // Async iterables, e.g. an async generator component or a `ReadableStream`.
+  if (isAsyncIterable(jsxElement)) {
+    return renderAsyncIterable.call(this, jsxElement as AsyncIterable<JSX.Element>, writer);
   }
 
   // Only nodes created by jsx(), createElement() or html() are rendered. Look-alike objects,
@@ -208,6 +214,55 @@ async function renderChildrenAsync(
     if (writer.buffer.length >= writer.chunkSize) {
       await writer.flush();
     }
+  }
+}
+
+/**
+ * Renders the items of an async iterable in order.
+ * The markup rendered so far is sent while waiting for each item, so items stream as they arrive.
+ * When rendering fails or the stream is cancelled, the source is stopped like `for await` does
+ * (e.g. an async generator runs its `finally` block and can close a database cursor).
+ */
+async function renderAsyncIterable(
+  this: any,
+  iterable: AsyncIterable<JSX.Element>,
+  writer: Writer,
+): Promise<void> {
+  const iterator = iterable[Symbol.asyncIterator]();
+  // Set when the source itself failed, so it isn't asked to stop.
+  let sourceFailed = false;
+  const next = async () => {
+    try {
+      return await iterator.next();
+    } catch (error) {
+      sourceFailed = true;
+      throw error;
+    }
+  };
+  try {
+    for (;;) {
+      // Don't pull more items once the stream reader is gone.
+      if (writer.cancelled) {
+        throw new Error("Stream cancelled");
+      }
+      const result = await flushAndAwait(writer, next());
+      if (result.done) {
+        return;
+      }
+      const pending = $renderElement.call(this, result.value, writer);
+      if (isPromise(pending)) {
+        await pending;
+      }
+    }
+  } catch (error) {
+    if (!sourceFailed) {
+      // Stop the source without waiting for it, so the render error is reported right away.
+      // The original error wins, so errors while stopping are ignored.
+      try {
+        handleRejection(iterator.return?.());
+      } catch {}
+    }
+    throw error;
   }
 }
 

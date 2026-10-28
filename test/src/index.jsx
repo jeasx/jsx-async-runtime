@@ -1172,3 +1172,143 @@ test("stream cancel doesn't leave an override promise unhandled", async () => {
   // An unhandled rejection would fail this test.
   await delay(50);
 });
+
+// Async iterables can be read only once, so each render gets fresh JSX from the factory.
+async function equalEach(createJsx, str) {
+  assert.strictEqual(await jsxToString.call({}, createJsx()), str);
+  assert.strictEqual((await streamToChunks(jsxToStream.call({}, createJsx()))).join(""), str);
+}
+
+test("async generator as children", () => {
+  async function* items() {
+    yield <li>a</li>;
+    await delay(5);
+    yield "b & c";
+    yield [1, <b>2</b>];
+  }
+  return equalEach(() => <ul>{items()}</ul>, `<ul><li>a</li>b &amp; c1<b>2</b></ul>`);
+});
+
+test("async generator component", () => {
+  async function* List({ count }) {
+    for (let i = 0; i < count; i++) {
+      await delay(1);
+      yield <li>{i}</li>;
+    }
+  }
+  return equal(
+    <ul>
+      <List count={3} />
+      <li>end</li>
+    </ul>,
+    `<ul><li>0</li><li>1</li><li>2</li><li>end</li></ul>`,
+  );
+});
+
+test("async iterable items can be async", () => {
+  const Async = async () => <i>async</i>;
+  async function* items() {
+    yield <Async />;
+    yield delay(5, "promise");
+  }
+  return equalEach(() => <p>{items()}</p>, `<p><i>async</i>promise</p>`);
+});
+
+test("readable stream as children", () => {
+  const createStream = () =>
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue("<a>");
+        controller.enqueue("b");
+        controller.close();
+      },
+    });
+  return equalEach(() => <pre>{createStream()}</pre>, `<pre>&lt;a&gt;b</pre>`);
+});
+
+test("async iterable passed directly", async () => {
+  async function* items() {
+    yield <b>x</b>;
+  }
+  assert.strictEqual(await jsxToString(items()), `<b>x</b>`);
+});
+
+test("async iterable uses the jsxToString override", () => {
+  async function* items() {
+    yield "a";
+    yield "b";
+  }
+  const context = {
+    jsxToString(element) {
+      return typeof element === "string" ? element.toUpperCase() : jsxToString.call(this, element);
+    },
+  };
+  return jsxToString.call(context, <p>{items()}</p>).then((result) => {
+    assert.strictEqual(result, `<p>AB</p>`);
+  });
+});
+
+test("stream sends async iterable items as they arrive", async () => {
+  async function* items() {
+    yield <li>1</li>;
+    await delay(5);
+    yield <li>2</li>;
+  }
+  const chunks = await streamToChunks(jsxToStream(<ul>{items()}</ul>));
+  // Like promise children, the markup so far is sent while waiting for each item.
+  assert.deepStrictEqual(chunks, [`<ul>`, `<li>1</li>`, `<li>2</li>`, `</ul>`]);
+});
+
+test("async iterable source error rejects", () =>
+  rejects(() => {
+    async function* items() {
+      yield "a";
+      throw new Error("source");
+    }
+    return <p>{items()}</p>;
+  }, "source"));
+
+test("async iterable item error stops the source", async () => {
+  let stopped = 0;
+  const Boom = () => {
+    throw new Error("item");
+  };
+  const createJsx = () => {
+    async function* items() {
+      try {
+        yield "a";
+        yield <Boom />;
+        yield "never";
+      } finally {
+        stopped++;
+      }
+    }
+    return <p>{items()}</p>;
+  };
+  await rejects(createJsx, "item");
+  assert.strictEqual(stopped, 2);
+});
+
+test("stream cancel stops an async iterable", async () => {
+  let pulled = 0;
+  let stopped = false;
+  async function* items() {
+    try {
+      for (;;) {
+        pulled++;
+        yield "x".repeat(1000);
+        await delay(5);
+      }
+    } finally {
+      stopped = true;
+    }
+  }
+  const stream = jsxToStream(<div>{items()}</div>);
+  const reader = stream.getReader();
+  await reader.read();
+  await reader.cancel();
+  const afterCancel = pulled;
+  await delay(30);
+  assert.ok(stopped, "source was not stopped");
+  assert.ok(pulled <= afterCancel + 1, `pulled ${pulled - afterCancel} items after cancel`);
+});
