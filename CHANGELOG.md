@@ -42,6 +42,7 @@
 
 ### Types (jsx.types)
 
+- The JSX types are also exported from `jsx-async-runtime/jsx-dev-runtime`, so TypeScript projects using `"jsx": "react-jsxdev"` no longer fail with "Cannot find namespace 'JSX'"
 - `Tag.tag` is typed as `string | ((props) => JSX.Element)`, matching what the runtime actually passes
 - `key` is accepted on components (e.g. `<Item key={id} label={label} />`) via `JSX.IntrinsicAttributes`, instead of failing type checks when the component's props don't declare it
 - `Tag` and raw markup carry a type-only marker, so TypeScript rejects hand-built element objects and plain `{ html }` objects (e.g. returned by a component), matching what the runtime renders. Create them with #createElement and #html instead
