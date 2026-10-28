@@ -90,6 +90,22 @@ test("sync component error rejects", () => {
   return assert.rejects(async () => jsxToString.call({}, <Broken />), /boom/);
 });
 
+test("a tag that is neither a string nor a function rejects", async () => {
+  /** @type {[any, string][]} */
+  const cases = [
+    [undefined, "undefined"],
+    [null, "null"],
+    [{}, "object"],
+    [42, "number"],
+  ];
+  for (const [tag, type] of cases) {
+    await assert.rejects(async () => jsxToString.call({}, classicCreateElement(tag, null, "x")), {
+      name: "TypeError",
+      message: new RegExp(`got ${type}\\. Check for a missing import`),
+    });
+  }
+});
+
 test("sync component error is returned as rejected promise", () => {
   const Broken = () => {
     throw new Error("boom");

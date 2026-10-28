@@ -244,3 +244,10 @@ test("stream in the children of a tag with an invalid name is cancelled", () =>
     "<div></div>",
     "Children of <a b> are not rendered",
   ));
+
+test("stream in the children of an undefined component is cancelled", () =>
+  cancelsUnreadStream(
+    (stream) => <div>{createElement(undefined, null, stream)}</div>,
+    "Invalid element type: expected a tag name or a component, got undefined. " +
+      "Check for a missing import or a wrong default export.",
+  ));

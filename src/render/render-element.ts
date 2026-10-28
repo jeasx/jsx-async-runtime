@@ -173,7 +173,15 @@ export function renderElement(
         throw error;
       });
     }
+    return;
   }
+
+  // Any other tag is a mistake, e.g. `undefined` from a missing import, so fail like React does.
+  // The render error handling cancels the streams in the children, which are never rendered.
+  throw new TypeError(
+    `Invalid element type: expected a tag name or a component, got ${jsxElement.tag === null ? "null" : typeof jsxElement.tag}. ` +
+      "Check for a missing import or a wrong default export.",
+  );
 }
 
 /**
