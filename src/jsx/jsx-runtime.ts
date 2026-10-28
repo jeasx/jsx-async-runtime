@@ -4,23 +4,24 @@ import { JSX_NODE_MARKER } from "./jsx-node-marker.js";
 
 type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
 
+// A function child, e.g. a render prop: `<Loader>{(data) => <p>{data}</p>}</Loader>`.
+type RenderProp = (...args: any[]) => unknown;
+type Child = JSX.Children | RenderProp;
+
 type Props = {
   [k: string]: any;
-  children?: JSX.Children;
+  children?: Child | Child[];
 };
 
-export function createElement(
-  tag: Tag,
-  props?: Props,
-  ...children: Array<JSX.Children>
-): JSX.Element {
+export function createElement(tag: Tag, props?: Props, ...children: Child[]): JSX.Element {
   // Copy props, so the caller's object is never changed.
   const $props = { ...props };
   if (children.length) {
     // Positional children replace props.children, like in React. Compiled JSX
     // calls createElement when `key` comes after a spread, so this keeps
     // `<Row {...node} key={id}>label</Row>` the same as without `key`.
-    $props.children = children;
+    // A single child is passed as compiled JSX passes it, so a render prop stays a function.
+    $props.children = children.length === 1 ? children[0] : children;
   }
   return jsx(tag, $props);
 }
@@ -42,11 +43,15 @@ export function html(markup: string): JSX.Element {
 export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
   props ??= {};
 
-  const $children: JSX.Element[] = [];
-  if (props.children != null) {
-    mapChildren(props.children, $children);
+  // Children are always an array, except a single function child (a render prop),
+  // which is passed as is, so the component can call it as its type says.
+  if (typeof props.children !== "function") {
+    const $children: Child[] = [];
+    if (props.children != null) {
+      mapChildren(props.children, $children);
+    }
+    props.children = $children;
   }
-  props.children = $children;
 
   // Promise props (component props and attributes) are only awaited
   // once earlier siblings have rendered, so they may reject before that.
@@ -66,11 +71,13 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
   } as unknown as JSX.Element;
 }
 
-function mapChildren(children: JSX.Children, accumulator: JSX.Element[]): void {
+function mapChildren(children: Child | Child[], accumulator: Child[]): void {
   switch (typeof children) {
     case "string":
     case "number":
     case "bigint":
+    // Functions are kept for components; tags render them as nothing.
+    case "function":
       accumulator.push(children);
       break;
     case "object":

@@ -94,6 +94,17 @@ Promises passed as children or attribute values are awaited as well, e.g. `<div>
 
 Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well.
 
+A component receives its children as an array, with one exception: a single function child (a render prop) is passed as is, so the component can call it:
+
+```jsx
+async function Loader({ children }) {
+  const data = await loadData();
+  return children(data);
+}
+
+<Loader>{(data) => <p>{data.title}</p>}</Loader>;
+```
+
 Async iterables work the same way, e.g. an async generator or a `ReadableStream`. Their items are rendered in order as they arrive, and `jsxToStream` sends the markup so far while waiting for each item. An async generator component lets you render rows straight from a paginated API or a database cursor:
 
 ```jsx

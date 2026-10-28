@@ -443,6 +443,44 @@ test("copied elements are still rendered", async () => {
 
 test("children passed as prop", () => equal(<div {...{ children: "x" }} />, `<div>x</div>`));
 
+// The build type-checks the render prop calls against these types.
+/** @param {{ children: (data: string) => JSX.Element }} props */
+const Loader = ({ children }) => children("data");
+/** @param {{ children: (data: string) => JSX.Element }} props */
+const AsyncLoader = async ({ children }) => children(await delay(1, "async data"));
+
+test("function child is passed to the component as a render prop", () =>
+  equal(<Loader>{(data) => <p>{data}</p>}</Loader>, `<p>data</p>`));
+
+test("render prop with an async component", () =>
+  equal(<AsyncLoader>{(data) => <p>{data}</p>}</AsyncLoader>, `<p>async data</p>`));
+
+test("render prop passed as children prop and with createElement", async () => {
+  /** @type {(data: string) => JSX.Element} */
+  const render = (data) => <b>{data}</b>;
+  await equal(<Loader children={render} />, `<b>data</b>`);
+  await equal(classicCreateElement(Loader, null, render), `<b>data</b>`);
+});
+
+test("functions among several children are kept", () => {
+  const Types = ({ children }) => children.map((child) => typeof child).join();
+  return equal(
+    <Types>
+      a{() => "x"}
+      {1}
+    </Types>,
+    `string,function,number`,
+  );
+});
+
+test("function children of tags render nothing", () =>
+  equal(
+    <p>
+      {() => "x"}a{() => "y"}
+    </p>,
+    `<p>a</p>`,
+  ));
+
 // --- Edge cases: attributes ---
 
 test("numeric attributes", () =>
