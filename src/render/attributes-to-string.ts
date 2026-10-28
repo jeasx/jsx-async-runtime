@@ -1,7 +1,7 @@
 import { classToString } from "../utils/class-to-string.js";
+import { createNameValidator } from "../utils/create-name-validator.js";
 import { isPromise } from "../utils/is-promise.js";
 import { styleToString } from "../utils/style-to-string.js";
-import { createNameValidator } from "./create-name-validator.js";
 import { escapeHTML } from "./escape-entities.js";
 
 // An attribute name must not be empty and

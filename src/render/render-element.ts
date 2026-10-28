@@ -1,12 +1,12 @@
 import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
+import { createNameValidator } from "../utils/create-name-validator.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
 import { attributesToString } from "./attributes-to-string.js";
-import { createNameValidator } from "./create-name-validator.js";
 import { escapeHTML } from "./escape-entities.js";
 
 /**
