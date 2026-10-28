@@ -1,4 +1,14 @@
-export { escapeHTML as escapeEntities };
+/**
+ * Escapes `&`, `<`, `>`, `"` and `'`. Other values are converted to a string first,
+ * e.g. a number or a `URL`. Like JSX children, `null`, `undefined` and booleans give `""`,
+ * so `escapeEntities(cond && name)` renders nothing instead of "false".
+ */
+export function escapeEntities(value: unknown): string {
+  if (typeof value === "string") {
+    return escapeHTML(value);
+  }
+  return value == null || typeof value === "boolean" ? "" : escapeHTML(String(value));
+}
 
 /*
 The following code was copied from:

@@ -62,6 +62,29 @@ test("escapeEntities with empty string", () => assert.strictEqual(escapeEntities
 test("escapeEntities with entities at start and end", () =>
   assert.strictEqual(escapeEntities("&a<"), "&amp;a&lt;"));
 
+test("escapeEntities converts other values to a string", () => {
+  assert.strictEqual(
+    escapeEntities(new URL("https://example.com/?a=1&b=2")),
+    "https://example.com/?a=1&amp;b=2",
+  );
+  assert.strictEqual(escapeEntities(5), "5");
+  assert.strictEqual(escapeEntities(0), "0");
+  assert.strictEqual(escapeEntities(10n), "10");
+});
+
+test("escapeEntities with null, undefined and booleans", () => {
+  assert.strictEqual(escapeEntities(null), "");
+  assert.strictEqual(escapeEntities(undefined), "");
+  assert.strictEqual(escapeEntities(false), "");
+  assert.strictEqual(escapeEntities(true), "");
+});
+
+test("escapeEntities on a non-string renders escaped with escaping off", () =>
+  assert.strictEqual(
+    jsxToString.call({ jsxEscapeHTML: false }, <p>{escapeEntities(new Error("<b>"))}</p>),
+    "<p>Error: &lt;b&gt;</p>",
+  ));
+
 test("component returning raw html", () => {
   const Raw = () => html("<b>raw</b>");
   return equal(<Raw />, `<b>raw</b>`);

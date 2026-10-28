@@ -40,6 +40,7 @@
 - The package can be loaded with `require()` from CommonJS (Node 22.12+), e.g. in Jest or older tooling. Previously the exports only allowed `import`, so `require("jsx-async-runtime")` failed with `ERR_PACKAGE_PATH_NOT_EXPORTED`
 - Calling #jsxToString or #jsxToStream without a context (e.g. `jsxToString(<App />)` instead of `jsxToString.call({}, <App />)`) gives each render a new empty context, so components that write to `this` no longer fail with "Cannot set properties of undefined"
 - Calling #jsxToString or #jsxToStream on a namespace import (e.g. `import * as runtime from "jsx-async-runtime"` and then `runtime.jsxToString(<App />)`) gives the render a new empty context. Previously the read-only module object became `this`, so components writing to `this` failed, and its `jsxToString` export was used as an override for every nested element, which slowed rendering and made streaming send fewer, larger chunks
+- #escapeEntities converts values that aren't strings to a string first, e.g. a number or a `URL`, and returns `""` for `null`, `undefined` and booleans, which render nothing as children too. Previously it threw a `TypeError` for values containing a special character (e.g. `escapeEntities(new URL("https://example.com/?a=1&b=2"))`) and returned other values unescaped and unchanged
 
 ### Security
 

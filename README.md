@@ -324,7 +324,7 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 | `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.           |
 | `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits. |
 | `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                 |
-| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a string.                                 |
+| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'`. Other values are converted to a string first. |
 | `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                        |
 | `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.   |
 
