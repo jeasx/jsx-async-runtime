@@ -11,11 +11,6 @@ function isAttribute(key: string): boolean {
   return key !== "children" && key !== "key" && isValidAttributeName(key);
 }
 
-// Functions are never rendered, so only objects are awaited.
-function isPromiseValue(value: unknown): value is PromiseLike<unknown> {
-  return typeof value === "object" && isPromise(value);
-}
-
 /**
  * Renders the attributes of a tag. Returns a promise only when an attribute value is a promise:
  * then all promise values are awaited in parallel and rendered like their resolved values.
@@ -27,7 +22,7 @@ export function attributesToString(props: Record<string, unknown>): string | Pro
       continue;
     }
     const value = props[key];
-    if (isPromiseValue(value)) {
+    if (isPromise(value)) {
       return resolveAttributes(props).then((resolved) => attributesToString(resolved) as string);
     }
     const str = attributeToString(key, value);
@@ -52,7 +47,7 @@ async function resolveAttributes(props: Record<string, unknown>): Promise<Record
     const value = props[key];
     // Assigned in prop order, so attributes render in the order they were written.
     resolved[key] = value;
-    if (isPromiseValue(value)) {
+    if (isPromise(value)) {
       pending.push(
         Promise.resolve(value).then(($value) => {
           resolved[key] = $value;

@@ -41,5 +41,25 @@ test("component returning a thenable", () => {
   return equal(<Thenable />, `<i>t</i>`);
 });
 
+test("functions with a then method are not awaited", async () => {
+  let thenCalled = false;
+  const thenableFunction = Object.assign(() => {}, {
+    then() {
+      thenCalled = true;
+    },
+  });
+  /** @type {any} */
+  const Component = () => thenableFunction;
+  await equal(
+    <p>
+      {thenableFunction}
+      <Component />
+    </p>,
+    `<p></p>`,
+  );
+  await equal(thenableFunction, ``);
+  assert.strictEqual(thenCalled, false);
+});
+
 test("rejected top-level promise", () =>
   assert.rejects(() => jsxToString.call({}, Promise.reject(new Error("boom"))), /boom/));
