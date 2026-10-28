@@ -1,4 +1,5 @@
 import { handleRejection } from "../utils/handle-rejection.js";
+import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { JSX_NODE_MARKER } from "./jsx-node-marker.js";
 
@@ -82,7 +83,8 @@ function mapChildren(children: Child | Child[], accumulator: Child[]): void {
       break;
     case "object":
       // Flatten arrays and other iterables (e.g. a Set or map.values()) into the children.
-      if (Array.isArray(children) || isIterable(children)) {
+      // Bytes stay one child, so they render as text.
+      if (Array.isArray(children) || (isIterable(children) && !isByteArray(children))) {
         for (const child of children) {
           mapChildren(child, accumulator);
         }

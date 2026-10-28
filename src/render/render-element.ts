@@ -2,6 +2,7 @@ import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
+import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
 import { attributesToString } from "./attributes-to-string.js";
@@ -45,6 +46,10 @@ const VOID_TAGS = new Set([
 // that end the tag name or break the markup.
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
 
+// Decodes bytes that come in one piece. Used without the `stream` option,
+// it keeps no state between calls, so one instance is shared.
+const textDecoder = new TextDecoder();
+
 /**
  * Renders a JSX element into the writer.
  * Runs synchronously as long as possible and only returns a promise
@@ -83,6 +88,11 @@ export function renderElement(
 
   if (Array.isArray(jsxElement)) {
     return renderChildren.call(this, jsxElement, writer);
+  }
+
+  // Bytes, e.g. a `Buffer` from `readFile()`, render as UTF-8 text, escaped like a string.
+  if (isByteArray(jsxElement)) {
+    return renderElement.call(this, textDecoder.decode(jsxElement), writer);
   }
 
   // Other iterables, e.g. a generator returned by a component.
@@ -278,6 +288,9 @@ async function renderAsyncIterable(
   };
   // The item being rendered, so its unread streams can be cancelled when it fails.
   let item: JSX.Element;
+  // Decodes byte items (e.g. the chunks of a `fetch()` body) as UTF-8 text. One decoder
+  // for all chunks, so a character split between two chunks is decoded correctly.
+  let decoder: TextDecoder | undefined;
   try {
     for (;;) {
       // Don't pull more items once the stream reader is gone.
@@ -286,9 +299,25 @@ async function renderAsyncIterable(
       }
       const result = await flushAndAwait(writer, next());
       if (result.done) {
+        // Bytes of a character cut off at the end render as the replacement character "\uFFFD".
+        const rest = decoder?.decode();
+        if (rest) {
+          const pending = $renderElement.call(this, rest, writer);
+          if (isPromise(pending)) {
+            await pending;
+          }
+        }
         return;
       }
       item = result.value;
+      if (isByteArray(item)) {
+        decoder ??= new TextDecoder();
+        item = decoder.decode(item, { stream: true });
+      } else if (decoder) {
+        // The bytes ended, so the text left in the decoder comes before this item.
+        item = [decoder.decode(), item];
+        decoder = undefined;
+      }
       const pending = $renderElement.call(this, item, writer);
       if (isPromise(pending)) {
         await pending;

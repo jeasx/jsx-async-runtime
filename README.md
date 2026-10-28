@@ -94,6 +94,8 @@ Promises passed as children or attribute values are awaited as well, e.g. `<div>
 
 Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well.
 
+Bytes (a `Uint8Array` or `Buffer`) are rendered as UTF-8 text and escaped like any other string, so a file from `readFile()` or a `fetch()` body can be rendered directly, e.g. `<pre>{(await fetch(url)).body}</pre>`.
+
 A component receives its children as an array, with one exception: a single function child (a render prop) is passed as is, so the component can call it:
 
 ```jsx
