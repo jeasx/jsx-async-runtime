@@ -22,6 +22,7 @@
 
 - A promise passed directly to #jsxToString (e.g. `jsxToString(loadPage())`) is awaited and rendered instead of rendering an empty string
 - A promise passed as a prop to a component (e.g. `<UserCard user={loadUser()} />`) no longer crashes Node with an unhandled rejection when it rejects before the component renders. The component still gets the error when it awaits the promise
+- A promise inside a nested array returned by a component (e.g. `[<Slow />, ids.map(loadItem)]`) or inside an array prop (e.g. `<UserList users={[loadUser(1), loadUser(2)]} />`) no longer crashes Node with an unhandled rejection when it rejects while an earlier sibling is still rendering. The error is reported like any other render error, or to the component when it awaits the promise
 - `key` is no longer rendered as text or as an HTML attribute, and the dev runtime no longer adds its source info as children. Components using compiled JSX don't receive `key` in their props; with #createElement (classic runtime, or `key` placed after a spread) it is still passed through
 - Children of void tags (e.g. `<br>text</br>`) are ignored, so they always render as a single tag like `<br>` instead of invalid HTML like `<br>text</br>`. Void tags are recognized regardless of case, so `<BR />` renders `<BR>` instead of `<BR></BR>`, which browsers read as two line breaks
 - `class` arrays may nest and contain objects, e.g. `class={["a", ["b"], { c: cond }]}` renders `class="a b c"` instead of `class="a b,[object Object]"`. The new `JSX.ClassValue` type describes all allowed values
@@ -29,6 +30,7 @@
 - Objects like `URL` or `Date` used as attribute values (e.g. `href={new URL(...)}`) render as their string value, e.g. `href="https://..."`, instead of quoted JSON. Plain objects and arrays are still JSON-encoded
 - BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail
 - #createElement no longer modifies the props object you pass in. Reusing the same props object for several elements previously duplicated their children
+- Children passed to #createElement as arguments replace `props.children`, like in React, instead of being rendered together with them. Compiled JSX calls #createElement when `key` comes after a spread, so `<Row {...node} key={node.id}>label</Row>` rendered `label` plus `node.children`. It now renders the same as without `key`
 - `Fragment` is exported from the main entry, next to #createElement, so the classic runtime can be used with a single import (e.g. `import { createElement, Fragment } from "jsx-async-runtime"`)
 - The package can be loaded with `require()` from CommonJS (Node 22.12+), e.g. in Jest or older tooling. Previously the exports only allowed `import`, so `require("jsx-async-runtime")` failed with `ERR_PACKAGE_PATH_NOT_EXPORTED`
 - Calling #jsxToString or #jsxToStream without a context (e.g. `jsxToString(<App />)` instead of `jsxToString.call({}, <App />)`) gives each render a new empty context, so components that write to `this` no longer fail with "Cannot set properties of undefined"

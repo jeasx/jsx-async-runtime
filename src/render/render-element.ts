@@ -195,16 +195,14 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
         }
       }
       if (isPromise(pending)) {
-        for (let index = i + 1; index < children.length; index++) {
-          handleRejection(children[index]);
-        }
+        // Rendering won't get to the later children right away.
+        handleRejection(children, i + 1);
         return renderChildrenAsync.call(this, children, i + 1, pending, writer);
       }
     }
   } catch (error) {
-    for (let index = i + 1; index < children.length; index++) {
-      handleRejection(children[index]);
-    }
+    // Rendering won't get to the later children at all.
+    handleRejection(children, i + 1);
     throw error;
   }
 }

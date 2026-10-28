@@ -17,8 +17,10 @@ export function createElement(
   // Copy props, so the caller's object is never changed.
   const $props = { ...props };
   if (children.length) {
-    // Positional children come before props.children.
-    $props.children = $props.children != null ? [...children, $props.children] : children;
+    // Positional children replace props.children, like in React. Compiled JSX
+    // calls createElement when `key` comes after a spread, so this keeps
+    // `<Row {...node} key={id}>label</Row>` the same as without `key`.
+    $props.children = children;
   }
   return jsx(tag, $props);
 }
@@ -48,8 +50,11 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
 
   // Promise props (component props and attributes) are only awaited
   // once earlier siblings have rendered, so they may reject before that.
+  // Children were already handled by mapChildren().
   for (const key in props) {
-    handleRejection(props[key]);
+    if (key !== "children") {
+      handleRejection(props[key]);
+    }
   }
 
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.

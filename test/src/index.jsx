@@ -1094,6 +1094,23 @@ test("createElement does not change the passed props", async () => {
   assert.deepStrictEqual(props, { id: "x", key: "k" });
 });
 
+test("createElement children replace props.children", async () => {
+  await equal(createElement("p", { children: "a" }, "b"), `<p>b</p>`);
+  await equal(createElement("p", { children: "a" }), `<p>a</p>`);
+});
+
+test("key after spread keeps the JSX children", () => {
+  // With `key` after a spread, the compiler calls createElement instead of jsx().
+  const node = { id: 1, children: ["raw"] };
+  const Row = ({ children }) => <li>{children}</li>;
+  return equal(
+    <Row {...node} key={node.id}>
+      label
+    </Row>,
+    `<li>label</li>`,
+  );
+});
+
 const delay = (ms, value) => new Promise((resolve) => setTimeout(() => resolve(value), ms));
 const rejectAfter = (ms, message) =>
   new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms));
@@ -1148,6 +1165,34 @@ test("nested promise child rejects while an earlier sibling is pending", () => {
 test("component returns an array with a rejecting promise", () => {
   const List = () => [delay(30, "a"), rejectAfter(5, "array")];
   return rejects(() => <List />, "array");
+});
+
+test("component returns a nested array with a rejecting promise", () => {
+  const Slow = () => delay(30, "a");
+  const List = () => [<Slow />, [[rejectAfter(5, "nested array")]]];
+  return rejects(() => <List />, "nested array");
+});
+
+test("component returns a nested array with a rejecting promise after a sibling threw", () => {
+  const Boom = () => {
+    throw new Error("first");
+  };
+  const List = () => [<Boom />, [rejectAfter(5, "second")]];
+  return rejects(() => <List />, "first");
+});
+
+test("promise in an array prop rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  const Users = async ({ users }) => (await Promise.all(users)).join();
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <Users users={[delay(1, "ada"), rejectAfter(5, "array prop")]} />
+      </div>
+    ),
+    "array prop",
+  );
 });
 
 test("promise prop rejects while an earlier sibling is pending", () => {
