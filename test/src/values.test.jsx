@@ -54,3 +54,42 @@ test("function children of tags render nothing", () =>
 test("true conditional", () => equal(<>{"1" === String(1) && <div></div>}</>, `<div></div>`));
 
 test("false conditional", () => equal(<>{"1" !== String(1) && <div></div>}</>, ``));
+
+test("objects with their own string form render it escaped", () => {
+  const date = new Date(0);
+  /** @type {any} */
+  const values = [date, "|", new URL("https://x.dev/?a=1&b=2"), "|", new Error("<b>"), "|", /a<b/g];
+  return equal(
+    <p>{values}</p>,
+    `<p>${String(date)}|https://x.dev/?a=1&amp;b=2|Error: &lt;b&gt;|/a&lt;b/g</p>`,
+  );
+});
+
+test("class instances with a toString method render it", () => {
+  class Money {
+    constructor(cents) {
+      this.cents = cents;
+    }
+    toString() {
+      return `${(this.cents / 100).toFixed(2)} €`;
+    }
+  }
+  class Price extends Money {}
+  /** @type {any} */
+  const values = [new Money(150), "|", new Price(99)];
+  return equal(<p>{values}</p>, `<p>1.50 €|0.99 €</p>`);
+});
+
+test("plain objects and class instances without toString render nothing", () => {
+  class Point {
+    x = 1;
+  }
+  /** @type {any} */
+  const values = [
+    { a: 1 },
+    Object.assign(Object.create(null), { a: 1 }),
+    new Point(),
+    JSON.parse(`{ "toString": "<script>" }`),
+  ];
+  return equal(<p>{values}</p>, `<p></p>`);
+});

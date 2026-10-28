@@ -33,6 +33,7 @@
 - Event handlers and other function or symbol attribute values (e.g. `onclick={() => ...}`) are skipped instead of printing their source code into the HTML
 - Objects like `URL` or `Date` used as attribute values (e.g. `href={new URL(...)}`) render as their string value, e.g. `href="https://..."`, instead of quoted JSON. Plain objects and arrays are still JSON-encoded
 - BigInt values inside object or array attributes (e.g. `data-x={{ id: 1n }}`) are encoded as strings instead of making the render fail
+- Objects with their own `toString` method used as children (e.g. `<p>{new Date()}</p>`, a `URL`, an `Error` or an instance of your own class) render their string form, escaped like text, as they already did as attribute values. Previously they silently rendered nothing. Plain objects and class instances without their own `toString` still render nothing
 - #createElement no longer modifies the props object you pass in. Reusing the same props object for several elements previously duplicated their children
 - Children passed to #createElement as arguments replace `props.children`, like in React, instead of being rendered together with them. Compiled JSX calls #createElement when `key` comes after a spread, so `<Row {...node} key={node.id}>label</Row>` rendered `label` plus `node.children`. It now renders the same as without `key`
 - `Fragment` is exported from the main entry, next to #createElement, so the classic runtime can be used with a single import (e.g. `import { createElement, Fragment } from "jsx-async-runtime"`)
