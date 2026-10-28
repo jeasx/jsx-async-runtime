@@ -1,4 +1,5 @@
 import { isPromise } from "../utils/is-promise.js";
+import { resolveContext } from "../utils/resolve-context.js";
 import { renderElement, Writer } from "./render-element.js";
 
 // Characters per chunk and queued in the stream before rendering pauses.
@@ -16,7 +17,7 @@ const CHUNK_SIZE = 16 * 1024;
  * @return A stream of markup chunks. It errors if a component throws.
  */
 export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<string> {
-  const context = this ?? {};
+  const context = resolveContext(this);
 
   const writer: Writer = {
     buffer: "",

@@ -1,4 +1,5 @@
 import { isPromise } from "../utils/is-promise.js";
+import { resolveContext } from "../utils/resolve-context.js";
 import { renderElement, Writer } from "./render-element.js";
 
 /**
@@ -15,7 +16,7 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
   // Collect all markup in the buffer, nothing is sent early.
   const writer: Writer = { buffer: "", chunkSize: Infinity, cancelled: false, flush() {} };
   try {
-    const pending = renderElement.call(this ?? {}, jsxElement, writer);
+    const pending = renderElement.call(resolveContext(this), jsxElement, writer);
     return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;
   } catch (error) {
     // Report errors the same way, whether rendering was sync or async.

@@ -656,6 +656,36 @@ test("render without 'this' context gets a new empty context", async () => {
   }
 });
 
+test("render via namespace import gets a new empty context", async () => {
+  // `runtime.jsxToString(...)` passes the read-only module namespace as `this`.
+  const runtime = await import("jsx-async-runtime");
+  function App() {
+    this.user = "ada";
+    // The namespace's jsxToString export must not be taken for an override.
+    assert.strictEqual(this.jsxToString, undefined);
+    return (
+      <div>
+        <section>
+          <Greeting />
+        </section>
+      </div>
+    );
+  }
+  async function Greeting() {
+    await delay(1);
+    return <p>{this.user}</p>;
+  }
+  assert.strictEqual(
+    await runtime.jsxToString(<App />),
+    `<div><section><p>ada</p></section></div>`,
+  );
+  // Without an override, nested markup is still sent before the async component.
+  assert.deepStrictEqual(await streamToChunks(runtime.jsxToStream(<App />)), [
+    `<div><section>`,
+    `<p>ada</p></section></div>`,
+  ]);
+});
+
 test("escaping disabled via context", async () =>
   assert.strictEqual(
     await jsxToString.call({ jsxEscapeHTML: false }, <p>{"<b>"}</p>),

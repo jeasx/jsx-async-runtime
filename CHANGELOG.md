@@ -31,6 +31,7 @@
 - `Fragment` is exported from the main entry, next to #createElement, so the classic runtime can be used with a single import (e.g. `import { createElement, Fragment } from "jsx-async-runtime"`)
 - The package can be loaded with `require()` from CommonJS (Node 22.12+), e.g. in Jest or older tooling. Previously the exports only allowed `import`, so `require("jsx-async-runtime")` failed with `ERR_PACKAGE_PATH_NOT_EXPORTED`
 - Calling #jsxToString or #jsxToStream without a context (e.g. `jsxToString(<App />)` instead of `jsxToString.call({}, <App />)`) gives each render a new empty context, so components that write to `this` no longer fail with "Cannot set properties of undefined"
+- Calling #jsxToString or #jsxToStream on a namespace import (e.g. `import * as runtime from "jsx-async-runtime"` and then `runtime.jsxToString(<App />)`) gives the render a new empty context. Previously the read-only module object became `this`, so components writing to `this` failed, and its `jsxToString` export was used as an override for every nested element, which slowed rendering and made streaming send fewer, larger chunks
 
 ### Security
 
