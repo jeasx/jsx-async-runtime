@@ -149,7 +149,7 @@ async function UserCard({ user }) {
 }
 ```
 
-Starting promises early is safe: if one rejects before rendering gets to it, the error is reported when the promise is rendered or awaited, like any other component error, instead of crashing Node as an unhandled rejection. Promises inside an array prop (e.g. `users={[loadUser(1), loadUser(2)]}`) are covered too, but promises inside an object prop (e.g. `data={{ user }}`) aren't, so pass each of those as its own prop.
+Starting promises early is safe: if one rejects before rendering gets to it, the error is reported when the promise is rendered or awaited, like any other component error, instead of crashing Node as an unhandled rejection. Promises inside an array prop (e.g. `users={[loadUser(1), loadUser(2)]}`) or directly inside an object prop (e.g. `data={{ user }}`) are covered too. Objects inside objects or arrays aren't checked, so passing large data stays cheap. Pass promises nested that deep (e.g. `data={{ profile: { user } }}` or `users={[{ avatar }]}`) as their own prop.
 
 `jsxToString` returns a plain `string` as long as no component had to wait, and a `Promise<string>` otherwise. Using `await` works in both cases.
 

@@ -1397,6 +1397,42 @@ test("promise prop rejects while an earlier sibling is pending", () => {
   );
 });
 
+test("promise in an object prop rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  const User = async ({ data }) => <p>{(await data.user).name}</p>;
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <User data={{ user: rejectAfter(5, "object prop") }} />
+      </div>
+    ),
+    "object prop",
+  );
+});
+
+test("promise in an array of an object prop rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  const Users = async ({ data }) => (await Promise.all(data.users)).join();
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <Users data={{ users: [delay(1, "ada"), rejectAfter(5, "array in object prop")] }} />
+      </div>
+    ),
+    "array in object prop",
+  );
+});
+
+test("object props that reference themselves are fine", () => {
+  // Object props are only walked one level deep, so cyclic data can't recurse forever.
+  const node = { name: "a" };
+  node.self = node;
+  const Name = ({ node }) => node.self.name;
+  return equal(<Name node={node} />, `a`);
+});
+
 test("promise prop rejects after an earlier sibling threw", () => {
   const Boom = () => {
     throw new Error("first");
