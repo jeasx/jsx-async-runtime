@@ -1,3 +1,4 @@
+import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
 import { renderElement, Writer } from "./render-element.js";
@@ -60,6 +61,8 @@ export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<
         controller.close();
       };
       const fail = (error: unknown) => {
+        // Streams that rendering didn't get to won't be read anymore.
+        cancelUnreadStreams(jsxElement, error);
         if (!writer.cancelled) {
           controller.error(error);
         }

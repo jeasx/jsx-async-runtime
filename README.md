@@ -108,7 +108,7 @@ async function* Users() {
 </ul>;
 ```
 
-If rendering fails or the stream reader cancels, the source is stopped like a `for await` loop does on `break`, so an async generator runs its `finally` block and can close the cursor. An async iterable can be read only once, so render each one only once.
+If rendering fails or the stream reader cancels, the source is stopped like a `for await` loop does on `break`, so an async generator runs its `finally` block and can close the cursor. A `ReadableStream` child that rendering never got to (e.g. a `fetch()` body after an earlier component threw) is cancelled, so it doesn't keep the connection open. Streams passed as other props are left to the component. An async iterable can be read only once, so render each one only once.
 
 Async components run one after another: a component is only called once everything before it has finished rendering. Two sibling components that each wait one second take two seconds in total. To load data in parallel, start the work first and pass the promises down, either as children or as props:
 

@@ -1,3 +1,4 @@
+import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
 import { renderElement, Writer } from "./render-element.js";
@@ -17,8 +18,18 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
   const writer: Writer = { buffer: "", chunkSize: Infinity, cancelled: false, flush() {} };
   try {
     const pending = renderElement.call(resolveContext(this), jsxElement, writer);
-    return isPromise(pending) ? pending.then(() => writer.buffer) : writer.buffer;
+    return isPromise(pending)
+      ? pending.then(
+          () => writer.buffer,
+          (error) => {
+            // Streams that rendering didn't get to won't be read anymore.
+            cancelUnreadStreams(jsxElement, error);
+            throw error;
+          },
+        )
+      : writer.buffer;
   } catch (error) {
+    cancelUnreadStreams(jsxElement, error);
     // Report errors the same way, whether rendering was sync or async.
     return Promise.reject(error);
   }

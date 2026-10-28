@@ -1,4 +1,5 @@
 import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
+import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isIterable } from "../utils/is-iterable.js";
@@ -135,13 +136,24 @@ export function renderElement(
     if (writer.cancelled) {
       throw new Error("Stream cancelled");
     }
-    const jsxElementTag = jsxElement.tag.call(this, jsxElement.props);
-    if (isPromise(jsxElementTag)) {
-      return flushAndAwait(writer, jsxElementTag).then((tag) =>
-        $renderElement.call(this, tag, writer),
-      );
+    const returned = jsxElement.tag.call(this, jsxElement.props);
+    // If rendering what the component returned fails (e.g. a layout that throws),
+    // cancel the streams in it that rendering didn't get to.
+    let pending: void | Promise<void>;
+    try {
+      pending = isPromise(returned)
+        ? flushAndAwait(writer, returned).then((value) => $renderElement.call(this, value, writer))
+        : $renderElement.call(this, returned, writer);
+    } catch (error) {
+      cancelUnreadStreams(returned, error);
+      throw error;
     }
-    return $renderElement.call(this, jsxElementTag, writer);
+    if (isPromise(pending)) {
+      return pending.then(undefined, (error) => {
+        cancelUnreadStreams(returned, error);
+        throw error;
+      });
+    }
   }
 }
 
@@ -197,16 +209,20 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
       if (isPromise(pending)) {
         // Rendering won't get to the later children right away.
         handleRejection(children, i + 1);
-        return renderChildrenAsync.call(this, children, i + 1, pending, writer);
+        return renderChildrenAsync.call(this, children, i, pending, writer);
       }
     }
   } catch (error) {
     // Rendering won't get to the later children at all.
     handleRejection(children, i + 1);
+    cancelUnreadStreams(children, error, i);
     throw error;
   }
 }
 
+/**
+ * Continues rendering the children once the child at `index` (`pendingChild`) is done.
+ */
 async function renderChildrenAsync(
   this: any,
   children: JSX.Element[],
@@ -214,21 +230,27 @@ async function renderChildrenAsync(
   pendingChild: Promise<void>,
   writer: Writer,
 ): Promise<void> {
-  await pendingChild;
-  for (; index < children.length; index++) {
-    const child = children[index]!;
-    let element: JSX.Element = child;
-    if (isPromise(child)) {
-      element = await flushAndAwait(writer, child);
+  try {
+    await pendingChild;
+    while (++index < children.length) {
+      const child = children[index]!;
+      let element: JSX.Element = child;
+      if (isPromise(child)) {
+        element = await flushAndAwait(writer, child);
+      }
+      // Only wait when the child has to, so sync siblings don't cost extra microtasks.
+      const pending = $renderElement.call(this, element, writer);
+      if (isPromise(pending)) {
+        await pending;
+      }
+      if (writer.buffer.length >= writer.chunkSize) {
+        await writer.flush();
+      }
     }
-    // Only wait when the child has to, so sync siblings don't cost extra microtasks.
-    const pending = $renderElement.call(this, element, writer);
-    if (isPromise(pending)) {
-      await pending;
-    }
-    if (writer.buffer.length >= writer.chunkSize) {
-      await writer.flush();
-    }
+  } catch (error) {
+    // From the failed child on, rendering won't get to the rest.
+    cancelUnreadStreams(children, error, index);
+    throw error;
   }
 }
 
@@ -254,6 +276,8 @@ async function renderAsyncIterable(
       throw error;
     }
   };
+  // The item being rendered, so its unread streams can be cancelled when it fails.
+  let item: JSX.Element;
   try {
     for (;;) {
       // Don't pull more items once the stream reader is gone.
@@ -264,12 +288,14 @@ async function renderAsyncIterable(
       if (result.done) {
         return;
       }
-      const pending = $renderElement.call(this, result.value, writer);
+      item = result.value;
+      const pending = $renderElement.call(this, item, writer);
       if (isPromise(pending)) {
         await pending;
       }
     }
   } catch (error) {
+    cancelUnreadStreams(item, error);
     if (!sourceFailed) {
       // Stop the source without waiting for it, so the render error is reported right away.
       // The original error wins, so errors while stopping are ignored.
