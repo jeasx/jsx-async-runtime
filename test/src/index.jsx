@@ -21,6 +21,13 @@ async function equal(jsx, str) {
   assert.strictEqual((await streamToChunks(jsxToStream.call({}, jsx))).join(""), str);
 }
 
+// Takes a factory for children that can be read only once (e.g. a generator),
+// so each render gets its own.
+async function equalFresh(createJsx, str) {
+  assert.strictEqual(await jsxToString.call({}, createJsx()), str);
+  assert.strictEqual((await streamToChunks(jsxToStream.call({}, createJsx()))).join(""), str);
+}
+
 async function streamToChunks(stream) {
   const chunks = [];
   for await (const chunk of stream) {
@@ -293,12 +300,14 @@ test("iterator helper as children", () => {
     [1, "Ada"],
     [2, "Linus"],
   ]);
-  return equal(
-    <ul>
-      {users.values().map((name) => (
-        <li>{name}</li>
-      ))}
-    </ul>,
+  return equalFresh(
+    () => (
+      <ul>
+        {users.values().map((name) => (
+          <li>{name}</li>
+        ))}
+      </ul>
+    ),
     `<ul><li>Ada</li><li>Linus</li></ul>`,
   );
 });
@@ -308,7 +317,17 @@ test("generator as children", () => {
     yield <li>a</li>;
     yield [<li>b</li>, "c"];
   }
-  return equal(<ul>{items()}</ul>, `<ul><li>a</li><li>b</li>c</ul>`);
+  return equalFresh(() => <ul>{items()}</ul>, `<ul><li>a</li><li>b</li>c</ul>`);
+});
+
+test("generator children are read when rendered", () => {
+  function* items() {
+    yield "a";
+  }
+  const element = <p>{items()}</p>;
+  // Like any iterator, a generator can be read only once.
+  assert.strictEqual(jsxToString(element), `<p>a</p>`);
+  assert.strictEqual(jsxToString(element), `<p></p>`);
 });
 
 test("component returning a generator", () => {
@@ -492,6 +511,47 @@ test("render prop passed as children prop and with createElement", async () => {
   const render = (data) => <b>{data}</b>;
   await equal(<Loader children={render} />, `<b>data</b>`);
   await equal(classicCreateElement(Loader, null, render), `<b>data</b>`);
+});
+
+// The build type-checks these components against their children types.
+test("a single child is passed to the component as is", async () => {
+  /** @param {{ children: string }} props */
+  const Shout = ({ children }) => <b>{children.toUpperCase()}</b>;
+  /** @param {{ children: number }} props */
+  const Increment = ({ children }) => children + 1;
+  const TagName = ({ children }) => children.tag;
+  await equal(<Shout>hello</Shout>, `<b>HELLO</b>`);
+  await equal(<Increment>{1}</Increment>, `2`);
+  await equal(
+    <TagName>
+      <i>x</i>
+    </TagName>,
+    `i`,
+  );
+});
+
+test("an array child is passed to the component as is", () => {
+  /** @param {{ children: string[] }} props */
+  const Join = ({ children }) => children.join("-");
+  return equal(<Join>{["a", "b"]}</Join>, `a-b`);
+});
+
+test("several children are passed to the component as an array, as written", () => {
+  const Values = ({ children }) => children.map(String).join();
+  return equal(
+    <Values>
+      {"a"}
+      {null}
+      {false}
+      {1}
+    </Values>,
+    `a,null,false,1`,
+  );
+});
+
+test("a component without children gets no children prop", () => {
+  const Props = (props) => String("children" in props);
+  return equal(<Props />, `false`);
 });
 
 test("functions among several children are kept", () => {
@@ -1127,8 +1187,8 @@ test("key after spread is not rendered as attribute", () => {
 });
 
 test("key is not passed to components", () => {
-  const Props = (props) => JSON.stringify(Object.keys(props)) + props.children.length;
-  return equal(<Props key="k">x</Props>, `[&quot;children&quot;]1`);
+  const Props = (props) => JSON.stringify(props);
+  return equal(<Props key="k">x</Props>, `{&quot;children&quot;:&quot;x&quot;}`);
 });
 
 test("key is allowed on typed components", () => {
@@ -1155,10 +1215,13 @@ test("key with classic createElement", () =>
   equal(createElement("li", { key: "k", id: "i" }, "x"), `<li id="i">x</li>`));
 
 test("key and source with jsxDEV", async () => {
-  const Children = (props) => String(props.children.length);
+  const Props = (props) => JSON.stringify(props);
   const source = { fileName: "f.jsx", lineNumber: 1, columnNumber: 1 };
   await equal(jsxDEV("li", { children: "x" }, "k", false, source, {}), `<li>x</li>`);
-  await equal(jsxDEV(Children, { children: "x" }, "k", false, source, {}), `1`);
+  await equal(
+    jsxDEV(Props, { children: "x" }, "k", false, source, {}),
+    `{&quot;children&quot;:&quot;x&quot;}`,
+  );
 });
 
 test("createElement does not change the passed props", async () => {
@@ -1233,6 +1296,33 @@ test("nested promise child rejects while an earlier sibling is pending", () => {
       </div>
     ),
     "nested",
+  );
+});
+
+test("promise in a Set child rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        {new Set([rejectAfter(5, "set")])}
+      </div>
+    ),
+    "set",
+  );
+});
+
+test("promise child of a component rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  const Wrap = ({ children }) => <p>{children}</p>;
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <Wrap>{rejectAfter(5, "single child")}</Wrap>
+      </div>
+    ),
+    "single child",
   );
 });
 

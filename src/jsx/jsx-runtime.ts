@@ -1,6 +1,4 @@
 import { handleRejection } from "../utils/handle-rejection.js";
-import { isByteArray } from "../utils/is-byte-array.js";
-import { isIterable } from "../utils/is-iterable.js";
 import { JSX_NODE_MARKER } from "./jsx-node-marker.js";
 
 type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
@@ -21,7 +19,7 @@ export function createElement(tag: Tag, props?: Props, ...children: Child[]): JS
     // Positional children replace props.children, like in React. Compiled JSX
     // calls createElement when `key` comes after a spread, so this keeps
     // `<Row {...node} key={id}>label</Row>` the same as without `key`.
-    // A single child is passed as compiled JSX passes it, so a render prop stays a function.
+    // A single child is passed as is, like compiled JSX passes it.
     $props.children = children.length === 1 ? children[0] : children;
   }
   return jsx(tag, $props);
@@ -44,23 +42,14 @@ export function html(markup: string): JSX.Element {
 export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
   props ??= {};
 
-  // Children are always an array, except a single function child (a render prop),
-  // which is passed as is, so the component can call it as its type says.
-  if (typeof props.children !== "function") {
-    const $children: Child[] = [];
-    if (props.children != null) {
-      mapChildren(props.children, $children);
-    }
-    props.children = $children;
-  }
+  // Children are passed to components as written, like in React and as TypeScript types them:
+  // a single child as is (e.g. a string or a render prop), several children as an array,
+  // and no `children` prop without children.
 
-  // Promise props (component props and attributes) are only awaited
+  // Promise props (children, component props and attributes) are only awaited
   // once earlier siblings have rendered, so they may reject before that.
-  // Children were already handled by mapChildren().
   for (const key in props) {
-    if (key !== "children") {
-      handleRejection(props[key]);
-    }
+    handleRejection(props[key]);
   }
 
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
@@ -70,30 +59,6 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
     tag,
     props,
   } as unknown as JSX.Element;
-}
-
-function mapChildren(children: Child | Child[], accumulator: Child[]): void {
-  switch (typeof children) {
-    case "string":
-    case "number":
-    case "bigint":
-    // Functions are kept for components; tags render them as nothing.
-    case "function":
-      accumulator.push(children);
-      break;
-    case "object":
-      // Flatten arrays and other iterables (e.g. a Set or map.values()) into the children.
-      // Bytes stay one child, so they render as text.
-      if (Array.isArray(children) || (isIterable(children) && !isByteArray(children))) {
-        for (const child of children) {
-          mapChildren(child, accumulator);
-        }
-      } else if (children != null) {
-        handleRejection(children);
-        accumulator.push(children);
-      }
-      break;
-  }
 }
 
 export const jsxs = jsx;

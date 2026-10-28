@@ -120,11 +120,10 @@ export function renderElement(
 
   if (typeof jsxElement.tag === "string") {
     const tag = jsxElement.tag;
-    const children = jsxElement.props.children
-      ? Array.isArray(jsxElement.props.children)
-        ? jsxElement.props.children
-        : [jsxElement.props.children as JSX.Element]
-      : [];
+    // Children are passed as written: none, a single child (e.g. `0` or a `Set`) or an array.
+    const $children = jsxElement.props.children;
+    const children: JSX.Element[] =
+      $children == null ? [] : Array.isArray($children) ? $children : [$children as JSX.Element];
     if (tag === "") {
       return renderChildren.call(this, children, writer);
     }

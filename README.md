@@ -92,11 +92,11 @@ console.log(await jsxToString(<Todos />));
 
 Promises passed as children or attribute values are awaited as well, e.g. `<div>{loadGreeting()}</div>` or `<img src={loadImageUrl()} />`. All promise attributes of a tag are awaited in parallel. The output order always matches the order in your JSX.
 
-Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well.
+Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well. Generators and other iterators are read when they are rendered and can be read only once, so render each one only once.
 
 Bytes (a `Uint8Array` or `Buffer`) are rendered as UTF-8 text and escaped like any other string, so a file from `readFile()` or a `fetch()` body can be rendered directly, e.g. `<pre>{(await fetch(url)).body}</pre>`.
 
-A component receives its children as an array, with one exception: a single function child (a render prop) is passed as is, so the component can call it:
+A component receives its children as written, like in React and as TypeScript types them: a single child as is (e.g. a string or an element), several children as an array, and no `children` prop without children. So a single function child works as a render prop:
 
 ```jsx
 async function Loader({ children }) {
@@ -296,7 +296,7 @@ Things to keep in mind:
 
 ## Customizing rendering
 
-Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also strings, numbers, arrays or `null`, so read its properties with optional chaining (`jsxElement?.tag`). It returns a string or a promise of one; `""`, `null` and `undefined` render nothing. Call the original `jsxToString` to fall back to the default rendering:
+Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also children as written, like strings, numbers, (nested) arrays, `null` or `false`, so read its properties with optional chaining (`jsxElement?.tag`). It returns a string or a promise of one; `""`, `null` and `undefined` render nothing. Call the original `jsxToString` to fall back to the default rendering:
 
 ```jsx
 import { jsxToString } from "jsx-async-runtime";

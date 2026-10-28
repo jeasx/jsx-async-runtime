@@ -19,7 +19,11 @@ createServer(async (request, response) => {
   };
 
   const htmlDocument = await jsxToString.call(context, <App url={request.url} />);
-  const htmlHead = await jsxToString.call(context, <head>{unifyHead(headGroups.flat())}</head>);
+  // Children are passed as written (a single child or a nested array), so flatten them completely.
+  const htmlHead = await jsxToString.call(
+    context,
+    <head>{unifyHead(headGroups.flat(Infinity))}</head>,
+  );
   const htmlPayload = htmlDocument.replace(HEAD_MARK, htmlHead);
 
   response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
