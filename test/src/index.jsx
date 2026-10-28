@@ -1148,3 +1148,27 @@ test("stream cancel stops a paused render", async () => {
   await delay(20);
   assert.ok(calls <= paused + 1, `rendered ${calls - paused} components after cancel`);
 });
+
+test("stream cancel doesn't leave an override promise unhandled", async () => {
+  const Slow = () => delay(20, "slow");
+  const context = {
+    jsxToString(element) {
+      if (element === "after") {
+        return Promise.reject(new Error("override failed"));
+      }
+      return jsxToString.call({}, element);
+    },
+  };
+  const stream = jsxToStream.call(
+    context,
+    <div>
+      <Slow />
+      after
+    </div>,
+  );
+  const reader = stream.getReader();
+  await reader.read();
+  await reader.cancel();
+  // An unhandled rejection would fail this test.
+  await delay(50);
+});

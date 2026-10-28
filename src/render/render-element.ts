@@ -236,7 +236,14 @@ function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): voi
  * Both are awaited together, so a rejection of `value` is handled right away.
  */
 function flushAndAwait<T>(writer: Writer, value: PromiseLike<T>): Promise<T> {
-  const ready = writer.flush();
+  let ready: void | Promise<void>;
+  try {
+    ready = writer.flush();
+  } catch (error) {
+    // The flush failed (e.g. the stream was cancelled), so `value` is never awaited.
+    handleRejection(value);
+    throw error;
+  }
   if (!ready) {
     return Promise.resolve(value);
   }
