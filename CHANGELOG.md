@@ -10,6 +10,7 @@
 - #jsxToString now returns `string | Promise<string>` instead of always returning a promise. It renders synchronously and only returns a promise once it hits an async component or a promise child. `await jsxToString(...)` keeps working unchanged
 - A `this.jsxToString` override set by a component now also applies to the siblings that follow it, not only to its children
 - Only elements created by JSX, #createElement or `jsx()` are rendered. Element objects built by hand (e.g. `{ type: "tag", tag: "b", props }`) render nothing; create them with #createElement instead. Copies of real elements (e.g. `{ ...element, tag: "i" }`) still render
+- Removed the `jsxsDEV` export from `jsx-async-runtime/jsx-dev-runtime`. It isn't part of the JSX dev runtime and no compiler calls it; compiled JSX uses `jsxDEV`, which is unchanged
 
 ### New features
 

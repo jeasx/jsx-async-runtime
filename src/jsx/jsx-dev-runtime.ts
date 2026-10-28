@@ -11,4 +11,4 @@ export function jsxDEV(
   return jsx(tag, props);
 }
 
-export { Fragment, _Fragment, _jsx, _jsxs, createElement, jsx, jsxs, jsxDEV as jsxsDEV };
+export { Fragment, _Fragment, _jsx, _jsxs, createElement, jsx, jsxs };
