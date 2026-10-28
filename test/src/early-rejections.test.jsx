@@ -183,3 +183,43 @@ test("object props that reference themselves are fine", () => {
   const Name = ({ node }) => node.self.name;
   return equal(<Name node={node} />, `a`);
 });
+
+test("array props that contain themselves are fine", () => {
+  const list = [];
+  list.push("a", list);
+  const set = new Set();
+  set.add("b").add(set);
+  const First = ({ list, set, data }) => `${list[0]}${[...set][0]}${data.list[0]}`;
+  return equal(<First list={list} set={set} data={{ list }} />, `aba`);
+});
+
+test("promise in an array that contains itself rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  const list = [];
+  list.push(list, rejectAfter(5, "cyclic array"));
+  const Item = async ({ list }) => await list[1];
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <Item list={list} />
+      </div>
+    ),
+    "cyclic array",
+  );
+});
+
+test("promise in an array nested several times rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  const inner = [rejectAfter(5, "shared array")];
+  const Item = async ({ list }) => await list[0][0];
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        <Item list={[inner, inner, [inner]]} />
+      </div>
+    ),
+    "shared array",
+  );
+});
