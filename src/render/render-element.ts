@@ -25,22 +25,27 @@ export type Writer = {
   flush(): void | Promise<void>;
 };
 
-const VOID_TAGS = new Set([
-  "area",
-  "base",
-  "br",
-  "col",
-  "embed",
-  "hr",
-  "img",
-  "input",
-  "link",
-  "meta",
-  "param",
-  "source",
-  "track",
-  "wbr",
-]);
+// HTML tag names are case-insensitive, so the uppercase and capitalized variants are void too
+// (e.g. `<BR>` and `<Br>`). Other mixed case (e.g. `<bR>`) is rare and not recognized,
+// so a single lookup does the check.
+const VOID_TAGS = new Set(
+  [
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr",
+  ].flatMap((tag) => [tag, tag.toUpperCase(), tag[0]!.toUpperCase() + tag.slice(1)]),
+);
 
 // A tag must start with an ASCII letter and must not contain characters
 // that end the tag name or break the markup.
@@ -196,8 +201,7 @@ function renderTag(
   writer.buffer += attributes.length ? `<${tag} ${attributes}>` : `<${tag}>`;
 
   // Void tags can't have content or a closing tag, so their children are ignored.
-  // HTML tag names are case-insensitive, so `<BR>` is void too.
-  if (VOID_TAGS.has(tag) || VOID_TAGS.has(tag.toLowerCase())) {
+  if (VOID_TAGS.has(tag)) {
     // The children are never rendered, so cancel their streams to not keep a connection open.
     // Most void tags have no children, so this usually creates no error.
     if (children.length) {

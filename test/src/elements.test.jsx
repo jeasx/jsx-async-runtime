@@ -50,14 +50,16 @@ test("void tags ignore children", () => {
   ).then(() => assert.equal(called, false));
 });
 
-test("void tags ignore case", () =>
+test("uppercase and capitalized void tags are void too", () =>
   equal(
     // Capitalized JSX names are components, so build the tags with createElement.
     <>
       {classicCreateElement("BR")}
+      {classicCreateElement("IMG", { src: "src" }, "text")}
+      {classicCreateElement("Br")}
       {classicCreateElement("Img", { src: "src" }, "text")}
     </>,
-    `<BR><Img src="src">`,
+    `<BR><IMG src="src"><Br><Img src="src">`,
   ));
 
 test("doctype declaration", () =>
