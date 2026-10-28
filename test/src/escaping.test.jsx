@@ -2,7 +2,6 @@ import { escapeEntities, html, jsxToString } from "jsx-async-runtime";
 import { createElement } from "jsx-async-runtime/jsx-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
-import Html from "./components/Html.js";
 import { equal } from "./helpers/equal.js";
 
 test("escape enabled", () =>
@@ -23,32 +22,39 @@ test("escape string", () =>
 
 test("unicode text is not escaped", () => equal(<p>Grüße 🚀 ©</p>, `<p>Grüße 🚀 ©</p>`));
 
-test("escape disabled", () =>
-  equal(
-    <div>
-      <h1>{`"Hello World"`}</h1>
-      <Html>
-        <section>{`<p>"Unescaped & text"</p>`}</section>
-      </Html>
-      <h2>{`"Hello World"`}</h2>
-    </div>,
-    `<div><h1>&quot;Hello World&quot;</h1><section><p>"Unescaped & text"</p></section><h2>&quot;Hello World&quot;</h2></div>`,
-  ));
-
-test("escaping disabled via context", async () =>
+test("removed jsxEscapeHTML context option doesn't turn escaping off", () =>
   assert.strictEqual(
-    await jsxToString.call({ jsxEscapeHTML: false }, <p>{"<b>"}</p>),
-    `<p><b></p>`,
+    jsxToString.call({ jsxEscapeHTML: false }, <p>{"<b>"}</p>),
+    `<p>&lt;b&gt;</p>`,
   ));
 
-test("only an explicit false turns escaping off", async () => {
-  for (const jsxEscapeHTML of [true, undefined, null, "true", "false", 1, 0, ""]) {
-    assert.strictEqual(
-      await jsxToString.call({ jsxEscapeHTML }, <p>{"<b>"}</p>),
-      `<p>&lt;b&gt;</p>`,
-      `jsxEscapeHTML: ${JSON.stringify(jsxEscapeHTML)}`,
-    );
+test("jsxToString override renders text raw", async () => {
+  // Migration path for the removed `jsxEscapeHTML: false` (see CHANGELOG).
+  const decoder = new TextDecoder();
+  const context = {
+    jsxToString(element) {
+      if (typeof element === "string") return element;
+      if (element instanceof Uint8Array) return decoder.decode(element);
+      return jsxToString.call(this, element);
+    },
+  };
+  const Text = () => <i>{"<b>2</b>"}</i>;
+  async function* chunks() {
+    yield "<b>4</b>";
+    yield new TextEncoder().encode("<b>5</b>");
   }
+  assert.strictEqual(
+    await jsxToString.call(
+      context,
+      <p title="<q>">
+        {"<b>1</b>"}
+        <Text />
+        {Buffer.from("<b>3</b>")}
+        {chunks()}
+      </p>,
+    ),
+    `<p title="&lt;q&gt;"><b>1</b><i><b>2</b></i><b>3</b><b>4</b><b>5</b></p>`,
+  );
 });
 
 test("escapeEntities escapes all special characters", () =>
@@ -79,11 +85,8 @@ test("escapeEntities with null, undefined and booleans", () => {
   assert.strictEqual(escapeEntities(true), "");
 });
 
-test("escapeEntities on a non-string renders escaped with escaping off", () =>
-  assert.strictEqual(
-    jsxToString.call({ jsxEscapeHTML: false }, <p>{escapeEntities(new Error("<b>"))}</p>),
-    "<p>Error: &lt;b&gt;</p>",
-  ));
+test("escapeEntities on a non-string renders escaped inside raw html", () =>
+  equal(<p>{html(escapeEntities(new Error("<b>")))}</p>, "<p>Error: &lt;b&gt;</p>"));
 
 test("component returning raw html", () => {
   const Raw = () => html("<b>raw</b>");

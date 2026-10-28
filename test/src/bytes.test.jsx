@@ -1,5 +1,3 @@
-import { jsxToString } from "jsx-async-runtime";
-import { strict as assert } from "node:assert";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import { equal } from "./helpers/equal.js";
@@ -24,13 +22,6 @@ test("component returning bytes", () => {
 
 test("bytes from another realm render as text", () =>
   equal(<p>{runInNewContext("new Uint8Array([104, 105])")}</p>, `<p>hi</p>`));
-
-test("bytes are not escaped when escaping is off", async () => {
-  assert.strictEqual(
-    await jsxToString.call({ jsxEscapeHTML: false }, <p>{Buffer.from("<b>")}</p>),
-    `<p><b></p>`,
-  );
-});
 
 test("other typed arrays render like arrays of numbers", () =>
   equal(<p>{new Uint16Array([1, 2])}</p>, `<p>12</p>`));

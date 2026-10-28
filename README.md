@@ -192,24 +192,25 @@ Never put untrusted input into an inline script this way. To pass data to a scri
 <script>{html(`const data = ${JSON.stringify(data).replaceAll("<", "\\u003c")};`)}</script>
 ```
 
-To restore the behaviour of `jsx-async-runtime < v2.x.x` and turn off text escaping completely, set `jsxEscapeHTML` on the `this` context:
+When you build markup as a string yourself, escape untrusted values in it with `escapeEntities`:
 
 ```jsx
-export default function () {
-  this.jsxEscapeHTML = false;
-  return <div>{"<p><b>HTML</b> from a trusted CMS</p>"}</div>;
-}
+import { escapeEntities, html } from "jsx-async-runtime";
+
+<div>{html(`<p>Hello <b>${escapeEntities(user.name)}</b></p>`)}</div>;
 ```
 
-With escaping turned off, use `escapeEntities` for markup from untrusted sources:
+Escaping can't be turned off for the whole page, so a `<p>{comment}</p>` can't render unescaped by accident. If you really need raw text everywhere (e.g. a trusted HTML stream from `fetch()`, which `html()` can't wrap), let a [`this.jsxToString` override](#customizing-rendering) return text as is:
 
 ```jsx
-import { escapeEntities } from "jsx-async-runtime";
-
-export default function () {
-  this.jsxEscapeHTML = false;
-  return <div>{escapeEntities("<p><b>HTML</b> from user input</p>")}</div>;
-}
+const decoder = new TextDecoder();
+const context = {
+  jsxToString(jsxElement) {
+    if (typeof jsxElement === "string") return jsxElement;
+    if (jsxElement instanceof Uint8Array) return decoder.decode(jsxElement);
+    return jsxToString.call(this, jsxElement);
+  },
+};
 ```
 
 Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so a name from untrusted input can't break out of the tag and inject markup.
@@ -343,7 +344,6 @@ Context properties read by the runtime:
 
 | Property        | Description                                                                                  |
 | --------------- | -------------------------------------------------------------------------------------------- |
-| `jsxEscapeHTML` | Set to `false` to turn off escaping of text. Defaults to `true`.                             |
 | `jsxToString`   | Override for rendering nested elements. See [Customizing rendering](#customizing-rendering). |
 
 ## Example project
