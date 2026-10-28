@@ -6,8 +6,8 @@ import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
  */
 export function isJsxNode(value: unknown): boolean {
   return (
-    typeof value === "object" &&
     value !== null &&
+    typeof value === "object" &&
     (value as Record<symbol, unknown>)[JSX_NODE_MARKER] === true
   );
 }
