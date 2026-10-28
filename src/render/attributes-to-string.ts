@@ -1,4 +1,6 @@
+import { classToString } from "../utils/class-to-string.js";
 import { isPromise } from "../utils/is-promise.js";
+import { styleToString } from "../utils/style-to-string.js";
 import { createNameValidator } from "./create-name-validator.js";
 import { escapeHTML } from "./escape-entities.js";
 
@@ -94,53 +96,4 @@ function attributeToString(key: string, value: any): string {
 
 function valueToStringTransformer(_key: string, value: unknown): unknown {
   return typeof value === "bigint" ? String(value) : value;
-}
-
-function styleToString(obj: Record<string, unknown>): string {
-  let result = "";
-  let separator = "";
-  for (const key in obj) {
-    const value = obj[key];
-    // Like in React, empty values are skipped, so `color: ""` doesn't render `color: `.
-    if (value === null || value === undefined || value === false || value === "") {
-      continue;
-    }
-    result += `${separator}${key}: ${value}`;
-    separator = "; ";
-  }
-  return result;
-}
-
-/**
- * Joins class names from an array or an object of `name: condition` pairs.
- * Arrays may nest and contain such objects, e.g. `["a", ["b"], { c: cond }]`.
- */
-function classToString(obj: unknown[] | Record<string, unknown>): string {
-  let result = "";
-  const add = (name: string) => {
-    if (name !== "") {
-      result += result !== "" ? ` ${name}` : name;
-    }
-  };
-  const walk = (value: unknown) => {
-    if (!value) {
-      return;
-    }
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        walk(item);
-      }
-    } else if (typeof value === "object") {
-      const record = value as Record<string, unknown>;
-      for (const key in record) {
-        if (record[key]) {
-          add(key);
-        }
-      }
-    } else {
-      add(String(value));
-    }
-  };
-  walk(obj);
-  return result;
 }
