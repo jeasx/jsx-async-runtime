@@ -4,7 +4,7 @@ import { handleRejection } from "../utils/handle-rejection.js";
 import { isPromise } from "../utils/is-promise.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
-import { flushAndAwait, Writer } from "../utils/writer.js";
+import { flushAndAwait, type Writer } from "../utils/writer.js";
 import { renderNested } from "./render-element.js";
 
 /** The progress of reading a lazy iterator or an async iterable. */

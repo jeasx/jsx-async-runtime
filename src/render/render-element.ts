@@ -8,7 +8,7 @@ import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
-import { flushAndAwait, Writer } from "../utils/writer.js";
+import { flushAndAwait, type Writer } from "../utils/writer.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
 import { renderAsyncIterable, renderIterator } from "./render-iterables.js";
