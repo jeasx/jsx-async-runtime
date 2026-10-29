@@ -12,7 +12,8 @@ type Props = {
   children?: Child | Child[];
 };
 
-export function createElement(tag: Tag, props?: Props, ...children: Child[]): JSX.Element {
+// `props` may be `null`, like in React, e.g. `createElement(Fragment, null, a, b)`.
+export function createElement(tag: Tag, props?: Props | null, ...children: Child[]): JSX.Element {
   // Copy props, so the caller's object is never changed.
   const $props = { ...props };
   if (children.length) {
