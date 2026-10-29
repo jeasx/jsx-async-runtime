@@ -65,8 +65,9 @@ const textDecoder = new TextDecoder();
 // Skips keys inherited from a polluted `Object.prototype`.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
-// Iterators over collections whose items already exist, so reading them up front costs no
-// extra work and lets early promise rejections in them be handled like in an array.
+// Iterators of the built-in collections (arrays, typed arrays, `Map` and `Set`), whose items
+// already exist, so reading them up front costs no extra work and lets early promise rejections
+// in them be handled like in an array.
 const EAGER_ITERATORS = new Set(["Array Iterator", "Map Iterator", "Set Iterator"]);
 
 /**
@@ -116,12 +117,12 @@ export function renderElement(
   // Other iterables, e.g. a generator returned by a component.
   if (isIterable(jsxElement)) {
     const iterator = jsxElement[Symbol.iterator]();
-    // Collections (e.g. a `Set` or `map.values()`) already hold their items, which may include
-    // promises that reject early, so they are rendered like an array. Lazy iterators
-    // (e.g. a generator or `iterator.map()`) are read item by item, so a long one streams
-    // without being held in memory, and an endless one can be stopped by a cancel.
-    const isCollection = (iterator as unknown) !== jsxElement;
-    if (isCollection || EAGER_ITERATORS.has((iterator as any)[Symbol.toStringTag])) {
+    // Built-in collections (e.g. a `Set` or `map.values()`) already hold their items, which may
+    // include promises that reject early, so they are rendered like an array. Everything else
+    // (e.g. a generator, `iterator.map()` or an object with a `*[Symbol.iterator]()` method)
+    // may be lazy, so it is read item by item: a long one streams without being held in memory,
+    // and an endless one can be stopped by a cancel.
+    if (EAGER_ITERATORS.has((iterator as any)[Symbol.toStringTag])) {
       return renderChildren.call(this, toArray(iterator), writer);
     }
     return renderIterator.call(this, iterator as Iterator<JSX.Element>, writer);

@@ -487,6 +487,48 @@ test("stream sends a long generator before reading all of it", async () => {
   await reader.cancel();
 });
 
+test("stream sends a long iterable object before reading all of it", async () => {
+  // Its `[Symbol.iterator]()` returns a new generator each time, unlike a generator itself.
+  let read = 0;
+  const rows = {
+    *[Symbol.iterator]() {
+      for (let i = 0; i < 100_000; i++) {
+        read++;
+        yield <li>{i}</li>;
+      }
+    },
+  };
+  const reader = jsxToStream(<ul>{rows as any}</ul>).getReader();
+  const first = await reader.read();
+  assert.ok(first.value!.startsWith("<ul><li>0</li>"));
+  assert.ok(read < 10_000, `read ${read} items before the first chunk`);
+  await reader.cancel();
+});
+
+test("stream cancel stops an endless iterable object", async () => {
+  let read = 0;
+  let stopped = false;
+  const items = {
+    *[Symbol.iterator]() {
+      try {
+        for (;;) {
+          read++;
+          yield "x".repeat(1000);
+        }
+      } finally {
+        stopped = true;
+      }
+    },
+  };
+  const reader = jsxToStream(<div>{items as any}</div>).getReader();
+  await reader.read();
+  await reader.cancel();
+  const afterCancel = read;
+  await delay(20);
+  assert.ok(stopped, "iterator was not stopped");
+  assert.ok(read <= afterCancel + 1, `read ${read - afterCancel} items after cancel`);
+});
+
 test("stream cancel stops an endless generator", async () => {
   let read = 0;
   let stopped = false;

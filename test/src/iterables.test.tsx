@@ -126,7 +126,13 @@ test("generator that throws fails the render", () => {
   return rejects(() => <p>{items()}</p>, "source failed");
 });
 
-test("iterator without Symbol.iterator of its own is read like an array", () => {
+test("typed arrays other than bytes render their numbers", () =>
+  equal(<p>{new Uint16Array([1, 2]) as any}</p>, `<p>12</p>`));
+
+test("Map renders its entries", () =>
+  equal(<p>{new Map([["a", <b>b</b>]]) as any}</p>, `<p>a<b>b</b></p>`));
+
+test("iterator without Symbol.iterator of its own is read item by item", () => {
   const iterable = {
     [Symbol.iterator]() {
       let i = 0;
