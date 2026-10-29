@@ -187,3 +187,28 @@ test("props that aren't rendered as attributes are not awaited", async () => {
   );
   assert.strictEqual(thenCalled, false);
 });
+
+test("bytes attribute renders as UTF-8 text", () =>
+  equal(
+    <div title={new TextEncoder().encode(`"Grüße"`) as any} />,
+    `<div title="&quot;Grüße&quot;"></div>`,
+  ));
+
+test("Map, Set and class instances without toString render nothing", () => {
+  class Point {
+    x = 1;
+  }
+  return equal(
+    <div
+      data-a={new Map([[1, 2]]) as any}
+      data-b={new Set([1]) as any}
+      data-c={new Point() as any}
+      data-d={Object.create(Object.create(null)) as any}
+      id="x"
+    />,
+    `<div id="x"></div>`,
+  );
+});
+
+test("style array renders nothing", () =>
+  equal(<div style={["color: red"] as any} />, `<div></div>`));

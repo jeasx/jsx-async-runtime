@@ -1,9 +1,13 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { classToString } from "../utils/class-to-string.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
+import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 import { styleToString } from "../utils/style-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
+
+// Decodes byte attribute values. Used without the `stream` option, it keeps no state between calls.
+const textDecoder = new TextDecoder();
 
 // An attribute name must not be empty and
 // must not contain characters that break the name.
@@ -91,6 +95,10 @@ function attributeToString(key: string, value: any): string {
       return "";
     }
     if (key === "style") {
+      // An array isn't a style object, so it renders nothing instead of `0: ...` for each item.
+      if (Array.isArray(value)) {
+        return "";
+      }
       const styles = styleToString(value);
       return styles && `style="${escapeHTML(styles)}"`;
     }
@@ -104,6 +112,17 @@ function attributeToString(key: string, value: any): string {
       // A `toJSON()` that returns `undefined` (or a function) gives no JSON, so render nothing
       // instead of `key="undefined"`.
       return json === undefined ? "" : `${key}="${escapeHTML(json)}"`;
+    }
+    // Bytes render as UTF-8 text, like they do as children, instead of a list of numbers.
+    if (isByteArray(value)) {
+      return `${key}="${escapeHTML(textDecoder.decode(value))}"`;
+    }
+    // Like children, only objects with their own string form (e.g. `Date`, `URL`) render it.
+    // Others (e.g. a `Map`, a `Set` or a class instance without `toString`) render nothing
+    // instead of `[object Map]`.
+    const toString = (value as { toString?: unknown }).toString;
+    if (typeof toString !== "function" || toString === Object.prototype.toString) {
+      return "";
     }
   }
   return `${key}="${escapeHTML(String(value))}"`;

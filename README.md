@@ -249,6 +249,8 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `class={["a", cond && "b"]}`              | `class="a b"` (falsy entries are skipped)                                        |
 | `class={["a", ["b"], { c: true }]}`       | `class="a b c"` (arrays may nest and contain objects)                            |
 | plain object or array                     | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                                     |
+| bytes, e.g. a `Buffer`                    | UTF-8 text (escaped), like bytes as children                                     |
+| `Map`, `Set` or other object without `toString` | nothing                                                                    |
 | anything else (`URL`, `Date`, numbers)    | its string form, e.g. `href={new URL("https://example.com")}`                    |
 
 Style properties use CSS names (`background-color`, not `backgroundColor`). Keys are rendered exactly as written and camelCase isn't converted, so `style={{ fontSize: "1rem" }}` renders `style="fontSize: 1rem"`, which browsers ignore. Custom properties work as written, e.g. `style={{ "--gap": "1rem" }}`. Promises inside `style` and `class` values aren't awaited and are skipped, so `class={{ active: isActive() }}` with an async `isActive` adds nothing; await them before rendering, or pass the whole value as a promise (e.g. `class={loadClasses()}`). `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
