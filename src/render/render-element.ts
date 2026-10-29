@@ -12,7 +12,7 @@ import { isPromise } from "../utils/is-promise.js";
 import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
-import { renderAsyncIterable, renderIterator } from "./render-iterables.js";
+import { renderAsyncIterable, renderIterable } from "./render-iterables.js";
 
 // HTML tag names are case-insensitive, so the uppercase and capitalized variants are void too
 // (e.g. `<BR>` and `<Br>`). Other mixed case (e.g. `<bR>`) is rare and not recognized,
@@ -44,11 +44,6 @@ const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 type Props = ElementNode["props"];
-
-// Iterators of the built-in collections (arrays, typed arrays, `Map` and `Set`), whose items
-// already exist, so reading them up front costs no extra work and lets early promise rejections
-// in them be handled like in an array.
-const EAGER_ITERATORS = new Set(["Array Iterator", "Map Iterator", "Set Iterator"]);
 
 /**
  * Renders a JSX element into the writer.
@@ -94,18 +89,9 @@ export function renderElement(
     return renderElement.call(this, decodeBytes(jsxElement), writer);
   }
 
-  // Other iterables, e.g. a generator returned by a component.
+  // Other iterables, e.g. a `Set` or a generator returned by a component.
   if (isIterable(jsxElement)) {
-    const iterator = jsxElement[Symbol.iterator]();
-    // Built-in collections (e.g. a `Set` or `map.values()`) already hold their items, which may
-    // include promises that reject early, so they are rendered like an array. Everything else
-    // (e.g. a generator, `iterator.map()` or an object with a `*[Symbol.iterator]()` method)
-    // may be lazy, so it is read item by item: a long one streams without being held in memory,
-    // and an endless one can be stopped by a cancel.
-    if (EAGER_ITERATORS.has((iterator as any)[Symbol.toStringTag])) {
-      return renderChildren.call(this, toArray(iterator), writer);
-    }
-    return renderIterator.call(this, iterator as Iterator<JSX.Element>, writer);
+    return renderIterable.call(this, jsxElement, writer);
   }
 
   // Async iterables, e.g. an async generator component or a `ReadableStream`.
@@ -259,7 +245,7 @@ function discardChildren(tag: string, children: JSX.Element[]): void {
  * Renders children in order. Stays sync until a child has to wait,
  * then continues the remaining children sequentially.
  */
-function renderChildren(this: any, children: JSX.Element[], writer: Writer): void | Promise<void> {
+export function renderChildren(this: any, children: JSX.Element[], writer: Writer): void | Promise<void> {
   let i = 0;
   try {
     for (; i < children.length; i++) {
@@ -332,18 +318,6 @@ async function renderChildrenAsync(
     cancelUnreadStreams(children, error, index);
     throw error;
   }
-}
-
-/**
- * Reads the rest of an iterator into an array.
- * Works for iterators that aren't iterable themselves, unlike `Array.from()`.
- */
-function toArray(iterator: Iterator<unknown>): JSX.Element[] {
-  const items: JSX.Element[] = [];
-  for (let result = iterator.next(); !result.done; result = iterator.next()) {
-    items.push(result.value as JSX.Element);
-  }
-  return items;
 }
 
 /**

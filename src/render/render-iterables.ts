@@ -2,10 +2,15 @@ import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { decodeItem, finishDecoding, type ByteDecoding } from "../utils/decode-bytes.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { isPromise } from "../utils/is-promise.js";
+import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
-import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
-import { renderAwaitable, renderNested } from "./render-element.js";
+import { renderAwaitable, renderChildren, renderNested } from "./render-element.js";
+
+// Iterators of the built-in collections (arrays, typed arrays, `Map` and `Set`), whose items
+// already exist, so reading them up front costs no extra work and lets early promise rejections
+// in them be handled like in an array.
+const EAGER_ITERATORS = new Set(["Array Iterator", "Map Iterator", "Set Iterator"]);
 
 /** The progress of reading a lazy iterator or an async iterable. */
 type IteratorState = ByteDecoding & {
@@ -37,13 +42,45 @@ function takeItem(state: IteratorState, result: IteratorResult<JSX.Element>): bo
 }
 
 /**
+ * Renders an iterable other than an array or bytes, e.g. a `Set` or a generator.
+ * Built-in collections (e.g. a `Set` or `map.values()`) already hold their items, which may
+ * include promises that reject early, so they are rendered like an array. Everything else
+ * (e.g. a generator, `iterator.map()` or an object with a `*[Symbol.iterator]()` method)
+ * may be lazy, so it is read item by item: a long one streams without being held in memory,
+ * and an endless one can be stopped by a cancel.
+ */
+export function renderIterable(
+  this: any,
+  iterable: Iterable<unknown>,
+  writer: Writer,
+): void | Promise<void> {
+  const iterator = iterable[Symbol.iterator]();
+  if (EAGER_ITERATORS.has((iterator as any)[Symbol.toStringTag])) {
+    return renderChildren.call(this, toArray(iterator), writer);
+  }
+  return renderIterator.call(this, iterator as Iterator<JSX.Element>, writer);
+}
+
+/**
+ * Reads the rest of an iterator into an array.
+ * Works for iterators that aren't iterable themselves, unlike `Array.from()`.
+ */
+function toArray(iterator: Iterator<unknown>): JSX.Element[] {
+  const items: JSX.Element[] = [];
+  for (let result = iterator.next(); !result.done; result = iterator.next()) {
+    items.push(result.value as JSX.Element);
+  }
+  return items;
+}
+
+/**
  * Renders the items of a lazy iterator (e.g. a generator) in order, reading one item at a time.
  * Stays sync until an item has to wait, then continues async. Large sync markup is flushed
  * as it piles up, so `jsxToStream` sends it early and pauses the iterator while the reader is behind.
  * When rendering fails or the stream is cancelled, the iterator is stopped like `for...of` does
  * (e.g. a generator runs its `finally` block).
  */
-export function renderIterator(
+function renderIterator(
   this: any,
   iterator: Iterator<JSX.Element>,
   writer: Writer,
