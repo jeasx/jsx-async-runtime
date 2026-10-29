@@ -22,8 +22,13 @@ export type Writer = {
   chunkSize: number;
   /** Set when the stream reader cancels; rendering stops at the next component. */
   cancelled: boolean;
-  /** Resolves when the stream reader cancels, so waits that can't be paused (e.g. for the next item of an async iterable) stop early. */
-  onCancel?: Promise<void>;
+  /**
+   * Rejects the pending waits (e.g. for a promise child or the next item of an async iterable)
+   * when the stream reader cancels, so a slow or endless wait doesn't keep the render going.
+   * Each wait adds its reject function and removes it once settled.
+   * Shared with nested `jsxToString` writers, so they stop too.
+   */
+  waits?: Set<(error: Error) => void>;
   flush(): void | Promise<void>;
 };
 
@@ -351,19 +356,6 @@ async function renderAsyncIterable(
       throw error;
     }
   };
-  // Stops waiting for the next item when the stream reader cancels, so a slow or endless source
-  // (e.g. a live feed) doesn't keep the render going. The source is then stopped below.
-  // One cancel listener for the whole iterable: racing each item against `onCancel` would add
-  // a listener per item, kept until the stream ends, so long sources would leak memory.
-  let rejectWait: ((error: Error) => void) | undefined;
-  writer.onCancel?.then(() => rejectWait?.(new Error("Stream cancelled")));
-  const nextOrCancel = writer.onCancel
-    ? () =>
-        new Promise<IteratorResult<JSX.Element>>((resolve, reject) => {
-          rejectWait = reject;
-          next().then(resolve, reject);
-        })
-    : next;
   // The item being rendered, so its unread streams can be cancelled when it fails.
   let item: JSX.Element;
   // Decodes byte items (e.g. the chunks of a `fetch()` body) as UTF-8 text. One decoder
@@ -375,7 +367,9 @@ async function renderAsyncIterable(
       if (writer.cancelled) {
         throw new Error("Stream cancelled");
       }
-      const result = await flushAndAwait(writer, nextOrCancel());
+      // When the stream reader cancels, the wait for a slow or endless source (e.g. a live feed)
+      // ends at once, and the source is stopped below.
+      const result = await flushAndAwait(writer, next());
       if (result.done) {
         // Bytes of a character cut off at the end render as the replacement character "\uFFFD".
         const rest = decoder?.decode();
@@ -439,6 +433,7 @@ function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): voi
  * Sends the markup rendered so far, then waits for `value`
  * and (when the stream reader is behind) for the reader to catch up.
  * Both are awaited together, so a rejection of `value` is handled right away.
+ * When the stream reader cancels, the wait rejects at once instead of waiting for `value`.
  */
 function flushAndAwait<T>(writer: Writer, value: PromiseLike<T>): Promise<T> {
   let ready: void | Promise<void>;
@@ -449,8 +444,35 @@ function flushAndAwait<T>(writer: Writer, value: PromiseLike<T>): Promise<T> {
     handleRejection(value);
     throw error;
   }
+  const waiting = untilCancelled(writer, value);
   if (!ready) {
+    return waiting;
+  }
+  return Promise.all([waiting, ready]).then(([$value]) => $value);
+}
+
+/**
+ * Waits for `value`, but rejects as soon as the stream reader cancels.
+ * Its reject function is kept in `writer.waits` only while waiting, so long renders
+ * (e.g. an endless async iterable) don't pile up listeners.
+ * A later rejection of `value` is still handled, so it can't crash Node.
+ */
+function untilCancelled<T>(writer: Writer, value: PromiseLike<T>): Promise<T> {
+  const waits = writer.waits;
+  if (!waits) {
     return Promise.resolve(value);
   }
-  return Promise.all([value, ready]).then(([$value]) => $value);
+  return new Promise<T>((resolve, reject) => {
+    waits.add(reject);
+    Promise.resolve(value).then(
+      ($value) => {
+        waits.delete(reject);
+        resolve($value);
+      },
+      (error) => {
+        waits.delete(reject);
+        reject(error);
+      },
+    );
+  });
 }

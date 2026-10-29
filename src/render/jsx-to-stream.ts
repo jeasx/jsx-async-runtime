@@ -24,14 +24,12 @@ export function jsxToStream(
 ): ReadableStream<string> {
   const context = resolveContext(this, "jsxToStream", jsxToStream);
 
-  let signalCancel!: () => void;
+  const waits = new Set<(error: Error) => void>();
   const writer: Writer = {
     buffer: "",
     chunkSize: CHUNK_SIZE,
     cancelled: false,
-    onCancel: new Promise<void>((resolve) => {
-      signalCancel = resolve;
-    }),
+    waits,
     flush() {},
   };
 
@@ -110,7 +108,12 @@ export function jsxToStream(
       writer.buffer = "";
       // Let paused rendering continue, so it stops at the next component.
       wakeUp();
-      signalCancel();
+      // End the waits for promises and async iterables, so rendering stops right away.
+      const error = new Error("Stream cancelled");
+      for (const reject of waits) {
+        reject(error);
+      }
+      waits.clear();
     },
   };
 

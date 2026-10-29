@@ -189,6 +189,67 @@ test("stream cancelled while a promise child is pending stops before the next pr
   assert.strictEqual(awaited, false);
 });
 
+test("stream cancel ends the wait for a promise that never settles", async () => {
+  // Rendering never gets to the body, so it's cancelled once rendering ends.
+  // Before, the render kept waiting for the promise, so the body stayed open.
+  let bodyCancelled = false;
+  const body = new ReadableStream({
+    cancel() {
+      bodyCancelled = true;
+    },
+  });
+  const never = new Promise<string>(() => {});
+  const reader = jsxToStream
+    .call(
+      {},
+      <p>
+        a{never}
+        {body}
+      </p>,
+    )
+    .getReader();
+  assert.deepStrictEqual(await reader.read(), { done: false, value: "<p>a" });
+  await reader.cancel();
+  await delay(10);
+  assert.strictEqual(bodyCancelled, true);
+});
+
+test("stream cancel ends the wait inside a nested jsxToString", async () => {
+  // An override renders each element with jsxToString, so the never-settling promise
+  // is waited for in the nested writer, which shares the stream's cancel.
+  let bodyCancelled = false;
+  const body = new ReadableStream({
+    cancel() {
+      bodyCancelled = true;
+    },
+  });
+  const Never = () => new Promise<string>(() => {});
+  const context = {
+    jsxToString(element: JSX.Element) {
+      return jsxToString.call(this, element);
+    },
+  };
+  const reader = jsxToStream
+    .call(
+      context,
+      <div>
+        a
+        <p>
+          <Never />
+        </p>
+        {body}
+      </div>,
+    )
+    .getReader();
+  // Nested jsxToString collects markup, so nothing is sent until the nested element is done.
+  const read = reader.read();
+  await delay(10);
+  await reader.cancel();
+  await read;
+  await delay(10);
+  assert.strictEqual(bodyCancelled, true);
+});
+
 test("stream cancel stops a paused render", async () => {
   let calls = 0;
   const Item = async () => {

@@ -54,7 +54,7 @@ function createWriter(stream: Writer | undefined): Writer {
     get cancelled() {
       return stream.cancelled;
     },
-    onCancel: stream.onCancel,
+    waits: stream.waits,
     flush() {
       if (stream.cancelled) {
         throw new Error("Stream cancelled");
