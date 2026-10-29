@@ -57,6 +57,58 @@ export type Writer = {
 };
 
 /**
+ * Creates a writer that collects all markup in the buffer, nothing is sent early.
+ * Inside a stream (`stream` is its writer, e.g. when called from a `this.jsxToString` override),
+ * rendering stops like the stream does when its reader cancels: at the next component or promise.
+ */
+export function createStringWriter(stream: Writer | undefined): Writer {
+  if (!stream) {
+    // `waits` is set, so it isn't inherited from a polluted `Object.prototype`.
+    return { buffer: "", chunkSize: Infinity, cancelled: false, waits: undefined, flush() {} };
+  }
+  return {
+    buffer: "",
+    chunkSize: Infinity,
+    get cancelled() {
+      return stream.cancelled;
+    },
+    waits: stream.waits,
+    flush() {
+      throwIfCancelled(stream);
+    },
+  };
+}
+
+/**
+ * Creates the writer of a stream. `flush` sends the markup rendered so far as a chunk.
+ * When the reader has enough queued markup (backpressure), it returns `waitForReader()`,
+ * so rendering pauses until the reader wants more.
+ */
+export function createStreamWriter(
+  controller: ReadableStreamDefaultController<string>,
+  chunkSize: number,
+  waitForReader: () => Promise<void>,
+): Writer {
+  const writer: Writer = {
+    buffer: "",
+    chunkSize,
+    cancelled: false,
+    waits: new Set(),
+    flush() {
+      throwIfCancelled(writer);
+      if (writer.buffer !== "") {
+        controller.enqueue(writer.buffer);
+        writer.buffer = "";
+      }
+      if ((controller.desiredSize ?? 1) <= 0) {
+        return waitForReader();
+      }
+    },
+  };
+  return writer;
+}
+
+/**
  * The error that ends rendering when the stream reader cancels.
  */
 function cancelledError(): Error {

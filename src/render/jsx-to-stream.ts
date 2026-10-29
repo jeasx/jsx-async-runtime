@@ -1,7 +1,12 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
-import { attachStreamWriter, cancelWriter, throwIfCancelled, type Writer } from "../utils/writer.js";
+import {
+  attachStreamWriter,
+  cancelWriter,
+  createStreamWriter,
+  type Writer,
+} from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
 
 // Characters per chunk and queued in the stream before rendering pauses.
@@ -24,13 +29,8 @@ export function jsxToStream(
 ): ReadableStream<string> {
   const context = resolveContext(this, "jsxToStream", jsxToStream);
 
-  const writer: Writer = {
-    buffer: "",
-    chunkSize: CHUNK_SIZE,
-    cancelled: false,
-    waits: new Set(),
-    flush() {},
-  };
+  // Set in `start`, which the stream calls right away (the controller only exists there).
+  let writer: Writer;
 
   // Resolves the pause when the reader wants more (or cancels).
   let resume: (() => void) | undefined;
@@ -42,23 +42,11 @@ export function jsxToStream(
 
   const source: UnderlyingDefaultSource<string> = {
     start(controller) {
-      // Sends the markup rendered so far as a chunk.
-      const enqueueBuffer = () => {
-        if (writer.buffer !== "") {
-          controller.enqueue(writer.buffer);
-          writer.buffer = "";
-        }
-      };
-      writer.flush = () => {
-        throwIfCancelled(writer);
-        enqueueBuffer();
-        // Backpressure: wait while the reader has enough queued markup.
-        if ((controller.desiredSize ?? 1) <= 0) {
-          return new Promise<void>((resolve) => {
-            resume = resolve;
-          });
-        }
-      };
+      writer = createStreamWriter(controller, CHUNK_SIZE, () => {
+        return new Promise<void>((resolve) => {
+          resume = resolve;
+        });
+      });
       const end = attachStreamWriter(context, writer);
       const done = () => {
         end();
@@ -68,7 +56,9 @@ export function jsxToStream(
         }
         // Enqueue the rest directly instead of calling flush(): nothing renders after it,
         // so there is no need to wait for the reader to catch up.
-        enqueueBuffer();
+        if (writer.buffer !== "") {
+          controller.enqueue(writer.buffer);
+        }
         controller.close();
       };
       const fail = (error: unknown) => {
