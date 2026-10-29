@@ -396,15 +396,34 @@ function finishDecoding(state: ByteDecoding): string {
   return rest;
 }
 
-/** The progress of reading a lazy iterator, shared by its sync and async parts. */
+/** The progress of reading a lazy iterator or an async iterable. */
 type IteratorState = ByteDecoding & {
   /** Set once the iterator is used up. */
   done: boolean;
   /** Set when the source itself failed, so it isn't asked to stop. */
   sourceFailed: boolean;
   /** The item being rendered, so its unread streams can be cancelled when it fails. */
-  item: unknown;
+  item: JSX.Element;
 };
+
+function createIteratorState(): IteratorState {
+  return { done: false, sourceFailed: false, item: undefined, decoder: undefined };
+}
+
+/**
+ * Takes the next result of the iterator into `state.item`, with bytes decoded as text.
+ * At the end, it sets `state.done` and takes the text left in the decoder.
+ * Returns `false` when there is nothing to render.
+ */
+function takeItem(state: IteratorState, result: IteratorResult<JSX.Element>): boolean {
+  if (result.done) {
+    state.done = true;
+    state.item = finishDecoding(state);
+    return state.item !== "";
+  }
+  state.item = decodeItem(state, result.value);
+  return true;
+}
 
 /**
  * Renders the items of a lazy iterator (e.g. a generator) in order, reading one item at a time.
@@ -418,12 +437,7 @@ function renderIterator(
   iterator: Iterator<JSX.Element>,
   writer: Writer,
 ): void | Promise<void> {
-  const state: IteratorState = {
-    done: false,
-    sourceFailed: false,
-    item: undefined,
-    decoder: undefined,
-  };
+  const state = createIteratorState();
   try {
     while (!state.done) {
       let pending = renderNextItem.call(this, iterator, state, writer);
@@ -489,17 +503,10 @@ function renderNextItem(
     state.sourceFailed = true;
     throw error;
   }
-  let item: JSX.Element;
-  if (result.done) {
-    state.done = true;
-    item = finishDecoding(state);
-    if (item === "") {
-      return;
-    }
-  } else {
-    item = decodeItem(state, result.value);
+  if (!takeItem(state, result)) {
+    return;
   }
-  state.item = item;
+  const item = state.item;
   if (isPromise(item)) {
     return flushAndAwait(writer, item).then(($item) => $renderElement.call(this, $item, writer));
   }
@@ -509,12 +516,18 @@ function renderNextItem(
 /**
  * Cancels the unread streams of the failed item and stops the iterator, unless the iterator
  * itself failed. Errors while stopping are ignored, so the original error wins.
+ * An async iterator is stopped without waiting for it, so the render error is reported right away.
  */
-function stopIterator(iterator: Iterator<unknown>, state: IteratorState, error: unknown): void {
+function stopIterator(
+  iterator: Iterator<unknown> | AsyncIterator<unknown>,
+  state: IteratorState,
+  error: unknown,
+): void {
   cancelUnreadStreams(state.item, error);
   if (!state.sourceFailed) {
     try {
-      iterator.return?.();
+      // Async iterators return a promise, whose rejection must not crash Node.
+      handleRejection(iterator.return?.());
     } catch {}
   }
 }
@@ -531,21 +544,17 @@ async function renderAsyncIterable(
   writer: Writer,
 ): Promise<void> {
   const iterator = iterable[Symbol.asyncIterator]();
-  // Set when the source itself failed, so it isn't asked to stop.
-  let sourceFailed = false;
+  const state = createIteratorState();
   const next = async () => {
     try {
       return await iterator.next();
     } catch (error) {
-      sourceFailed = true;
+      state.sourceFailed = true;
       throw error;
     }
   };
-  // The item being rendered, so its unread streams can be cancelled when it fails.
-  let item: JSX.Element;
-  const decoding: ByteDecoding = { decoder: undefined };
   try {
-    for (;;) {
+    while (!state.done) {
       // Don't pull more items once the stream reader is gone.
       if (writer.cancelled) {
         throw new Error("Stream cancelled");
@@ -553,31 +562,16 @@ async function renderAsyncIterable(
       // When the stream reader cancels, the wait for a slow or endless source (e.g. a live feed)
       // ends at once, and the source is stopped below.
       const result = await flushAndAwait(writer, next());
-      if (result.done) {
-        const rest = finishDecoding(decoding);
-        if (rest !== "") {
-          const pending = $renderElement.call(this, rest, writer);
-          if (isPromise(pending)) {
-            await pending;
-          }
-        }
+      if (!takeItem(state, result)) {
         return;
       }
-      item = decodeItem(decoding, result.value);
-      const pending = $renderElement.call(this, item, writer);
+      const pending = $renderElement.call(this, state.item, writer);
       if (isPromise(pending)) {
         await pending;
       }
     }
   } catch (error) {
-    cancelUnreadStreams(item, error);
-    if (!sourceFailed) {
-      // Stop the source without waiting for it, so the render error is reported right away.
-      // The original error wins, so errors while stopping are ignored.
-      try {
-        handleRejection(iterator.return?.());
-      } catch {}
-    }
+    stopIterator(iterator, state, error);
     throw error;
   }
 }
