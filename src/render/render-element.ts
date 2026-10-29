@@ -8,10 +8,10 @@ import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
+import { flushAndAwait, Writer } from "../utils/writer.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
 import { renderAsyncIterable, renderIterator } from "./render-iterables.js";
-import { flushAndAwait, Writer } from "./writer.js";
 
 // HTML tag names are case-insensitive, so the uppercase and capitalized variants are void too
 // (e.g. `<BR>` and `<Br>`). Other mixed case (e.g. `<bR>`) is rare and not recognized,

@@ -4,8 +4,8 @@ import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
+import { flushAndAwait, Writer } from "../utils/writer.js";
 import { renderNested } from "./render-element.js";
-import { flushAndAwait, Writer } from "./writer.js";
 
 /**
  * Decodes the byte items of an iterator or async iterable (e.g. the chunks of a `fetch()` body)

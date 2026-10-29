@@ -1,9 +1,8 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
+import { streamWriters, type Writer } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
-import { streamWriters } from "./stream-writers.js";
-import type { Writer } from "./writer.js";
 
 /**
  * Renders a JSX element to a string.

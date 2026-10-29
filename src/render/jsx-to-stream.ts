@@ -1,9 +1,8 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
+import { streamWriters, type Writer } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
-import { streamWriters } from "./stream-writers.js";
-import type { Writer } from "./writer.js";
 
 // Characters per chunk and queued in the stream before rendering pauses.
 const CHUNK_SIZE = 16 * 1024;
