@@ -177,3 +177,27 @@ test("copied elements are still rendered", async () => {
     `<p><i>x</i></p>`,
   );
 });
+
+test("a polluted Object.prototype adds no attributes and no raw markup", async () => {
+  // Simulates a prototype pollution bug elsewhere in the app, e.g. a naive deep merge
+  // of a request body like `{"__proto__": {"onmouseover": "alert(1)"}}`.
+  const polluted = {
+    onmouseover: "alert(1)",
+    html: "<img src=x onerror=alert(1)>",
+    background: "url(https://evil.example)",
+  };
+  Object.assign(Object.prototype, polluted);
+  try {
+    await equal(
+      <div class={{ a: true }} style={{ color: "red" }}>
+        <p title={Promise.resolve("t")}>text</p>
+        {html("<b>raw</b>")}
+      </div>,
+      `<div class="a" style="color: red"><p title="t">text</p><b>raw</b></div>`,
+    );
+  } finally {
+    for (const key in polluted) {
+      delete Object.prototype[key];
+    }
+  }
+});

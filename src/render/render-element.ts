@@ -121,7 +121,9 @@ export function renderElement(
     return;
   }
 
-  if ("html" in jsxElement) {
+  // Raw markup from html(). Checked by its own `type`, since `html` could be inherited
+  // from a polluted `Object.prototype` and would turn every element into raw markup.
+  if (jsxElement.type === "html") {
     if (typeof jsxElement.html === "string") {
       writer.buffer += jsxElement.html;
     }

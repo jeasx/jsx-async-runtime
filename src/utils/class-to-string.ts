@@ -1,3 +1,7 @@
+// Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
+// see attributes-to-string.ts.
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 /**
  * Joins class names from an array or an object of `name: condition` pairs.
  * Arrays may nest and contain such objects, e.g. `["a", ["b"], { c: cond }]`.
@@ -20,7 +24,7 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
     } else if (typeof value === "object") {
       const record = value as Record<string, unknown>;
       for (const key in record) {
-        if (record[key]) {
+        if (hasOwnProperty.call(record, key) && record[key]) {
           add(key);
         }
       }

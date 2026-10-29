@@ -32,7 +32,9 @@ export function createElement(tag: Tag, props?: Props, ...children: Child[]): JS
  */
 export function html(markup: string): JSX.Element {
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
-  return { [JSX_NODE_MARKER]: true, html: markup } as unknown as JSX.Element;
+  // An own `type` tells raw markup from elements, so an `html` key inherited
+  // from a polluted `Object.prototype` can't turn elements into raw markup.
+  return { [JSX_NODE_MARKER]: true, type: "html", html: markup } as unknown as JSX.Element;
 }
 
 /**

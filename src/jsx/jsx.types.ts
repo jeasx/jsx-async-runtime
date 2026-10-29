@@ -16,6 +16,7 @@ type Props = {
 
 type Html = {
   [NODE]: true;
+  type: "html";
   html: string;
 };
 
