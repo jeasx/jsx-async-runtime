@@ -6,6 +6,7 @@ import {
 } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
+import { getOwnChildren } from "../utils/get-own-children.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
@@ -42,9 +43,6 @@ const VOID_TAGS = new Set(
 // A tag must start with an ASCII letter and must not contain characters
 // that end the tag name or break the markup.
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
-
-// Skips keys inherited from a polluted `Object.prototype`.
-const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 type Props = ElementNode["props"];
 
@@ -167,13 +165,11 @@ function renderTagElement(
 }
 
 /**
- * Returns the children as an array. They are passed as written:
+ * Returns the own children as an array. They are passed as written:
  * none, a single child (e.g. `0` or a `Set`) or an array.
- * Own children only, so `children` from a polluted `Object.prototype` isn't rendered
- * in every element without children.
  */
 function getChildren(props: Props): JSX.Element[] {
-  const children = hasOwnProperty.call(props, "children") ? props.children : undefined;
+  const children = getOwnChildren(props) as JSX.Children | undefined;
   return children == null ? [] : Array.isArray(children) ? children : [children as JSX.Element];
 }
 

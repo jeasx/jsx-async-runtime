@@ -1,5 +1,6 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { forEachItem } from "./for-each-item.js";
+import { getOwnChildren } from "./get-own-children.js";
 import { handleRejection } from "./handle-rejection.js";
 import { noOp } from "./no-op.js";
 
@@ -63,9 +64,7 @@ function cancelItem(item: object, reason: unknown): void {
     // Without the reason: `destroy(error)` emits an "error" event, which crashes Node
     // when nobody listens for it.
     item.destroy();
-  } else if (isJsxNode(item) && item.type === "tag" && Object.hasOwn(item.props, "children")) {
-    // Own children only, like rendering reads them, so `children` from a polluted
-    // `Object.prototype` isn't walked.
-    forEachItem(item.props.children, (child) => cancelItem(child, reason));
+  } else if (isJsxNode(item) && item.type === "tag") {
+    forEachItem(getOwnChildren(item.props), (child) => cancelItem(child, reason));
   }
 }
