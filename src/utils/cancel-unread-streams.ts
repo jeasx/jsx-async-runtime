@@ -28,7 +28,10 @@ function walk(value: unknown, reason: unknown, start: number): void {
     }
   } else if (value instanceof Promise) {
     // Deliberately not isPromise(): calling then() on other thenables can start work early.
-    value.then(($value) => cancelUnreadStreams($value, reason), () => {});
+    value.then(
+      ($value) => cancelUnreadStreams($value, reason),
+      () => {},
+    );
   } else if (typeof ReadableStream === "function" && value instanceof ReadableStream) {
     if (!value.locked) {
       handleRejection(value.cancel(reason));
