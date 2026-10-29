@@ -263,11 +263,8 @@ export function renderChildren(this: any, children: JSX.Element[], writer: Write
         if (typeof child === "object" && isByteRun(children, i)) {
           [element, i] = decodeByteRun(children, i);
         }
-        pending = renderNested.call(this, element, writer);
-        if (!pending) {
-          // Send large sync markup early; continue async if the reader is behind.
-          pending = flushIfFull(writer);
-        }
+        // Send large sync markup early; continue async if the reader is behind.
+        pending = renderNested.call(this, element, writer) || flushIfFull(writer);
       }
       if (isPromise(pending)) {
         // Rendering won't get to the later children right away.

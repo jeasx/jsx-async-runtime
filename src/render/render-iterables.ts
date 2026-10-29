@@ -88,11 +88,8 @@ function renderIterator(
   const state = createIteratorState();
   try {
     while (!state.done) {
-      let pending = renderNextItem.call(this, iterator, state, writer);
-      if (!pending) {
-        // Send large sync markup early; continue async if the reader is behind.
-        pending = flushIfFull(writer);
-      }
+      // Send large sync markup early; continue async if the reader is behind.
+      const pending = renderNextItem.call(this, iterator, state, writer) || flushIfFull(writer);
       if (isPromise(pending)) {
         return renderIteratorAsync.call(this, iterator, state, pending, writer);
       }
