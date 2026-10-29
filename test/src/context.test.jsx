@@ -58,6 +58,38 @@ test("render via namespace import gets a new empty context", async () => {
   ]);
 });
 
+test("render via CommonJS interop copy of the module gets a new empty context", async () => {
+  // TypeScript's `esModuleInterop` compiles `import * as runtime` to a plain object
+  // with a getter per export, which `runtime.jsxToString(...)` passes as `this`.
+  const namespace = await import("jsx-async-runtime");
+  const runtime = {};
+  for (const key of Object.keys(namespace)) {
+    Object.defineProperty(runtime, key, { enumerable: true, get: () => namespace[key] });
+  }
+  function App() {
+    const seen = this.user ?? "none";
+    this.user = "ada";
+    // The copy's jsxToString export must not be taken for an override.
+    assert.strictEqual(this.jsxToString, undefined);
+    return (
+      <p>
+        {seen} <Greeting />
+      </p>
+    );
+  }
+  function Greeting() {
+    return this.user;
+  }
+  // The copy is shared by all renders, so a reused context would leak data between them.
+  for (let i = 0; i < 2; i++) {
+    assert.strictEqual(await runtime.jsxToString(<App />), `<p>none ada</p>`);
+    assert.strictEqual(
+      (await streamToChunks(runtime.jsxToStream(<App />))).join(""),
+      `<p>none ada</p>`,
+    );
+  }
+});
+
 test("custom jsxToString via context", async () => {
   const ctx = {
     async jsxToString(element) {

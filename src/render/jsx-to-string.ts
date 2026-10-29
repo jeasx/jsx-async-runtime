@@ -17,7 +17,8 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
   // Collect all markup in the buffer, nothing is sent early.
   const writer: Writer = { buffer: "", chunkSize: Infinity, cancelled: false, flush() {} };
   try {
-    const pending = renderElement.call(resolveContext(this), jsxElement, writer);
+    const context = resolveContext(this, "jsxToString", jsxToString);
+    const pending = renderElement.call(context, jsxElement, writer);
     return isPromise(pending)
       ? pending.then(
           () => writer.buffer,

@@ -18,7 +18,7 @@ const CHUNK_SIZE = 16 * 1024;
  * @return A stream of markup chunks. It errors if a component throws.
  */
 export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<string> {
-  const context = resolveContext(this);
+  const context = resolveContext(this, "jsxToStream", jsxToStream);
 
   const writer: Writer = {
     buffer: "",
