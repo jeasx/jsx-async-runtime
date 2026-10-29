@@ -1,7 +1,7 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
-import { streamWriters, throwIfCancelled, type Writer } from "../utils/writer.js";
+import { getStreamWriter, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
 
 /**
@@ -20,7 +20,7 @@ export function jsxToString(
 ): string | Promise<string> {
   try {
     const context = resolveContext(this, "jsxToString", jsxToString);
-    const writer = createWriter(streamWriters.get(context));
+    const writer = createWriter(getStreamWriter(context));
     const pending = renderElement.call(context, jsxElement, writer);
     return isPromise(pending)
       ? pending.then(

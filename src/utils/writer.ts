@@ -6,7 +6,32 @@ import { handleRejection } from "./handle-rejection.js";
  * or a component) uses it to stop when the stream reader cancels, like the stream itself does.
  * Keyed by context, so streams rendered at the same time need their own context objects.
  */
-export const streamWriters = new WeakMap<object, Writer>();
+const streamWriters = new WeakMap<object, Writer>();
+
+/**
+ * Makes `writer` the stream writer of `context` while the stream renders, so nested
+ * `jsxToString` calls with this context (e.g. from an override) see a cancel.
+ * Returns a function that removes it once rendering ended, unless another stream
+ * took the context over. Contexts that aren't objects can't be keys and are skipped.
+ */
+export function attachStreamWriter(context: unknown, writer: Writer): () => void {
+  if (typeof context !== "function" && (typeof context !== "object" || context === null)) {
+    return () => {};
+  }
+  streamWriters.set(context, writer);
+  return () => {
+    if (streamWriters.get(context) === writer) {
+      streamWriters.delete(context);
+    }
+  };
+}
+
+/**
+ * Returns the writer of the stream that `context` is rendered to, if any.
+ */
+export function getStreamWriter(context: unknown): Writer | undefined {
+  return streamWriters.get(context as object);
+}
 
 /**
  * Receives the rendered markup. Markup is appended to `buffer`.
@@ -34,8 +59,25 @@ export type Writer = {
 /**
  * The error that ends rendering when the stream reader cancels.
  */
-export function cancelledError(): Error {
+function cancelledError(): Error {
   return new Error("Stream cancelled");
+}
+
+/**
+ * Marks the writer as cancelled when the stream reader is gone: drops the unsent markup
+ * and rejects the pending waits (for promises and async iterables), so rendering stops right away.
+ */
+export function cancelWriter(writer: Writer): void {
+  writer.cancelled = true;
+  writer.buffer = "";
+  const waits = writer.waits;
+  if (waits) {
+    const error = cancelledError();
+    for (const reject of waits) {
+      reject(error);
+    }
+    waits.clear();
+  }
 }
 
 /**

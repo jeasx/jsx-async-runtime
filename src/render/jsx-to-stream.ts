@@ -1,7 +1,7 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
-import { cancelledError, streamWriters, throwIfCancelled, type Writer } from "../utils/writer.js";
+import { attachStreamWriter, cancelWriter, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
 
 // Characters per chunk and queued in the stream before rendering pauses.
@@ -24,12 +24,11 @@ export function jsxToStream(
 ): ReadableStream<string> {
   const context = resolveContext(this, "jsxToStream", jsxToStream);
 
-  const waits = new Set<(error: Error) => void>();
   const writer: Writer = {
     buffer: "",
     chunkSize: CHUNK_SIZE,
     cancelled: false,
-    waits,
+    waits: new Set(),
     flush() {},
   };
 
@@ -60,17 +59,7 @@ export function jsxToStream(
           });
         }
       };
-      // Lets nested jsxToString calls with this context (e.g. from an override) see a cancel.
-      // Removed once rendering ended, unless another stream took the context over.
-      const isObject = typeof context === "object" || typeof context === "function";
-      if (isObject) {
-        streamWriters.set(context, writer);
-      }
-      const end = () => {
-        if (isObject && streamWriters.get(context) === writer) {
-          streamWriters.delete(context);
-        }
-      };
+      const end = attachStreamWriter(context, writer);
       const done = () => {
         end();
         // The reader is gone, so the stream must not be written or closed anymore.
@@ -103,16 +92,9 @@ export function jsxToStream(
     },
     pull: wakeUp,
     cancel() {
-      writer.cancelled = true;
-      writer.buffer = "";
       // Let paused rendering continue, so it stops at the next component.
       wakeUp();
-      // End the waits for promises and async iterables, so rendering stops right away.
-      const error = cancelledError();
-      for (const reject of waits) {
-        reject(error);
-      }
-      waits.clear();
+      cancelWriter(writer);
     },
   };
 
