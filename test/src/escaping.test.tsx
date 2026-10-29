@@ -32,7 +32,7 @@ test("jsxToString override renders text raw", async () => {
   // Migration path for the removed `jsxEscapeHTML: false` (see CHANGELOG).
   const decoder = new TextDecoder();
   const context = {
-    jsxToString(element) {
+    jsxToString(element: JSX.Element) {
       if (typeof element === "string") return element;
       if (element instanceof Uint8Array) return decoder.decode(element);
       return jsxToString.call(this, element);
@@ -98,11 +98,11 @@ test("empty raw html", () => equal(<p>{html("")}</p>, `<p></p>`));
 test("raw html with non-string value is not rendered", () =>
   equal(
     <p>
-      {html(/** @type {any} */ (null))}
-      {html(/** @type {any} */ (undefined))}
-      {html(/** @type {any} */ (5))}
-      {html(/** @type {any} */ (["<b>", "x"]))}
-      {html(/** @type {any} */ ({ toString: () => "<b>x</b>" }))}
+      {html(null as any)}
+      {html(undefined as any)}
+      {html(5 as any)}
+      {html(["<b>", "x"] as any)}
+      {html({ toString: () => "<b>x</b>" } as any)}
     </p>,
     `<p></p>`,
   ));
@@ -125,8 +125,7 @@ test("object with inherited html key is not rendered", () =>
   equal(<p>{Object.create({ html: "<b>x</b>" })}</p>, `<p></p>`));
 
 test("copied raw html is still rendered", () => {
-  /** @type {any} */
-  const raw = html("<b>x</b>");
+  const raw: any = html("<b>x</b>");
   return equal(<p>{{ ...raw }}</p>, `<p><b>x</b></p>`);
 });
 
@@ -148,8 +147,7 @@ test("JSON element look-alike as top-level element is not rendered", () =>
   equal(JSON.parse(`{ "type": "tag", "tag": "b", "props": { "children": ["x"] } }`), ``));
 
 test("hand-built element objects are not rendered, createElement ones are", () => {
-  /** @type {any} */
-  const handBuilt = { type: "tag", tag: "b", props: { children: ["x"] } };
+  const handBuilt: any = { type: "tag", tag: "b", props: { children: ["x"] } };
   return equal(
     <p>
       {handBuilt}
@@ -161,7 +159,7 @@ test("hand-built element objects are not rendered, createElement ones are", () =
 
 test("copied elements are still rendered", async () => {
   const ctx = {
-    jsxToString(element) {
+    jsxToString(element: any) {
       // A copy with a changed tag keeps the element marker.
       const $element = element?.tag === "b" ? { ...element, tag: "i" } : element;
       return jsxToString.call(this, $element);
@@ -197,7 +195,7 @@ test("a polluted Object.prototype adds no attributes and no raw markup", async (
     );
   } finally {
     for (const key in polluted) {
-      delete Object.prototype[key];
+      delete (Object.prototype as any)[key];
     }
   }
 });

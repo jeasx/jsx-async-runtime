@@ -44,8 +44,8 @@ test("async execution", async () =>
   ));
 
 test("nested async components", () => {
-  const Inner = async ({ children }) => <b>{children}</b>;
-  const Outer = async ({ children }) => <Inner>{children}</Inner>;
+  const Inner = async ({ children }: { children: JSX.Children }) => <b>{children}</b>;
+  const Outer = async ({ children }: { children: JSX.Children }) => <Inner>{children}</Inner>;
   return equal(<Outer>x</Outer>, `<b>x</b>`);
 });
 
@@ -91,8 +91,7 @@ test("sync component error rejects", () => {
 });
 
 test("a tag that is neither a string nor a function rejects", async () => {
-  /** @type {[any, string][]} */
-  const cases = [
+  const cases: [any, string][] = [
     [undefined, "undefined"],
     [null, "null"],
     [{}, "object"],
@@ -119,15 +118,14 @@ test("async component error rejects", () => {
   const Broken = async () => {
     throw new Error("boom async");
   };
-  return assert.rejects(jsxToString.call({}, <Broken />), /boom async/);
+  return assert.rejects(async () => jsxToString.call({}, <Broken />), /boom async/);
 });
 
 // The build type-checks the render prop calls against these types.
-/** @param {{ children: (data: string) => JSX.Element }} props */
-const Loader = ({ children }) => children("data");
+const Loader = ({ children }: { children: (data: string) => JSX.Element }) => children("data");
 
-/** @param {{ children: (data: string) => JSX.Element }} props */
-const AsyncLoader = async ({ children }) => children(await delay(1, "async data"));
+const AsyncLoader = async ({ children }: { children: (data: string) => JSX.Element }) =>
+  children(await delay(1, "async data"));
 
 test("function child is passed to the component as a render prop", () =>
   equal(<Loader>{(data) => <p>{data}</p>}</Loader>, `<p>data</p>`));
@@ -136,19 +134,16 @@ test("render prop with an async component", () =>
   equal(<AsyncLoader>{(data) => <p>{data}</p>}</AsyncLoader>, `<p>async data</p>`));
 
 test("render prop passed as children prop and with createElement", async () => {
-  /** @type {(data: string) => JSX.Element} */
-  const render = (data) => <b>{data}</b>;
+  const render = (data: string) => <b>{data}</b>;
   await equal(<Loader children={render} />, `<b>data</b>`);
   await equal(classicCreateElement(Loader, null, render), `<b>data</b>`);
 });
 
 // The build type-checks these components against their children types.
 test("a single child is passed to the component as is", async () => {
-  /** @param {{ children: string }} props */
-  const Shout = ({ children }) => <b>{children.toUpperCase()}</b>;
-  /** @param {{ children: number }} props */
-  const Increment = ({ children }) => children + 1;
-  const TagName = ({ children }) => children.tag;
+  const Shout = ({ children }: { children: string }) => <b>{children.toUpperCase()}</b>;
+  const Increment = ({ children }: { children: number }) => children + 1;
+  const TagName = ({ children }: { children: any }) => children.tag;
   await equal(<Shout>hello</Shout>, `<b>HELLO</b>`);
   await equal(<Increment>{1}</Increment>, `2`);
   await equal(
@@ -160,13 +155,12 @@ test("a single child is passed to the component as is", async () => {
 });
 
 test("an array child is passed to the component as is", () => {
-  /** @param {{ children: string[] }} props */
-  const Join = ({ children }) => children.join("-");
+  const Join = ({ children }: { children: string[] }) => children.join("-");
   return equal(<Join>{["a", "b"]}</Join>, `a-b`);
 });
 
 test("several children are passed to the component as an array, as written", () => {
-  const Values = ({ children }) => children.map(String).join();
+  const Values = ({ children }: { children: unknown[] }) => children.map(String).join();
   return equal(
     <Values>
       {"a"}
@@ -179,12 +173,13 @@ test("several children are passed to the component as an array, as written", () 
 });
 
 test("a component without children gets no children prop", () => {
-  const Props = (props) => String("children" in props);
+  const Props = (props: Record<string, unknown>) => String("children" in props);
   return equal(<Props />, `false`);
 });
 
 test("functions among several children are kept", () => {
-  const Types = ({ children }) => children.map((child) => typeof child).join();
+  const Types = ({ children }: { children: unknown[] }) =>
+    children.map((child) => typeof child).join();
   return equal(
     <Types>
       a{() => "x"}

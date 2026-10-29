@@ -46,14 +46,12 @@ test("promise attribute resolving to an element renders nothing", () =>
 test("bigint attribute", () => equal(<div data-n={10n} />, `<div data-n="10"></div>`));
 
 test("URL attribute uses its string form", () => {
-  /** @type {any} */
-  const url = new URL("https://x.dev/a?b=1&c=2");
+  const url: any = new URL("https://x.dev/a?b=1&c=2");
   return equal(<a href={url} />, `<a href="https://x.dev/a?b=1&amp;c=2"></a>`);
 });
 
 test("Date attribute uses its string form", () => {
-  /** @type {any} */
-  const date = new Date(0);
+  const date: any = new Date(0);
   return equal(<time datetime={date} />, `<time datetime="${String(date)}"></time>`);
 });
 
@@ -87,14 +85,12 @@ test("escape json attribute", () =>
   ));
 
 test("function and symbol attributes are skipped", () => {
-  /** @type {any} */
-  const props = { onclick: () => alert(1), "data-s": Symbol("s") };
+  const props: any = { onclick: () => alert(1), "data-s": Symbol("s") };
   return equal(<button {...props} type="button" />, `<button type="button"></button>`);
 });
 
 test("invalid attribute names are skipped", () => {
-  /** @type {any} */
-  const props = {
+  const props: any = {
     "x onclick": "1",
     'a b="c" onload': "1",
     "x/onclick": "1",
@@ -113,8 +109,7 @@ test("invalid attribute names are skipped", () => {
 });
 
 test("framework attribute names are kept", () => {
-  /** @type {any} */
-  const props = { "@click": "f()", "x-on:click": "g()", ":class": "c", "hx-get": "/" };
+  const props: any = { "@click": "f()", "x-on:click": "g()", ":class": "c", "hx-get": "/" };
   return equal(
     <div {...props} />,
     `<div @click="f()" x-on:click="g()" :class="c" hx-get="/"></div>`,
@@ -146,7 +141,10 @@ test("promise attributes are awaited", () =>
 test("promise attribute on void tag and with thenable", () =>
   equal(
     // Built with createElement, since the attribute types only allow promises.
-    classicCreateElement("img", { src: { then: (resolve) => resolve("a.png") }, alt: "" }),
+    classicCreateElement("img", {
+      src: { then: (resolve: (value: string) => void) => resolve("a.png") },
+      alt: "",
+    }),
     `<img src="a.png" alt="">`,
   ));
 

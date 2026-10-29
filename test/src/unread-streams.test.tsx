@@ -7,21 +7,24 @@ import { streamToChunks } from "./helpers/stream-to-chunks.js";
 // When a render fails or the stream reader cancels, streams that rendering never got to
 // (e.g. a fetch() body) are cancelled, so they don't keep a connection open.
 
+// Creates the JSX around a new stream, so each render gets its own.
+type CreateJsx = (stream: ReadableStream<string>) => JSX.Element;
+
 // Renders fresh JSX (from a factory, which gets a new stream) with both renderers and
 // checks that the stream was cancelled with the render error, because rendering never read it.
-async function cancelsUnreadStream(createJsx, message) {
+async function cancelsUnreadStream(createJsx: CreateJsx, message: string) {
   const renders = [
-    (jsx) => jsxToString.call({}, jsx),
-    (jsx) => streamToChunks(jsxToStream.call({}, jsx)),
+    (jsx: JSX.Element) => jsxToString.call({}, jsx),
+    (jsx: JSX.Element) => streamToChunks(jsxToStream.call({}, jsx)),
   ];
   for (const render of renders) {
-    let reason;
+    let reason: Error | undefined;
     const stream = new ReadableStream({
       pull(controller) {
         controller.enqueue("x");
         controller.close();
       },
-      cancel(r) {
+      cancel(r: Error) {
         reason = r;
       },
     });
@@ -63,7 +66,7 @@ test("unread stream is cancelled when an earlier async sibling fails", () => {
 });
 
 test("unread stream is cancelled when the component it is passed to throws", () => {
-  const Layout = (_props) => {
+  const Layout = (_props: object) => {
     throw new Error("layout");
   };
   return cancelsUnreadStream((stream) => {
@@ -78,7 +81,7 @@ test("unread stream is cancelled when the component it is passed to throws", () 
 });
 
 test("unread stream is cancelled when an async component's markup fails", () => {
-  const Layout = async (_props) => {
+  const Layout = async (_props: object) => {
     throw new Error("async layout");
   };
   return cancelsUnreadStream((stream) => {
@@ -185,7 +188,7 @@ test("stream passed as a non-children prop is left alone", async () => {
   const Boom = () => {
     throw new Error("prop");
   };
-  const Body = ({ body }) => body;
+  const Body = ({ body }: { body: ReadableStream<string> }) => body;
   await assert.rejects(
     async () =>
       jsxToString(
@@ -202,15 +205,15 @@ test("stream passed as a non-children prop is left alone", async () => {
 
 // Children of void tags and of tags with an invalid name are never rendered,
 // so their streams are cancelled even when the render succeeds.
-async function cancelsSkippedStream(createJsx, expected, message) {
+async function cancelsSkippedStream(createJsx: CreateJsx, expected: string, message: string) {
   const renders = [
-    (jsx) => jsxToString.call({}, jsx),
-    async (jsx) => (await streamToChunks(jsxToStream.call({}, jsx))).join(""),
+    (jsx: JSX.Element) => jsxToString.call({}, jsx),
+    async (jsx: JSX.Element) => (await streamToChunks(jsxToStream.call({}, jsx))).join(""),
   ];
   for (const render of renders) {
-    let reason;
+    let reason: Error | undefined;
     const stream = new ReadableStream({
-      cancel(r) {
+      cancel(r: Error) {
         reason = r;
       },
     });
@@ -247,7 +250,14 @@ test("stream in the children of a tag with an invalid name is cancelled", () =>
 
 test("stream in the children of an undefined component is cancelled", () =>
   cancelsUnreadStream(
-    (stream) => <div>{createElement(undefined, null, stream)}</div>,
+    (stream) => (
+      <div>
+        {
+          // @ts-expect-error an undefined tag, e.g. from a missing import
+          createElement(undefined, null, stream)
+        }
+      </div>
+    ),
     "Invalid element type: expected a tag name or a component, got undefined. " +
       "Check for a missing import or a wrong default export.",
   ));

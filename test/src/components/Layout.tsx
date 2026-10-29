@@ -1,6 +1,8 @@
 import Headline from "./Headline.js";
 
-export default function Layout({ title = "", context = undefined, children = {} }) {
+type Props = { title?: string; context?: { subtitle: string }; children?: JSX.Children };
+
+export default function Layout(this: any, { title = "", context, children }: Props) {
   if (context) {
     this.context = { ...context };
   }

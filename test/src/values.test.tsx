@@ -12,7 +12,7 @@ test("undefined value", () => equal(undefined, ``));
 test("null value", () => equal(null, ``));
 
 // equal() calls a function to get the JSX, so this one returns the function to render.
-test("function value", () => equal(() => () => "x", ``));
+test("function value", () => equal((() => () => "x") as any, ``));
 
 test("zero as only child", () => equal(<h1>{0}</h1>, `<h1>0</h1>`));
 
@@ -57,8 +57,15 @@ test("false conditional", () => equal(<>{"1" !== String(1) && <div></div>}</>, `
 
 test("objects with their own string form render it escaped", () => {
   const date = new Date(0);
-  /** @type {any} */
-  const values = [date, "|", new URL("https://x.dev/?a=1&b=2"), "|", new Error("<b>"), "|", /a<b/g];
+  const values: any = [
+    date,
+    "|",
+    new URL("https://x.dev/?a=1&b=2"),
+    "|",
+    new Error("<b>"),
+    "|",
+    /a<b/g,
+  ];
   return equal(
     <p>{values}</p>,
     `<p>${String(date)}|https://x.dev/?a=1&amp;b=2|Error: &lt;b&gt;|/a&lt;b/g</p>`,
@@ -67,7 +74,8 @@ test("objects with their own string form render it escaped", () => {
 
 test("class instances with a toString method render it", () => {
   class Money {
-    constructor(cents) {
+    cents: number;
+    constructor(cents: number) {
       this.cents = cents;
     }
     toString() {
@@ -75,8 +83,7 @@ test("class instances with a toString method render it", () => {
     }
   }
   class Price extends Money {}
-  /** @type {any} */
-  const values = [new Money(150), "|", new Price(99)];
+  const values: any = [new Money(150), "|", new Price(99)];
   return equal(<p>{values}</p>, `<p>1.50 €|0.99 €</p>`);
 });
 
@@ -84,8 +91,7 @@ test("plain objects and class instances without toString render nothing", () => 
   class Point {
     x = 1;
   }
-  /** @type {any} */
-  const values = [
+  const values: any = [
     { a: 1 },
     Object.assign(Object.create(null), { a: 1 }),
     new Point(),

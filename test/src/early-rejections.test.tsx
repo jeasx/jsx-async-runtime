@@ -47,7 +47,7 @@ test("promise in a Set child rejects while an earlier sibling is pending", () =>
 
 test("promise child of a component rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
-  const Wrap = ({ children }) => <p>{children}</p>;
+  const Wrap = ({ children }: { children: JSX.Children }) => <p>{children}</p>;
   return rejects(
     () => (
       <div>
@@ -72,7 +72,7 @@ test("promise attribute rejects while an earlier sibling is pending", () =>
 
 test("promise prop rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
-  const User = async ({ user }) => <p>{(await user).name}</p>;
+  const User = async ({ user }: { user: Promise<{ name: string }> }) => <p>{(await user).name}</p>;
   return rejects(
     () => (
       <div>
@@ -86,7 +86,8 @@ test("promise prop rejects while an earlier sibling is pending", () => {
 
 test("promise in an array prop rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
-  const Users = async ({ users }) => (await Promise.all(users)).join();
+  const Users = async ({ users }: { users: Promise<string>[] }) =>
+    (await Promise.all(users)).join();
   return rejects(
     () => (
       <div>
@@ -100,7 +101,9 @@ test("promise in an array prop rejects while an earlier sibling is pending", () 
 
 test("promise in an object prop rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
-  const User = async ({ data }) => <p>{(await data.user).name}</p>;
+  const User = async ({ data }: { data: { user: Promise<{ name: string }> } }) => (
+    <p>{(await data.user).name}</p>
+  );
   return rejects(
     () => (
       <div>
@@ -114,7 +117,8 @@ test("promise in an object prop rejects while an earlier sibling is pending", ()
 
 test("promise in an array of an object prop rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
-  const Users = async ({ data }) => (await Promise.all(data.users)).join();
+  const Users = async ({ data }: { data: { users: Promise<string>[] } }) =>
+    (await Promise.all(data.users)).join();
   return rejects(
     () => (
       <div>
@@ -164,7 +168,7 @@ test("promise prop rejects after an earlier sibling threw", () => {
   const Boom = () => {
     throw new Error("first");
   };
-  const User = async ({ user }) => <p>{(await user).name}</p>;
+  const User = async ({ user }: { user: Promise<{ name: string }> }) => <p>{(await user).name}</p>;
   return rejects(
     () => (
       <div>
@@ -176,28 +180,31 @@ test("promise prop rejects after an earlier sibling threw", () => {
   );
 });
 
+type Node = { name: string; self?: Node };
+
 test("object props that reference themselves are fine", () => {
   // Object props are only walked one level deep, so cyclic data can't recurse forever.
-  const node = { name: "a" };
+  const node: Node = { name: "a" };
   node.self = node;
-  const Name = ({ node }) => node.self.name;
+  const Name = ({ node }: { node: Node }) => node.self?.name;
   return equal(<Name node={node} />, `a`);
 });
 
 test("array props that contain themselves are fine", () => {
-  const list = [];
+  const list: unknown[] = [];
   list.push("a", list);
-  const set = new Set();
+  const set = new Set<unknown>();
   set.add("b").add(set);
-  const First = ({ list, set, data }) => `${list[0]}${[...set][0]}${data.list[0]}`;
+  type Props = { list: unknown[]; set: Set<unknown>; data: { list: unknown[] } };
+  const First = ({ list, set, data }: Props) => `${list[0]}${[...set][0]}${data.list[0]}`;
   return equal(<First list={list} set={set} data={{ list }} />, `aba`);
 });
 
 test("promise in an array that contains itself rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
-  const list = [];
+  const list: unknown[] = [];
   list.push(list, rejectAfter(5, "cyclic array"));
-  const Item = async ({ list }) => await list[1];
+  const Item = async ({ list }: { list: unknown[] }) => (await list[1]) as string;
   return rejects(
     () => (
       <div>
@@ -212,7 +219,7 @@ test("promise in an array that contains itself rejects while an earlier sibling 
 test("promise in an array nested several times rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
   const inner = [rejectAfter(5, "shared array")];
-  const Item = async ({ list }) => await list[0][0];
+  const Item = async ({ list }: { list: any[] }) => await list[0][0];
   return rejects(
     () => (
       <div>

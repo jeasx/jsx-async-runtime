@@ -8,7 +8,8 @@ test("class as empty string", () => equal(<div class=""></div>, `<div class=""><
 test("class as object", () => {
   const className1 = "";
   const className2 = "hidden";
-  const className3 = undefined;
+  // An undefined key becomes "undefined", which is skipped like any other false condition.
+  const className3: any = undefined;
   return equal(
     <div
       class={{
@@ -46,8 +47,7 @@ test("class as array with objects", () =>
 
 test("class array skips true, like falsy values", () => {
   // e.g. `isActive || "inactive"`, which the types reject, but plain JS allows.
-  /** @type {any} */
-  const isActive = true;
+  const isActive: any = true;
   return equal(
     <div class={["a", isActive || "inactive", [true], 0, 1]}></div>,
     `<div class="a 1"></div>`,

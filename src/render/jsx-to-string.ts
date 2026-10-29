@@ -11,10 +11,13 @@ import { streamWriters } from "./stream-writers.js";
  *
  * @param this - Optional context passed to all components (e.g. `jsxToString.call({}, jsx)`).
  *   Without one, the render gets a new empty object, so components can always write to `this`.
- * @param jsxElement - The JSX element to render.
+ * @param jsxElement - The JSX element to render, or a promise of it.
  * @return The rendered markup, or a promise of it when rendering had to wait.
  */
-export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
+export function jsxToString(
+  this: any,
+  jsxElement: JSX.Element | PromiseLike<JSX.Element>,
+): string | Promise<string> {
   try {
     const context = resolveContext(this, "jsxToString", jsxToString);
     const writer = createWriter(streamWriters.get(context));

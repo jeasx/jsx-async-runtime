@@ -1,4 +1,4 @@
-export default function Headline({ title = "Hello World" }) {
+export default function Headline(this: any, { title = "Hello World" }: { title?: string }) {
   return this?.context?.subtitle ? (
     <h1>
       {title} - {this.context?.subtitle}

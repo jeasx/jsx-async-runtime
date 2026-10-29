@@ -48,6 +48,11 @@ declare global {
       | { [key: string]: boolean | null | undefined }
       | Array<ClassValue>;
 
+    // Valid tags: element names and components (TypeScript 5.1+). A component may return
+    // a promise of any element, so `async function Page(): Promise<JSX.Element>` type-checks,
+    // which `JSX.Element` alone can't express without referring to itself.
+    type ElementType = string | ((props: any) => Element | PromiseLike<Element>);
+
     // Attributes allowed on every element and component. `key` is accepted
     // (e.g. when mapping lists), but never rendered as an attribute.
     interface IntrinsicAttributes {
@@ -867,8 +872,11 @@ declare global {
       zoomAndPan?: "disable" | "magnify";
     }
 
-    // Every attribute also accepts a promise, which is awaited before the tag is rendered.
-    type AwaitableAttributes<T> = T extends object ? { [K in keyof T]: T[K] | Promise<T[K]> } : T;
+    // Every attribute also accepts `null`, which renders nothing like `undefined`,
+    // and a promise, which is awaited before the tag is rendered.
+    type AwaitableAttributes<T> = T extends object
+      ? { [K in keyof T]: T[K] | null | Promise<T[K] | null> }
+      : T;
     type AwaitableElements = {
       [E in keyof IntrinsicElementAttributes]: AwaitableAttributes<IntrinsicElementAttributes[E]>;
     };

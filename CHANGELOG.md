@@ -66,6 +66,9 @@ Read the breaking changes below before upgrading.
 
 ### Types (jsx.types)
 
+- Components with a `Promise<JSX.Element>` return type (e.g. `async function Page(): Promise<JSX.Element>`) can be used in JSX. Previously only async components without a return type passed type checks. Valid tags are now described by `JSX.ElementType` (TypeScript 5.1+).
+- #jsxToString and #jsxToStream accept a promise of an element (e.g. `jsxToString(loadPage())`), matching what the runtime renders.
+- Attributes accept `null` (also as a promise value), which renders nothing like `undefined`, so `<div id={null} />` no longer fails type checks with `strict` enabled.
 - #createElement accepts `null` as props, like in React, so `createElement(Fragment, null, a, b)` no longer fails type checks with `strict` enabled.
 - `Tag.tag` is typed as `string | ((props) => JSX.Element)`, matching what the runtime actually passes.
 - `key` is accepted on components (e.g. `<Item key={id} label={label} />`) via `JSX.IntrinsicAttributes`, instead of failing type checks when the component's props don't declare it.

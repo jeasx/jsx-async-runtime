@@ -23,7 +23,7 @@ test("key after spread is not rendered as attribute", () => {
 test("key after spread keeps the JSX children", () => {
   // With `key` after a spread, the compiler calls createElement instead of jsx().
   const node = { id: 1, children: ["raw"] };
-  const Row = ({ children }) => <li>{children}</li>;
+  const Row = ({ children }: { children: JSX.Children }) => <li>{children}</li>;
   return equal(
     <Row {...node} key={node.id}>
       label
@@ -33,14 +33,13 @@ test("key after spread keeps the JSX children", () => {
 });
 
 test("key is not passed to components", () => {
-  const Props = (props) => JSON.stringify(props);
+  const Props = (props: Record<string, unknown>) => JSON.stringify(props);
   return equal(<Props key="k">x</Props>, `{&quot;children&quot;:&quot;x&quot;}`);
 });
 
 test("key is allowed on typed components", () => {
   // The build type-checks this: `key` must be accepted although Item's props don't declare it.
-  /** @param {{ label: string }} props */
-  const Item = ({ label }) => <li>{label}</li>;
+  const Item = ({ label }: { label: string }) => <li>{label}</li>;
   return equal(
     <ul>
       {["a", "b"].map((label) => (
@@ -55,7 +54,7 @@ test("key with classic createElement", () =>
   equal(createElement("li", { key: "k", id: "i" }, "x"), `<li id="i">x</li>`));
 
 test("key and source with jsxDEV", async () => {
-  const Props = (props) => JSON.stringify(props);
+  const Props = (props: Record<string, unknown>) => JSON.stringify(props);
   const source = { fileName: "f.jsx", lineNumber: 1, columnNumber: 1 };
   await equal(jsxDEV("li", { children: "x" }, "k", false, source, {}), `<li>x</li>`);
   await equal(

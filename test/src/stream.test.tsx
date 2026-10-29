@@ -167,7 +167,7 @@ test("stream cancelled while a promise child is pending stops before the next pr
   // next one is reached: only the cancel check in flush() can stop the render there.
   let awaited = false;
   const next = {
-    then(resolve) {
+    then(resolve: (value: string) => void) {
       awaited = true;
       resolve("y");
     },
@@ -230,7 +230,7 @@ test("stream cancel stops an async iterable", async () => {
 test("stream cancel doesn't leave an override promise unhandled", async () => {
   const Slow = () => delay(20, "slow");
   const context = {
-    jsxToString(element) {
+    jsxToString(element: JSX.Element) {
       if (element === "after") {
         return Promise.reject(new Error("override failed"));
       }
@@ -253,14 +253,14 @@ test("stream cancel doesn't leave an override promise unhandled", async () => {
 
 test("stream cancel stops rendering inside a jsxToString override", async () => {
   let calls = 0;
-  async function Item({ i }) {
+  async function Item({ i }: { i: number }) {
     calls++;
     await delay(5);
     return <li>{i}</li>;
   }
   // Like the README example: every element is rendered by a nested jsxToString call.
   const context = {
-    jsxToString(element) {
+    jsxToString(element: JSX.Element) {
       return jsxToString.call(this, element);
     },
   };
@@ -302,7 +302,7 @@ test("stream cancel stops an async iterable inside a jsxToString override", asyn
     }
   }
   const context = {
-    jsxToString(element) {
+    jsxToString(element: JSX.Element) {
       return jsxToString.call(this, element);
     },
   };

@@ -15,10 +15,13 @@ const CHUNK_SIZE = 16 * 1024;
  *
  * @param this - Optional context passed to all components (e.g. `jsxToStream.call({}, jsx)`).
  *   Without one, the render gets a new empty object, so components can always write to `this`.
- * @param jsxElement - The JSX element to render.
+ * @param jsxElement - The JSX element to render, or a promise of it.
  * @return A stream of markup chunks. It errors if a component throws.
  */
-export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<string> {
+export function jsxToStream(
+  this: any,
+  jsxElement: JSX.Element | PromiseLike<JSX.Element>,
+): ReadableStream<string> {
   const context = resolveContext(this, "jsxToStream", jsxToStream);
 
   const writer: Writer = {

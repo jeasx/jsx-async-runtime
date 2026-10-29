@@ -16,7 +16,7 @@ test("async generator as children", () => {
 });
 
 test("async generator component", () => {
-  async function* List({ count }) {
+  async function* List({ count }: { count: number }) {
     for (let i = 0; i < count; i++) {
       await delay(1);
       yield <li>{i}</li>;
@@ -59,19 +59,17 @@ test("readable stream as children", () => {
   return equal(() => <pre>{createStream()}</pre>, `<pre>&lt;a&gt;b</pre>`);
 });
 
-test("async iterable uses the jsxToString override", () => {
+test("async iterable uses the jsxToString override", async () => {
   async function* items() {
     yield "a";
     yield "b";
   }
   const context = {
-    jsxToString(element) {
+    jsxToString(element: JSX.Element) {
       return typeof element === "string" ? element.toUpperCase() : jsxToString.call(this, element);
     },
   };
-  return jsxToString.call(context, <p>{items()}</p>).then((result) => {
-    assert.strictEqual(result, `<p>AB</p>`);
-  });
+  assert.strictEqual(await jsxToString.call(context, <p>{items()}</p>), `<p>AB</p>`);
 });
 
 test("async iterable source error rejects", () =>

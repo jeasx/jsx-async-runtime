@@ -4,15 +4,13 @@
     "target": "esnext",
     "moduleResolution": "nodenext",
     "types": ["node"],
-    "strict": false,
+    "strict": true,
     "rootDir": "src",
     "outDir": "dist",
     "incremental": true,
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "jsx": "react-jsx",
-    "jsxImportSource": "jsx-async-runtime",
-    "allowJs": true,
-    "checkJs": true
+    "jsxImportSource": "jsx-async-runtime"
   },
   "include": ["src"]
 }

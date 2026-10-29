@@ -31,13 +31,16 @@ test("thenable as top-level element", () => equal(thenable(<p>a</p>), `<p>a</p>`
 
 test("promise resolving to a promise", () =>
   equal(
-    <p>{Promise.resolve({ then: (resolve) => resolve(Promise.resolve("a")) })}</p>,
+    <p>
+      {Promise.resolve({
+        then: (resolve: (value: unknown) => void) => resolve(Promise.resolve("a")),
+      })}
+    </p>,
     `<p>a</p>`,
   ));
 
 test("component returning a thenable", () => {
-  /** @type {any} */
-  const Thenable = () => thenable(<i>t</i>);
+  const Thenable: any = () => thenable(<i>t</i>);
   return equal(<Thenable />, `<i>t</i>`);
 });
 
@@ -48,8 +51,7 @@ test("functions with a then method are not awaited", async () => {
       thenCalled = true;
     },
   });
-  /** @type {any} */
-  const Component = () => thenableFunction;
+  const Component: any = () => thenableFunction;
   await equal(
     <p>
       {thenableFunction}
@@ -57,9 +59,9 @@ test("functions with a then method are not awaited", async () => {
     </p>,
     `<p></p>`,
   );
-  await equal(thenableFunction, ``);
+  await equal(thenableFunction as any, ``);
   assert.strictEqual(thenCalled, false);
 });
 
 test("rejected top-level promise", () =>
-  assert.rejects(() => jsxToString.call({}, Promise.reject(new Error("boom"))), /boom/));
+  assert.rejects(async () => jsxToString.call({}, Promise.reject(new Error("boom"))), /boom/));

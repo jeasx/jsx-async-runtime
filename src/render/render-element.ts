@@ -62,7 +62,7 @@ const textDecoder = new TextDecoder();
  */
 export function renderElement(
   this: any,
-  jsxElement: JSX.Element,
+  jsxElement: JSX.Element | PromiseLike<JSX.Element>,
   writer: Writer,
 ): void | Promise<void> {
   if (jsxElement === null) {
