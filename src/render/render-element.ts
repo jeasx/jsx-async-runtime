@@ -1,6 +1,9 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import type { ElementNode } from "../jsx/jsx.types.js";
-import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
+import {
+  cancelUnreadStreams,
+  cancelUnreadStreamsOnRejection,
+} from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
 import { handleRejection } from "../utils/handle-rejection.js";
@@ -195,10 +198,7 @@ function renderComponent(
     throw error;
   }
   if (isPromise(pending)) {
-    return pending.then(undefined, (error) => {
-      cancelUnreadStreams(returned, error);
-      throw error;
-    });
+    return cancelUnreadStreamsOnRejection(pending, returned);
   }
 }
 

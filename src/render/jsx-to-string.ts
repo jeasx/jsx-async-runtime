@@ -1,4 +1,7 @@
-import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
+import {
+  cancelUnreadStreams,
+  cancelUnreadStreamsOnRejection,
+} from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
 import { getStreamWriter, throwIfCancelled, type Writer } from "../utils/writer.js";
@@ -23,14 +26,7 @@ export function jsxToString(
     const writer = createWriter(getStreamWriter(context));
     const pending = renderElement.call(context, jsxElement, writer);
     return isPromise(pending)
-      ? pending.then(
-          () => writer.buffer,
-          (error) => {
-            // Streams that rendering didn't get to won't be read anymore.
-            cancelUnreadStreams(jsxElement, error);
-            throw error;
-          },
-        )
+      ? cancelUnreadStreamsOnRejection(pending.then(() => writer.buffer), jsxElement)
       : writer.buffer;
   } catch (error) {
     cancelUnreadStreams(jsxElement, error);

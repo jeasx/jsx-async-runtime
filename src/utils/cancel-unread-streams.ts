@@ -20,7 +20,18 @@ export function cancelUnreadStreams(value: unknown, reason: unknown, start = 0):
   }
 }
 
-type NodeStream = { destroy(): void; destroyed?: boolean; readableFlowing: boolean | null };
+/**
+ * Passes on the result of `pending`. When it rejects, first cancels the unread streams in `value`
+ * (e.g. what a component returned), since rendering won't get to them anymore.
+ */
+export function cancelUnreadStreamsOnRejection<T>(pending: Promise<T>, value: unknown): Promise<T> {
+  return pending.then(undefined, (error) => {
+    cancelUnreadStreams(value, error);
+    throw error;
+  });
+}
+
+type NodeStream ={ destroy(): void; destroyed?: boolean; readableFlowing: boolean | null };
 
 /**
  * Checks for a Node.js readable stream (e.g. from `fs.createReadStream()`) that nobody reads yet.
