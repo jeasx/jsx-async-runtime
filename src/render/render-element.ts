@@ -353,12 +353,17 @@ async function renderAsyncIterable(
   };
   // Stops waiting for the next item when the stream reader cancels, so a slow or endless source
   // (e.g. a live feed) doesn't keep the render going. The source is then stopped below.
-  const onCancel = writer.onCancel?.then((): never => {
-    throw new Error("Stream cancelled");
-  });
-  // A cancel after the source ended has no listener, so mark it handled.
-  handleRejection(onCancel);
-  const nextOrCancel = onCancel ? () => Promise.race([next(), onCancel]) : next;
+  // One cancel listener for the whole iterable: racing each item against `onCancel` would add
+  // a listener per item, kept until the stream ends, so long sources would leak memory.
+  let rejectWait: ((error: Error) => void) | undefined;
+  writer.onCancel?.then(() => rejectWait?.(new Error("Stream cancelled")));
+  const nextOrCancel = writer.onCancel
+    ? () =>
+        new Promise<IteratorResult<JSX.Element>>((resolve, reject) => {
+          rejectWait = reject;
+          next().then(resolve, reject);
+        })
+    : next;
   // The item being rendered, so its unread streams can be cancelled when it fails.
   let item: JSX.Element;
   // Decodes byte items (e.g. the chunks of a `fetch()` body) as UTF-8 text. One decoder

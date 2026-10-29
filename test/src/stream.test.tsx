@@ -1,6 +1,8 @@
 import { jsxToStream, jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
+import { setFlagsFromString } from "node:v8";
+import { runInNewContext } from "node:vm";
 import Timeout from "./components/Timeout.js";
 import { delay } from "./helpers/delay.js";
 import { streamToChunks } from "./helpers/stream-to-chunks.js";
@@ -386,4 +388,25 @@ test("a context can be rendered again after its stream was cancelled", async () 
   // Wait until the cancelled render has ended.
   await delay(30);
   assert.strictEqual(await jsxToString.call(context, <Slow />), `<p>slow</p>`);
+});
+
+test("stream of a long async iterable doesn't grow memory per item", async () => {
+  // Measured with gc between samples. A leak of a cancel listener per item
+  // grew the heap by about 250 bytes per item, so 200k items added about 50 MB.
+  setFlagsFromString("--expose-gc");
+  const gc = runInNewContext("gc") as () => void;
+  const heap: number[] = [];
+  async function* items() {
+    for (let i = 0; i <= 200_000; i++) {
+      if (i % 100_000 === 0) {
+        gc();
+        heap.push(process.memoryUsage().heapUsed);
+      }
+      await null;
+      yield "";
+    }
+  }
+  await streamToChunks(jsxToStream(<p>{items()}</p>));
+  const growth = heap.at(-1)! - heap[0]!;
+  assert.ok(growth < 10_000_000, `heap grew by ${(growth / 1e6).toFixed(1)} MB`);
 });
