@@ -42,7 +42,7 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
           continue;
         }
         const condition = record[key];
-        if (typeof condition === "object" && isPromise(condition)) {
+        if (isPromise(condition)) {
           handleRejection(condition);
         } else if (condition) {
           add(key);
