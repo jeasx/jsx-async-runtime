@@ -23,7 +23,7 @@ export function handleRejection(value: unknown, start = 0): void {
   // and calling then() on other thenables can start work early (e.g. a lazy query builder).
   if (value instanceof Promise) {
     value.then(undefined, ignore);
-  } else if (Array.isArray(value) || value instanceof Set || value instanceof Map) {
+  } else if (isCollection(value)) {
     walk(value, start, undefined);
   } else if (!isJsxNode(value)) {
     // Elements are skipped, since their props were handled when they were created.
@@ -35,6 +35,11 @@ export function handleRejection(value: unknown, start = 0): void {
 }
 
 function ignore(): void {}
+
+/** Checks for the collections that are walked: arrays, Sets and Maps. */
+function isCollection(value: object): value is unknown[] | Set<unknown> | Map<unknown, unknown> {
+  return Array.isArray(value) || value instanceof Set || value instanceof Map;
+}
 
 /**
  * Handles the promises in a container, and in the arrays, Sets and Maps nested in it.
@@ -78,7 +83,7 @@ function handleItem(
   }
   if (item instanceof Promise) {
     item.then(undefined, ignore);
-  } else if (Array.isArray(item) || item instanceof Set || item instanceof Map) {
+  } else if (isCollection(item)) {
     seen ??= new Set<object>([container]);
     if (!seen.has(item)) {
       seen.add(item);
