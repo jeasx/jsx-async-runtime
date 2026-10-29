@@ -1,5 +1,6 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { handleRejection } from "./handle-rejection.js";
+import { hasOwnStringForm } from "./has-own-string-form.js";
 import { isPromise } from "./is-promise.js";
 
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
@@ -39,11 +40,12 @@ export function styleToString(obj: Record<string, unknown>): string {
       continue;
     }
     // Like attributes, functions and Symbols render nothing (a Symbol would throw below).
-    // Objects without their own string form, e.g. plain objects and arrays, are skipped too.
+    // Objects without their own string form, e.g. plain objects, are skipped too,
+    // and so are arrays: "a,b" is never a useful CSS value.
     if (
       typeof value === "function" ||
       typeof value === "symbol" ||
-      (typeof value === "object" && !hasOwnStringForm(value))
+      (typeof value === "object" && (Array.isArray(value) || !hasOwnStringForm(value)))
     ) {
       continue;
     }
@@ -51,17 +53,4 @@ export function styleToString(obj: Record<string, unknown>): string {
     separator = "; ";
   }
   return result;
-}
-
-/**
- * Checks for objects with their own `toString`, e.g. a `URL`, like children do.
- * Arrays don't count: "a,b" is never a useful CSS value.
- */
-function hasOwnStringForm(value: object): boolean {
-  const toString = (value as { toString?: unknown }).toString;
-  return (
-    !Array.isArray(value) &&
-    typeof toString === "function" &&
-    toString !== Object.prototype.toString
-  );
 }

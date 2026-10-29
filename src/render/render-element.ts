@@ -2,6 +2,7 @@ import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { handleRejection } from "../utils/handle-rejection.js";
+import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
@@ -137,9 +138,8 @@ export function renderElement(
   // e.g. from JSON.parse() or a database record, render nothing, so user data can't inject markup.
   if (!isJsxNode(jsxElement)) {
     // Objects with their own string form (e.g. `Date`, `URL`, `Error`) render it, escaped like text.
-    // Plain objects use the default `toString` (or have none), so they don't render "[object Object]".
-    const toString = (jsxElement as { toString?: unknown }).toString;
-    if (typeof toString === "function" && toString !== Object.prototype.toString) {
+    // Plain objects render nothing instead of "[object Object]".
+    if (hasOwnStringForm(jsxElement)) {
       return renderElement.call(this, String(jsxElement), writer);
     }
     return;

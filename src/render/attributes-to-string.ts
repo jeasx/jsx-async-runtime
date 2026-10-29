@@ -1,6 +1,7 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { classToString } from "../utils/class-to-string.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
+import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 import { styleToString } from "../utils/style-to-string.js";
@@ -120,8 +121,7 @@ function attributeToString(key: string, value: any): string {
     // Like children, only objects with their own string form (e.g. `Date`, `URL`) render it.
     // Others (e.g. a `Map`, a `Set` or a class instance without `toString`) render nothing
     // instead of `[object Map]`.
-    const toString = (value as { toString?: unknown }).toString;
-    if (typeof toString !== "function" || toString === Object.prototype.toString) {
+    if (!hasOwnStringForm(value)) {
       return "";
     }
   }
