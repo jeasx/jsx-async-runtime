@@ -1,3 +1,5 @@
+import { isJsxNode } from "../jsx/is-jsx-node.js";
+
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
 // see attributes-to-string.ts.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -6,6 +8,7 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
  * Joins class names from an array or an object of `name: condition` pairs.
  * Arrays may nest and contain such objects, e.g. `["a", ["b"], { c: cond }]`.
  * Booleans are skipped like in clsx, so `[isActive || "inactive"]` doesn't add a "true" class.
+ * Elements and html() markup are skipped too, so their internal keys don't become class names.
  */
 export function classToString(obj: unknown[] | Record<string, unknown>): string {
   let result = "";
@@ -15,7 +18,7 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
     }
   };
   const walk = (value: unknown) => {
-    if (!value || value === true) {
+    if (!value || value === true || isJsxNode(value)) {
       return;
     }
     if (Array.isArray(value)) {

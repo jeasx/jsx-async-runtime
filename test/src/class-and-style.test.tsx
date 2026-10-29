@@ -1,3 +1,4 @@
+import { html } from "jsx-async-runtime";
 import test from "node:test";
 import { equal } from "./helpers/equal.js";
 
@@ -63,6 +64,12 @@ test("escape class array", () =>
 test("escape class object keys", () =>
   equal(<div class={{ 'a"b': true }} />, `<div class="a&quot;b"></div>`));
 
+test("class array skips elements and html()", () =>
+  equal(
+    <div class={["a", html("<b>"), [<i />], { c: true }] as any} />,
+    `<div class="a c"></div>`,
+  ));
+
 test("style as string", () => equal(<h1 style="color: red"></h1>, `<h1 style="color: red"></h1>`));
 
 test("style as empty string", () => equal(<h1 style=""></h1>, `<h1 style=""></h1>`));
@@ -103,4 +110,10 @@ test("style with only skipped values", () =>
   equal(
     <div style={{ color: null, margin: undefined, display: false, "font-weight": "" }} />,
     `<div></div>`,
+  ));
+
+test("style skips elements and html() values", () =>
+  equal(
+    <div style={{ color: html("red") as any, margin: (<b />) as any, padding: 0 }} />,
+    `<div style="padding: 0"></div>`,
   ));
