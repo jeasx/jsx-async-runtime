@@ -194,8 +194,8 @@ export function renderElement(
     let pending: void | Promise<void>;
     try {
       pending = isPromise(returned)
-        ? flushAndAwait(writer, returned).then((value) => $renderElement.call(this, value, writer))
-        : $renderElement.call(this, returned, writer);
+        ? flushAndAwait(writer, returned).then((value) => renderNested.call(this, value, writer))
+        : renderNested.call(this, returned, writer);
     } catch (error) {
       cancelUnreadStreams(returned, error);
       throw error;
@@ -261,7 +261,7 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
       let pending: void | Promise<void>;
       if (isPromise(child)) {
         pending = flushAndAwait(writer, child).then(($child) =>
-          $renderElement.call(this, $child, writer),
+          renderNested.call(this, $child, writer),
         );
       } else {
         let element = child;
@@ -269,7 +269,7 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
         if (typeof child === "object" && isByteRun(children, i)) {
           [element, i] = decodeByteRun(children, i);
         }
-        pending = $renderElement.call(this, element, writer);
+        pending = renderNested.call(this, element, writer);
         if (!pending && writer.buffer.length >= writer.chunkSize) {
           // Send large sync markup early; continue async if the reader is behind.
           pending = writer.flush();
@@ -310,7 +310,7 @@ async function renderChildrenAsync(
         [element, index] = decodeByteRun(children, index);
       }
       // Only wait when the child has to, so sync siblings don't cost extra microtasks.
-      const pending = $renderElement.call(this, element, writer);
+      const pending = renderNested.call(this, element, writer);
       if (isPromise(pending)) {
         await pending;
       }
@@ -508,9 +508,9 @@ function renderNextItem(
   }
   const item = state.item;
   if (isPromise(item)) {
-    return flushAndAwait(writer, item).then(($item) => $renderElement.call(this, $item, writer));
+    return flushAndAwait(writer, item).then(($item) => renderNested.call(this, $item, writer));
   }
-  return $renderElement.call(this, item, writer);
+  return renderNested.call(this, item, writer);
 }
 
 /**
@@ -565,7 +565,7 @@ async function renderAsyncIterable(
       if (!takeItem(state, result)) {
         return;
       }
-      const pending = $renderElement.call(this, state.item, writer);
+      const pending = renderNested.call(this, state.item, writer);
       if (isPromise(pending)) {
         await pending;
       }
@@ -581,7 +581,7 @@ async function renderAsyncIterable(
  * The override returns a string, which is appended to the writer.
  * `undefined` and `null` render nothing, so `return;` drops an element.
  */
-function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void | Promise<void> {
+function renderNested(this: any, jsxElement: JSX.Element, writer: Writer): void | Promise<void> {
   const $jsxToString = this?.jsxToString;
   // Only functions count, so a `jsxToString` value inherited from a polluted `Object.prototype`
   // (e.g. a string from a naive deep merge of a request body) can't break every render.
