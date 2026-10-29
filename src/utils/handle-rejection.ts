@@ -1,4 +1,4 @@
-import { isJsxNode } from "./is-jsx-node.js";
+import { isJsxNode } from "../jsx/is-jsx-node.js";
 
 type Container = unknown[] | Set<unknown> | Record<string, unknown>;
 

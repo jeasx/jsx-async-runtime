@@ -1,5 +1,5 @@
+import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { handleRejection } from "./handle-rejection.js";
-import { isJsxNode } from "./is-jsx-node.js";
 
 /**
  * Called when rendering failed or the stream reader cancelled. Cancels the `ReadableStream`s

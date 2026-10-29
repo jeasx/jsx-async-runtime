@@ -1,6 +1,6 @@
+import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { classToString } from "../utils/class-to-string.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
-import { isJsxNode } from "../utils/is-jsx-node.js";
 import { isPromise } from "../utils/is-promise.js";
 import { styleToString } from "../utils/style-to-string.js";
 import { escapeHTML } from "./escape-entities.js";

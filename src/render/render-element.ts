@@ -1,10 +1,10 @@
+import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
-import { isJsxNode } from "../utils/is-jsx-node.js";
 import { isPromise } from "../utils/is-promise.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";

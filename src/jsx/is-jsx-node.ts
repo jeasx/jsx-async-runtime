@@ -1,5 +1,9 @@
-import { JSX_NODE_MARKER } from "../jsx/jsx-node-marker.js";
-import type { Html, Tag } from "../jsx/jsx.types.js";
+import type { Html, Tag } from "./jsx.types.js";
+
+// Marks elements and raw markup created by jsx(), createElement() and html().
+// JSON can't contain Symbols, so parsed data (e.g. a request body) can never pass as either.
+// `Symbol.for` makes the marker work even when two copies of this package are loaded.
+export const JSX_NODE_MARKER = Symbol.for("jsx-async-runtime.node");
 
 /**
  * Checks for nodes created by JSX, createElement() or html(), and copies of them.

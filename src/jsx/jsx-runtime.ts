@@ -1,5 +1,5 @@
 import { handleRejection } from "../utils/handle-rejection.js";
-import { JSX_NODE_MARKER } from "./jsx-node-marker.js";
+import { JSX_NODE_MARKER } from "./is-jsx-node.js";
 
 type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
 
