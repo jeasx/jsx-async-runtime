@@ -44,6 +44,16 @@ test("class as array with objects", () =>
     `<div class="a b d e"></div>`,
   ));
 
+test("class array skips true, like falsy values", () => {
+  // e.g. `isActive || "inactive"`, which the types reject, but plain JS allows.
+  /** @type {any} */
+  const isActive = true;
+  return equal(
+    <div class={["a", isActive || "inactive", [true], 0, 1]}></div>,
+    `<div class="a 1"></div>`,
+  );
+});
+
 test("class as undefined array", () =>
   equal(<div class={[null, undefined, ""]}></div>, `<div></div>`));
 

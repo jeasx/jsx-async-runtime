@@ -5,6 +5,7 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
 /**
  * Joins class names from an array or an object of `name: condition` pairs.
  * Arrays may nest and contain such objects, e.g. `["a", ["b"], { c: cond }]`.
+ * Booleans are skipped like in clsx, so `[isActive || "inactive"]` doesn't add a "true" class.
  */
 export function classToString(obj: unknown[] | Record<string, unknown>): string {
   let result = "";
@@ -14,7 +15,7 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
     }
   };
   const walk = (value: unknown) => {
-    if (!value) {
+    if (!value || value === true) {
       return;
     }
     if (Array.isArray(value)) {
