@@ -2,10 +2,11 @@
 // elements must come from JSX or createElement(), raw markup from html().
 declare const NODE: unique symbol;
 
-export type Tag = {
+// An element created by JSX or createElement(), e.g. `<div>` or `<Page />`.
+export type ElementNode = {
   [NODE]: true;
   type: "tag";
-  tag: string | ((props: Props) => JSX.Element);
+  tag: JSX.ElementType;
   props: Props;
 };
 
@@ -15,7 +16,7 @@ type Props = {
 };
 
 // `tag` and `props` never exist on raw markup. Declared anyway, so code that got
-// a `Tag | Html` from isJsxNode() can read `node.tag` without checking `node.type` first.
+// an `ElementNode | Html` from isJsxNode() can read `node.tag` without checking `node.type` first.
 export type Html = {
   [NODE]: true;
   type: "html";
@@ -30,7 +31,7 @@ declare global {
     type AsyncIterableElement = AsyncIterable<Element>;
     type AsyncElement = Promise<SyncElement | AsyncIterableElement> | AsyncIterableElement;
     type SyncElement =
-      | Tag
+      | ElementNode
       | Html
       | null
       | undefined

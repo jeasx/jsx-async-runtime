@@ -1,4 +1,4 @@
-import type { Html, Tag } from "./jsx.types.js";
+import type { ElementNode, Html } from "./jsx.types.js";
 
 // Marks elements and raw markup created by jsx(), createElement() and html().
 // JSON can't contain Symbols, so parsed data (e.g. a request body) can never pass as either.
@@ -13,7 +13,7 @@ export const JSX_ASYNC_RUNTIME = Symbol.for("jsx-async-runtime");
  * As a type guard, it lets a `this.jsxToString` override read the tag in TypeScript:
  * `if (isJsxNode(element) && element.tag === "script")`. Raw markup has no tag.
  */
-export function isJsxNode(value: unknown): value is Tag | Html {
+export function isJsxNode(value: unknown): value is ElementNode | Html {
   return (
     value !== null &&
     typeof value === "object" &&

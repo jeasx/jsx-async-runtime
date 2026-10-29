@@ -1,5 +1,5 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
-import type { Tag } from "../jsx/jsx.types.js";
+import type { ElementNode } from "../jsx/jsx.types.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
@@ -43,7 +43,7 @@ const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x
 // Skips keys inherited from a polluted `Object.prototype`.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
-type Props = Tag["props"];
+type Props = ElementNode["props"];
 
 // Iterators of the built-in collections (arrays, typed arrays, `Map` and `Set`), whose items
 // already exist, so reading them up front costs no extra work and lets early promise rejections
@@ -192,7 +192,7 @@ function getChildren(props: Props): JSX.Element[] {
  */
 function renderComponent(
   this: any,
-  component: (props: Props) => JSX.Element,
+  component: Exclude<JSX.ElementType, string>,
   props: Props,
   writer: Writer,
 ): void | Promise<void> {

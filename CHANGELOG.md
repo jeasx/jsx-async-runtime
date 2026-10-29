@@ -23,6 +23,7 @@ Read the breaking changes below before upgrading.
 - Only elements created by JSX, #createElement or `jsx()` are rendered. Element objects built by hand (e.g. `{ type: "tag", tag: "b", props }`) render nothing; create them with #createElement instead. Copies of real elements (e.g. `{ ...element, tag: "i" }`) still render.
 - An element whose tag is neither a string nor a function (e.g. `<Card />` where `Card` is `undefined` because of a missing import or a wrong default export) now fails the render with a `TypeError`, like in React. Previously it silently rendered nothing, and streams in its children were never cancelled.
 - Removed the `jsxsDEV` export from `jsx-async-runtime/jsx-dev-runtime`. It isn't part of the JSX dev runtime and no compiler calls it; compiled JSX uses `jsxDEV`, which is unchanged.
+- Renamed the exported `Tag` type to `ElementNode`, since it describes an element, not a tag. To migrate, replace `Tag` with `ElementNode` in your imports.
 
 ### New features
 
@@ -75,9 +76,9 @@ Read the breaking changes below before upgrading.
 - #jsxToString and #jsxToStream accept a promise of an element (e.g. `jsxToString(loadPage())`), matching what the runtime renders.
 - Attributes accept `null` (also as a promise value), which renders nothing like `undefined`, so `<div id={null} />` no longer fails type checks with `strict` enabled.
 - #createElement accepts `null` as props, like in React, so `createElement(Fragment, null, a, b)` no longer fails type checks with `strict` enabled.
-- `Tag.tag` is typed as `string | ((props) => JSX.Element)`, matching what the runtime actually passes.
+- Elements are typed as `ElementNode`, and `ElementNode.tag` as `JSX.ElementType`, matching what the runtime actually passes, including async components.
 - `key` is accepted on components (e.g. `<Item key={id} label={label} />`) via `JSX.IntrinsicAttributes`, instead of failing type checks when the component's props don't declare it.
-- `Tag` and raw markup carry a type-only marker, so TypeScript rejects hand-built element objects and plain `{ html }` objects (e.g. returned by a component), matching what the runtime renders. Create them with #createElement and #html instead.
+- `ElementNode` and raw markup carry a type-only marker, so TypeScript rejects hand-built element objects and plain `{ html }` objects (e.g. returned by a component), matching what the runtime renders. Create them with #createElement and #html instead.
 - `class` accepts falsy values, matching what the runtime already skips: arrays may contain `false`, `null` and `undefined` (e.g. `class={["a", cond && "b"]}`), and object values may be `null` or `undefined` (e.g. `class={{ active: user?.isActive }}`).
 - `aria-*` attributes only accept strings. Booleans didn't work as expected: `true` renders an empty attribute (which ARIA treats as unset) and `false` removes it. Use e.g. `aria-hidden="true"`.
 - `contenteditable`, `spellcheck`, `translate` and `writingsuggestions` no longer accept `false`, because it removes the attribute (so the parent's value applies) instead of turning the feature off. Use the string value instead (e.g. `spellcheck="false"` or `translate="no"`).

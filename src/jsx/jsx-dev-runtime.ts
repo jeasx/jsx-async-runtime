@@ -1,7 +1,7 @@
 import { Fragment, _Fragment, _jsx, _jsxs, createElement, jsx, jsxs } from "./jsx-runtime.js";
 
 export function jsxDEV(
-  tag: Parameters<typeof jsx>[0],
+  tag: JSX.ElementType,
   props?: Parameters<typeof jsx>[1],
   _key?: unknown,
   _isStaticChildren?: boolean,
