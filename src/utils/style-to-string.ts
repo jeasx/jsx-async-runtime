@@ -1,4 +1,6 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
+import { handleRejection } from "./handle-rejection.js";
+import { isPromise } from "./is-promise.js";
 
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
 // see attributes-to-string.ts.
@@ -10,6 +12,8 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
  * Keys are used as-is (no camelCase conversion).
  * Like in React, empty values are skipped, so `color: ""` doesn't render `color: `.
  * Elements and html() markup are skipped too, instead of rendering `[object Object]`.
+ * Promises are skipped as well (unlike a promise attribute, they aren't awaited),
+ * instead of rendering `[object Promise]`.
  */
 export function styleToString(obj: Record<string, unknown>): string {
   let result = "";
@@ -26,6 +30,11 @@ export function styleToString(obj: Record<string, unknown>): string {
       value === "" ||
       isJsxNode(value)
     ) {
+      continue;
+    }
+    if (isPromise(value)) {
+      // Never awaited, so a rejection must not crash Node.
+      handleRejection(value);
       continue;
     }
     result += `${separator}${key}: ${value}`;

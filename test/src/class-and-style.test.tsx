@@ -1,6 +1,8 @@
 import { html } from "jsx-async-runtime";
 import test from "node:test";
+import { delay } from "./helpers/delay.js";
 import { equal } from "./helpers/equal.js";
+import { rejectAfter } from "./helpers/reject-after.js";
 
 test("class as string", () => equal(<div class="a b c"></div>, `<div class="a b c"></div>`));
 
@@ -69,6 +71,48 @@ test("class array skips elements and html()", () =>
     <div class={["a", html("<b>"), [<i />], { c: true }] as any} />,
     `<div class="a c"></div>`,
   ));
+
+test("class skips promise names and conditions", () =>
+  equal(
+    <div
+      class={["a", Promise.resolve("b"), [Promise.resolve("c")], { d: Promise.resolve(true), e: true }] as any}
+    />,
+    `<div class="a e"></div>`,
+  ));
+
+test("class object skips promise conditions, even if they reject", () =>
+  equal(
+    () => <div class={{ a: true, b: rejectAfter(1, "class") as any }} />,
+    `<div class="a"></div>`,
+  ));
+
+test("class skips rejecting promises nested in objects", async () => {
+  await equal(
+    () => <div class={[{ a: true, b: rejectAfter(1, "nested class") as any }]} />,
+    `<div class="a"></div>`,
+  );
+  // Give a rejection that nobody handled the chance to fail the test.
+  await delay(10);
+});
+
+test("whole class value as promise is still awaited", () =>
+  equal(<div class={Promise.resolve({ a: true, b: false }) as any} />, `<div class="a"></div>`));
+
+test("style skips promise values, even if they reject", async () => {
+  await equal(
+    () => <div style={{ color: Promise.resolve("red") as any, margin: rejectAfter(1, "style") as any, padding: 0 }} />,
+    `<div style="padding: 0"></div>`,
+  );
+  await delay(10);
+});
+
+test("style from a promise skips nested promise values", async () => {
+  await equal(
+    () => <div style={Promise.resolve({ color: rejectAfter(1, "late style"), padding: 0 }) as any} />,
+    `<div style="padding: 0"></div>`,
+  );
+  await delay(10);
+});
 
 test("style as string", () => equal(<h1 style="color: red"></h1>, `<h1 style="color: red"></h1>`));
 
