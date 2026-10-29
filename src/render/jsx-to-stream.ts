@@ -43,12 +43,16 @@ export function jsxToStream(
 
   const source: UnderlyingDefaultSource<string> = {
     start(controller) {
-      writer.flush = () => {
-        throwIfCancelled(writer);
+      // Sends the markup rendered so far as a chunk.
+      const enqueueBuffer = () => {
         if (writer.buffer !== "") {
           controller.enqueue(writer.buffer);
           writer.buffer = "";
         }
+      };
+      writer.flush = () => {
+        throwIfCancelled(writer);
+        enqueueBuffer();
         // Backpressure: wait while the reader has enough queued markup.
         if ((controller.desiredSize ?? 1) <= 0) {
           return new Promise<void>((resolve) => {
@@ -75,10 +79,7 @@ export function jsxToStream(
         }
         // Enqueue the rest directly instead of calling flush(): nothing renders after it,
         // so there is no need to wait for the reader to catch up.
-        if (writer.buffer !== "") {
-          controller.enqueue(writer.buffer);
-          writer.buffer = "";
-        }
+        enqueueBuffer();
         controller.close();
       };
       const fail = (error: unknown) => {
