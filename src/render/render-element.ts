@@ -1,6 +1,7 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
+import { decodeBytes } from "../utils/decode-bytes.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
@@ -59,10 +60,6 @@ const VOID_TAGS = new Set(
 // that end the tag name or break the markup.
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
 
-// Decodes bytes that come in one piece. Used without the `stream` option,
-// it keeps no state between calls, so one instance is shared.
-const textDecoder = new TextDecoder();
-
 // Skips keys inherited from a polluted `Object.prototype`.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -112,7 +109,7 @@ export function renderElement(
 
   // Bytes, e.g. a `Buffer` from `readFile()`, render as UTF-8 text, escaped like a string.
   if (isByteArray(jsxElement)) {
-    return renderElement.call(this, textDecoder.decode(jsxElement), writer);
+    return renderElement.call(this, decodeBytes(jsxElement), writer);
   }
 
   // Other iterables, e.g. a generator returned by a component.
