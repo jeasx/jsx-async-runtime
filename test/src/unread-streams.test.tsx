@@ -3,7 +3,7 @@ import { strict as assert } from "node:assert";
 import { Readable } from "node:stream";
 import test from "node:test";
 import { delay } from "./helpers/delay.js";
-import { streamToChunks } from "./helpers/stream-to-chunks.js";
+import { renderers } from "./helpers/renderers.js";
 
 // When a render fails or the stream reader cancels, streams that rendering never got to
 // (e.g. a fetch() body) are cancelled, so they don't keep a connection open.
@@ -14,11 +14,7 @@ type CreateJsx = (stream: ReadableStream<string>) => JSX.Element;
 // Renders fresh JSX (from a factory, which gets a new stream) with both renderers and
 // checks that the stream was cancelled with the render error, because rendering never read it.
 async function cancelsUnreadStream(createJsx: CreateJsx, message: string) {
-  const renders = [
-    (jsx: JSX.Element) => jsxToString.call({}, jsx),
-    (jsx: JSX.Element) => streamToChunks(jsxToStream.call({}, jsx)),
-  ];
-  for (const render of renders) {
+  for (const render of renderers) {
     let reason: Error | undefined;
     const stream = new ReadableStream({
       pull(controller) {
@@ -207,11 +203,7 @@ test("stream passed as a non-children prop is left alone", async () => {
 // Children of void tags and of tags with an invalid name are never rendered,
 // so their streams are cancelled even when the render succeeds.
 async function cancelsSkippedStream(createJsx: CreateJsx, expected: string, message: string) {
-  const renders = [
-    (jsx: JSX.Element) => jsxToString.call({}, jsx),
-    async (jsx: JSX.Element) => (await streamToChunks(jsxToStream.call({}, jsx))).join(""),
-  ];
-  for (const render of renders) {
+  for (const render of renderers) {
     let reason: Error | undefined;
     const stream = new ReadableStream({
       cancel(r: Error) {
@@ -286,11 +278,7 @@ test("unread Node.js stream is destroyed when an earlier sibling throws", async 
   const Boom = () => {
     throw new Error("sibling");
   };
-  const renders = [
-    (jsx: JSX.Element) => jsxToString.call({}, jsx),
-    (jsx: JSX.Element) => streamToChunks(jsxToStream.call({}, jsx)),
-  ];
-  for (const render of renders) {
+  for (const render of renderers) {
     const { stream, state } = createNodeStream("x");
     await assert.rejects(
       async () =>

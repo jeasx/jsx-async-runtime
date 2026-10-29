@@ -132,7 +132,7 @@ test("stream cancelled while waiting doesn't crash and stops rendering", async (
   let calls = 0;
   const Slow = async () => {
     calls++;
-    await new Promise((res) => setTimeout(res, 10));
+    await delay(10);
     return "x";
   };
   const reader = jsxToStream
@@ -145,7 +145,7 @@ test("stream cancelled while waiting doesn't crash and stops rendering", async (
     .getReader();
   assert.deepStrictEqual(await reader.read(), { done: false, value: "<p>a" });
   await reader.cancel();
-  await new Promise((res) => setTimeout(res, 50));
+  await delay(50);
   assert.strictEqual(calls, 1);
 });
 
@@ -160,7 +160,7 @@ test("stream cancelled before the last async component finishes doesn't crash", 
     .getReader();
   await reader.read();
   await reader.cancel();
-  await new Promise((res) => setTimeout(res, 50));
+  await delay(50);
 });
 
 test("stream cancelled while a promise child is pending stops before the next promise child", async () => {
@@ -178,14 +178,14 @@ test("stream cancelled while a promise child is pending stops before the next pr
     .call(
       {},
       <p>
-        a{new Promise((res) => setTimeout(() => res(null), 10))}
+        a{delay(10, null)}
         {next}c
       </p>,
     )
     .getReader();
   assert.deepStrictEqual(await reader.read(), { done: false, value: "<p>a" });
   await reader.cancel();
-  await new Promise((res) => setTimeout(res, 50));
+  await delay(50);
   assert.strictEqual(awaited, false);
 });
 
