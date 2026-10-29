@@ -51,8 +51,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "clean": "tsc --build --clean",
-    "test": "npm --prefix test ci && npm --prefix test run build && npm --prefix test test",
-    "bench": "npm --prefix bench ci && npm --prefix bench run build && npm --prefix bench start"
+    "test": "npm run build && npm --prefix test ci && npm --prefix test run build && npm --prefix test test",
+    "bench": "npm run build && npm --prefix bench ci && npm --prefix bench run build && npm --prefix bench start"
   },
   "devDependencies": {
     "@types/node": "26.6.6",
