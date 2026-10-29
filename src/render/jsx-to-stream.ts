@@ -5,6 +5,7 @@ import {
   attachStreamWriter,
   cancelWriter,
   createStreamWriter,
+  enqueueBuffer,
   type Writer,
 } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
@@ -56,9 +57,7 @@ export function jsxToStream(
         }
         // Enqueue the rest directly instead of calling flush(): nothing renders after it,
         // so there is no need to wait for the reader to catch up.
-        if (writer.buffer !== "") {
-          controller.enqueue(writer.buffer);
-        }
+        enqueueBuffer(writer, controller);
         controller.close();
       };
       const fail = (error: unknown) => {

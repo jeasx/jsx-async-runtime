@@ -96,16 +96,26 @@ export function createStreamWriter(
     waits: new Set(),
     flush() {
       throwIfCancelled(writer);
-      if (writer.buffer !== "") {
-        controller.enqueue(writer.buffer);
-        writer.buffer = "";
-      }
+      enqueueBuffer(writer, controller);
       if ((controller.desiredSize ?? 1) <= 0) {
         return waitForReader();
       }
     },
   };
   return writer;
+}
+
+/**
+ * Sends the markup rendered so far as a chunk of the stream.
+ */
+export function enqueueBuffer(
+  writer: Writer,
+  controller: ReadableStreamDefaultController<string>,
+): void {
+  if (writer.buffer !== "") {
+    controller.enqueue(writer.buffer);
+    writer.buffer = "";
+  }
 }
 
 /**
