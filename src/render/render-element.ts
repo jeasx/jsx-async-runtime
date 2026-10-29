@@ -360,16 +360,50 @@ function toArray(iterator: Iterator<unknown>): JSX.Element[] {
   return items;
 }
 
+/**
+ * Decodes the byte items of an iterator or async iterable (e.g. the chunks of a `fetch()` body)
+ * as UTF-8 text. One decoder for consecutive byte items, so a character split between two of them
+ * is decoded correctly. Created at the first byte item, so other iterators need none.
+ */
+type ByteDecoding = {
+  decoder: TextDecoder | undefined;
+};
+
+/**
+ * Returns what to render for the next item: bytes are decoded as text,
+ * and the text left in the decoder by the bytes before the item comes first.
+ */
+function decodeItem(state: ByteDecoding, item: JSX.Element): JSX.Element {
+  if (isByteArray(item)) {
+    state.decoder ??= new TextDecoder();
+    return state.decoder.decode(item, { stream: true });
+  }
+  if (state.decoder) {
+    const rest = state.decoder.decode();
+    state.decoder = undefined;
+    return [rest, item];
+  }
+  return item;
+}
+
+/**
+ * Returns the text left in the decoder once the items ended, or `""`.
+ * Bytes of a character cut off at the end render as the replacement character "�".
+ */
+function finishDecoding(state: ByteDecoding): string {
+  const rest = state.decoder?.decode() ?? "";
+  state.decoder = undefined;
+  return rest;
+}
+
 /** The progress of reading a lazy iterator, shared by its sync and async parts. */
-type IteratorState = {
+type IteratorState = ByteDecoding & {
   /** Set once the iterator is used up. */
   done: boolean;
   /** Set when the source itself failed, so it isn't asked to stop. */
   sourceFailed: boolean;
   /** The item being rendered, so its unread streams can be cancelled when it fails. */
   item: unknown;
-  /** Decodes byte items as UTF-8, so a character split between two of them is decoded correctly. */
-  decoder: TextDecoder | undefined;
 };
 
 /**
@@ -458,23 +492,12 @@ function renderNextItem(
   let item: JSX.Element;
   if (result.done) {
     state.done = true;
-    // Bytes of a character cut off at the end render as the replacement character "�".
-    const rest = state.decoder?.decode();
-    state.decoder = undefined;
-    if (!rest) {
+    item = finishDecoding(state);
+    if (item === "") {
       return;
     }
-    item = rest;
   } else {
-    item = result.value;
-    if (isByteArray(item)) {
-      state.decoder ??= new TextDecoder();
-      item = state.decoder.decode(item, { stream: true });
-    } else if (state.decoder) {
-      // The bytes ended, so the text left in the decoder comes before this item.
-      item = [state.decoder.decode(), item];
-      state.decoder = undefined;
-    }
+    item = decodeItem(state, result.value);
   }
   state.item = item;
   if (isPromise(item)) {
@@ -520,9 +543,7 @@ async function renderAsyncIterable(
   };
   // The item being rendered, so its unread streams can be cancelled when it fails.
   let item: JSX.Element;
-  // Decodes byte items (e.g. the chunks of a `fetch()` body) as UTF-8 text. One decoder
-  // for all chunks, so a character split between two chunks is decoded correctly.
-  let decoder: TextDecoder | undefined;
+  const decoding: ByteDecoding = { decoder: undefined };
   try {
     for (;;) {
       // Don't pull more items once the stream reader is gone.
@@ -533,9 +554,8 @@ async function renderAsyncIterable(
       // ends at once, and the source is stopped below.
       const result = await flushAndAwait(writer, next());
       if (result.done) {
-        // Bytes of a character cut off at the end render as the replacement character "\uFFFD".
-        const rest = decoder?.decode();
-        if (rest) {
+        const rest = finishDecoding(decoding);
+        if (rest !== "") {
           const pending = $renderElement.call(this, rest, writer);
           if (isPromise(pending)) {
             await pending;
@@ -543,15 +563,7 @@ async function renderAsyncIterable(
         }
         return;
       }
-      item = result.value;
-      if (isByteArray(item)) {
-        decoder ??= new TextDecoder();
-        item = decoder.decode(item, { stream: true });
-      } else if (decoder) {
-        // The bytes ended, so the text left in the decoder comes before this item.
-        item = [decoder.decode(), item];
-        decoder = undefined;
-      }
+      item = decodeItem(decoding, result.value);
       const pending = $renderElement.call(this, item, writer);
       if (isPromise(pending)) {
         await pending;
