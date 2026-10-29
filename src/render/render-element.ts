@@ -163,10 +163,7 @@ function renderTagElement(
     return renderChildren.call(this, children, writer);
   }
   if (!isValidTagName(tag)) {
-    // The children are never rendered, so cancel their streams to not keep a connection open.
-    if (children.length) {
-      cancelUnreadStreams(children, new Error(`Children of <${tag}> are not rendered`));
-    }
+    discardChildren(tag, children);
     return;
   }
   const attributes = attributesToString(props);
@@ -233,11 +230,7 @@ function renderTag(
 
   // Void tags can't have content or a closing tag, so their children are ignored.
   if (VOID_TAGS.has(tag)) {
-    // The children are never rendered, so cancel their streams to not keep a connection open.
-    // Most void tags have no children, so this usually creates no error.
-    if (children.length) {
-      cancelUnreadStreams(children, new Error(`Children of <${tag}> are not rendered`));
-    }
+    discardChildren(tag, children);
     return;
   }
 
@@ -249,6 +242,17 @@ function renderTag(
     });
   }
   writer.buffer += closeTag;
+}
+
+/**
+ * Cancels the streams of children that are never rendered (e.g. of a void tag),
+ * so they don't keep a connection open. Most such tags have no children,
+ * so this usually creates no error.
+ */
+function discardChildren(tag: string, children: JSX.Element[]): void {
+  if (children.length) {
+    cancelUnreadStreams(children, new Error(`Children of <${tag}> are not rendered`));
+  }
 }
 
 /**
