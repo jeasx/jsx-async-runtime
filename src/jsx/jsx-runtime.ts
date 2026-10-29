@@ -56,7 +56,6 @@ export function jsx(tag: JSX.ElementType, props?: Props, _key?: unknown): JSX.El
 /**
  * Marks a string as raw markup, which is rendered without escaping,
  * e.g. `{html("<!DOCTYPE html>")}`. Never pass untrusted input.
- * Plain `{ html }` objects (e.g. from JSON.parse()) render nothing.
  */
 export function html(markup: string): JSX.Element {
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
