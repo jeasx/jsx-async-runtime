@@ -48,6 +48,16 @@ export function throwIfCancelled(writer: Pick<Writer, "cancelled">): void {
 }
 
 /**
+ * Sends the markup early once the buffer reaches `chunkSize`, so large sync markup streams.
+ * Returns a promise when rendering should pause until the reader catches up.
+ */
+export function flushIfFull(writer: Writer): void | Promise<void> {
+  if (writer.buffer.length >= writer.chunkSize) {
+    return writer.flush();
+  }
+}
+
+/**
  * Sends the markup rendered so far, then waits for `value`
  * and (when the stream reader is behind) for the reader to catch up.
  * Both are awaited together, so a rejection of `value` is handled right away.

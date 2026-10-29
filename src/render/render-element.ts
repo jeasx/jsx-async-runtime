@@ -8,7 +8,7 @@ import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
-import { flushAndAwait, throwIfCancelled, type Writer } from "../utils/writer.js";
+import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
 import { renderAsyncIterable, renderIterator } from "./render-iterables.js";
@@ -244,9 +244,9 @@ function renderChildren(this: any, children: JSX.Element[], writer: Writer): voi
           [element, i] = decodeByteRun(children, i);
         }
         pending = renderNested.call(this, element, writer);
-        if (!pending && writer.buffer.length >= writer.chunkSize) {
+        if (!pending) {
           // Send large sync markup early; continue async if the reader is behind.
-          pending = writer.flush();
+          pending = flushIfFull(writer);
         }
       }
       if (isPromise(pending)) {
@@ -288,8 +288,9 @@ async function renderChildrenAsync(
       if (isPromise(pending)) {
         await pending;
       }
-      if (writer.buffer.length >= writer.chunkSize) {
-        await writer.flush();
+      const flushed = flushIfFull(writer);
+      if (flushed) {
+        await flushed;
       }
     }
   } catch (error) {

@@ -4,7 +4,7 @@ import { handleRejection } from "../utils/handle-rejection.js";
 import { isPromise } from "../utils/is-promise.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
-import { flushAndAwait, throwIfCancelled, type Writer } from "../utils/writer.js";
+import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { renderNested } from "./render-element.js";
 
 /** The progress of reading a lazy iterator or an async iterable. */
@@ -52,9 +52,9 @@ export function renderIterator(
   try {
     while (!state.done) {
       let pending = renderNextItem.call(this, iterator, state, writer);
-      if (!pending && writer.buffer.length >= writer.chunkSize) {
+      if (!pending) {
         // Send large sync markup early; continue async if the reader is behind.
-        pending = writer.flush();
+        pending = flushIfFull(writer);
       }
       if (isPromise(pending)) {
         return renderIteratorAsync.call(this, iterator, state, pending, writer);
@@ -85,8 +85,9 @@ async function renderIteratorAsync(
       if (isPromise(pending)) {
         await pending;
       }
-      if (writer.buffer.length >= writer.chunkSize) {
-        await writer.flush();
+      const flushed = flushIfFull(writer);
+      if (flushed) {
+        await flushed;
       }
     }
   } catch (error) {
