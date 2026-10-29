@@ -46,6 +46,61 @@ test("unread stream is cancelled when an earlier sibling throws", () => {
   );
 });
 
+test("unread stream in a Set child is cancelled when an earlier sibling throws", () => {
+  const Boom = () => {
+    throw new Error("sibling");
+  };
+  return cancelsUnreadStream(
+    (stream) => (
+      <div>
+        <Boom />
+        {new Set([stream])}
+      </div>
+    ),
+    "sibling",
+  );
+});
+
+test("unread stream as a Map key or value is cancelled when an earlier sibling throws", async () => {
+  const Boom = () => {
+    throw new Error("sibling");
+  };
+  await cancelsUnreadStream(
+    (stream) => (
+      <div>
+        <Boom />
+        {new Map([[stream, "x"]]) as any}
+      </div>
+    ),
+    "sibling",
+  );
+  await cancelsUnreadStream(
+    (stream) => (
+      <div>
+        <Boom />
+        {new Map([["x", stream]]) as any}
+      </div>
+    ),
+    "sibling",
+  );
+});
+
+test("unread stream in an array that contains itself is cancelled when an earlier sibling throws", () => {
+  const Boom = () => {
+    throw new Error("sibling");
+  };
+  return cancelsUnreadStream((stream) => {
+    const items: any[] = [stream];
+    items.push(items);
+    return (
+      <div>
+        <Boom />
+        {items}
+      </div>
+    );
+  }, "sibling");
+});
+
 test("unread stream is cancelled when an earlier async sibling fails", () => {
   const Boom = async () => {
     await delay(1);
