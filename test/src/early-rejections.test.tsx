@@ -45,6 +45,52 @@ test("promise in a Set child rejects while an earlier sibling is pending", () =>
   );
 });
 
+test("promise in a Map child rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        {new Map([["key", rejectAfter(5, "map value")]]) as any}
+      </div>
+    ),
+    "map value",
+  );
+});
+
+test("promise as a Map key rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        {new Map([[rejectAfter(5, "map key"), "value"]]) as any}
+      </div>
+    ),
+    "map key",
+  );
+});
+
+test("promise in an array in a Map child rejects while an earlier sibling is pending", () => {
+  const Slow = () => delay(30, "a");
+  return rejects(
+    () => (
+      <div>
+        <Slow />
+        {new Map([["key", [delay(1, "b"), rejectAfter(5, "array in map")]]]) as any}
+      </div>
+    ),
+    "array in map",
+  );
+});
+
+test("Maps that contain themselves are fine", () => {
+  const map = new Map<unknown, unknown>();
+  map.set("a", map);
+  const First = ({ map }: { map: Map<unknown, unknown> }) => [...map.keys()][0] as string;
+  return equal(<First map={map} />, `a`);
+});
+
 test("promise child of a component rejects while an earlier sibling is pending", () => {
   const Slow = () => delay(30, "a");
   const Wrap = ({ children }: { children: JSX.Children }) => <p>{children}</p>;
