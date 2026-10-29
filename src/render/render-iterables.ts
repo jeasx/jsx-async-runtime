@@ -5,7 +5,7 @@ import { isPromise } from "../utils/is-promise.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
 import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
-import { renderNested } from "./render-element.js";
+import { renderAwaitable, renderNested } from "./render-element.js";
 
 /** The progress of reading a lazy iterator or an async iterable. */
 type IteratorState = ByteDecoding & {
@@ -116,11 +116,7 @@ function renderNextItem(
   if (!takeItem(state, result)) {
     return;
   }
-  const item = state.item;
-  if (isPromise(item)) {
-    return flushAndAwait(writer, item).then(($item) => renderNested.call(this, $item, writer));
-  }
-  return renderNested.call(this, item, writer);
+  return renderAwaitable.call(this, state.item, writer);
 }
 
 /**
