@@ -1,4 +1,4 @@
-import type { Writer } from "./render-element.js";
+import type { Writer } from "./writer.js";
 
 /**
  * The writer of the stream that a context is rendered to, set by `jsxToStream` while rendering.
