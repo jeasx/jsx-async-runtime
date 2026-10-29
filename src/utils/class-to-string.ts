@@ -1,6 +1,6 @@
-import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { handleRejection } from "./handle-rejection.js";
 import { isPromise } from "./is-promise.js";
+import { rendersNothing } from "./renders-nothing.js";
 
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
 // see attributes-to-string.ts.
@@ -23,7 +23,7 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
     }
   };
   const walk = (value: unknown) => {
-    if (!value || value === true || isJsxNode(value)) {
+    if (!value || value === true || rendersNothing(value)) {
       return;
     }
     if (Array.isArray(value)) {
@@ -48,8 +48,7 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
           add(key);
         }
       }
-    } else if (typeof value !== "function" && typeof value !== "symbol") {
-      // Like attributes, functions and Symbols render nothing instead of their source or `Symbol(...)`.
+    } else {
       add(String(value));
     }
   };

@@ -5,6 +5,7 @@ import { decodeBytes } from "../utils/decode-bytes.js";
 import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
+import { rendersNothing } from "../utils/renders-nothing.js";
 import { styleToString } from "../utils/style-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
 
@@ -78,21 +79,10 @@ function attributeToString(key: string, value: any): string {
   if (value === true) {
     return key;
   }
-  if (
-    value === false ||
-    value === null ||
-    value === undefined ||
-    typeof value === "function" ||
-    typeof value === "symbol"
-  ) {
+  if (rendersNothing(value)) {
     return "";
   }
   if (typeof value === "object") {
-    // Elements and html() markup can't be attribute values, so they render nothing
-    // instead of their internal structure as JSON.
-    if (isJsxNode(value)) {
-      return "";
-    }
     if (key === "style") {
       // An array isn't a style object, so it renders nothing instead of `0: ...` for each item.
       if (Array.isArray(value)) {

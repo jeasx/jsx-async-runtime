@@ -1,7 +1,7 @@
-import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { handleRejection } from "./handle-rejection.js";
 import { hasOwnStringForm } from "./has-own-string-form.js";
 import { isPromise } from "./is-promise.js";
+import { rendersNothing } from "./renders-nothing.js";
 
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
 // see attributes-to-string.ts.
@@ -25,13 +25,8 @@ export function styleToString(obj: Record<string, unknown>): string {
       continue;
     }
     const value = obj[key];
-    if (
-      value === null ||
-      value === undefined ||
-      value === false ||
-      value === "" ||
-      isJsxNode(value)
-    ) {
+    // Like attributes, so e.g. a Symbol is skipped instead of throwing below.
+    if (value === "" || rendersNothing(value)) {
       continue;
     }
     if (isPromise(value)) {
@@ -39,14 +34,9 @@ export function styleToString(obj: Record<string, unknown>): string {
       handleRejection(value);
       continue;
     }
-    // Like attributes, functions and Symbols render nothing (a Symbol would throw below).
-    // Objects without their own string form, e.g. plain objects, are skipped too,
+    // Objects without their own string form, e.g. plain objects, are skipped,
     // and so are arrays: "a,b" is never a useful CSS value.
-    if (
-      typeof value === "function" ||
-      typeof value === "symbol" ||
-      (typeof value === "object" && (Array.isArray(value) || !hasOwnStringForm(value)))
-    ) {
+    if (typeof value === "object" && (Array.isArray(value) || !hasOwnStringForm(value))) {
       continue;
     }
     result += `${separator}${key}: ${value}`;
