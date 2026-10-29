@@ -28,18 +28,6 @@ export function createElement(
 }
 
 /**
- * Marks a string as raw markup, which is rendered without escaping,
- * e.g. `{html("<!DOCTYPE html>")}`. Never pass untrusted input.
- * Plain `{ html }` objects (e.g. from JSON.parse()) render nothing.
- */
-export function html(markup: string): JSX.Element {
-  // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
-  // An own `type` tells raw markup from elements, so an `html` key inherited
-  // from a polluted `Object.prototype` can't turn elements into raw markup.
-  return { [JSX_ASYNC_RUNTIME]: true, type: "html", html: markup } as unknown as JSX.Element;
-}
-
-/**
  * Creates the element and keeps the given props object without copying it,
  * since compiled JSX always creates a fresh object.
  */
@@ -63,6 +51,18 @@ export function jsx(tag: JSX.ElementType, props?: Props, _key?: unknown): JSX.El
     tag,
     props,
   } as unknown as JSX.Element;
+}
+
+/**
+ * Marks a string as raw markup, which is rendered without escaping,
+ * e.g. `{html("<!DOCTYPE html>")}`. Never pass untrusted input.
+ * Plain `{ html }` objects (e.g. from JSON.parse()) render nothing.
+ */
+export function html(markup: string): JSX.Element {
+  // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
+  // An own `type` tells raw markup from elements, so an `html` key inherited
+  // from a polluted `Object.prototype` can't turn elements into raw markup.
+  return { [JSX_ASYNC_RUNTIME]: true, type: "html", html: markup } as unknown as JSX.Element;
 }
 
 export const jsxs = jsx;
