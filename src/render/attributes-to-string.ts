@@ -9,21 +9,6 @@ import { rendersNothing } from "../utils/renders-nothing.js";
 import { styleToString } from "../utils/style-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
 
-// An attribute name must not be empty and
-// must not contain characters that break the name.
-const isValidAttributeName = createNameValidator(/^[^\s"'<>/=&\x00-\x1f\x7f-\x9f]+$/);
-
-// Skips keys inherited from a polluted `Object.prototype` (e.g. by a naive deep merge
-// of a request body elsewhere in the app), so they can't add attributes like `onmouseover`.
-// A module-local `hasOwnProperty.call()` keeps V8's fast path for `for...in` loops,
-// which `Object.hasOwn()` or an imported helper lose (about 7% slower in the benchmark).
-const hasOwnProperty = Object.prototype.hasOwnProperty;
-
-// Props that are never rendered (children, key, invalid names) are skipped, and never awaited.
-function isAttribute(key: string): boolean {
-  return key !== "children" && key !== "key" && isValidAttributeName(key);
-}
-
 /**
  * Renders the attributes of a tag. Returns a promise only when an attribute value is a promise:
  * then all promise values are awaited in parallel and rendered like their resolved values.
@@ -44,6 +29,21 @@ export function attributesToString(props: Record<string, unknown>): string | Pro
     }
   }
   return result;
+}
+
+// Skips keys inherited from a polluted `Object.prototype` (e.g. by a naive deep merge
+// of a request body elsewhere in the app), so they can't add attributes like `onmouseover`.
+// A module-local `hasOwnProperty.call()` keeps V8's fast path for `for...in` loops,
+// which `Object.hasOwn()` or an imported helper lose (about 7% slower in the benchmark).
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
+// An attribute name must not be empty and
+// must not contain characters that break the name.
+const isValidAttributeName = createNameValidator(/^[^\s"'<>/=&\x00-\x1f\x7f-\x9f]+$/);
+
+// Props that are never rendered (children, key, invalid names) are skipped, and never awaited.
+function isAttribute(key: string): boolean {
+  return key !== "children" && key !== "key" && isValidAttributeName(key);
 }
 
 /**
