@@ -1,8 +1,6 @@
 import { handleRejection } from "../utils/handle-rejection.js";
 import { JSX_ASYNC_RUNTIME } from "./is-jsx-node.js";
 
-type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
-
 // A function child, e.g. a render prop: `<Loader>{(data) => <p>{data}</p>}</Loader>`.
 type RenderProp = (...args: any[]) => unknown;
 type Child = JSX.Children | RenderProp;
@@ -13,7 +11,11 @@ type Props = {
 };
 
 // `props` may be `null`, like in React, e.g. `createElement(Fragment, null, a, b)`.
-export function createElement(tag: Tag, props?: Props | null, ...children: Child[]): JSX.Element {
+export function createElement(
+  tag: JSX.ElementType,
+  props?: Props | null,
+  ...children: Child[]
+): JSX.Element {
   // Copy props, so the caller's object is never changed.
   const $props = { ...props };
   if (children.length) {
@@ -42,7 +44,7 @@ export function html(markup: string): JSX.Element {
  * Creates the element and keeps the given props object without copying it,
  * since compiled JSX always creates a fresh object.
  */
-export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
+export function jsx(tag: JSX.ElementType, props?: Props, _key?: unknown): JSX.Element {
   props ??= {};
 
   // Children are passed to components as written, like in React and as TypeScript types them:
