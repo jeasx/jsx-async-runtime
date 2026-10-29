@@ -1,47 +1,11 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
+import { decodeItem, finishDecoding, type ByteDecoding } from "../utils/decode-bytes.js";
 import { handleRejection } from "../utils/handle-rejection.js";
-import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
 import { flushAndAwait, Writer } from "../utils/writer.js";
 import { renderNested } from "./render-element.js";
-
-/**
- * Decodes the byte items of an iterator or async iterable (e.g. the chunks of a `fetch()` body)
- * as UTF-8 text. One decoder for consecutive byte items, so a character split between two of them
- * is decoded correctly. Created at the first byte item, so other iterators need none.
- */
-type ByteDecoding = {
-  decoder: TextDecoder | undefined;
-};
-
-/**
- * Returns what to render for the next item: bytes are decoded as text,
- * and the text left in the decoder by the bytes before the item comes first.
- */
-function decodeItem(state: ByteDecoding, item: JSX.Element): JSX.Element {
-  if (isByteArray(item)) {
-    state.decoder ??= new TextDecoder();
-    return state.decoder.decode(item, { stream: true });
-  }
-  if (state.decoder) {
-    const rest = state.decoder.decode();
-    state.decoder = undefined;
-    return [rest, item];
-  }
-  return item;
-}
-
-/**
- * Returns the text left in the decoder once the items ended, or `""`.
- * Bytes of a character cut off at the end render as the replacement character "�".
- */
-function finishDecoding(state: ByteDecoding): string {
-  const rest = state.decoder?.decode() ?? "";
-  state.decoder = undefined;
-  return rest;
-}
 
 /** The progress of reading a lazy iterator or an async iterable. */
 type IteratorState = ByteDecoding & {

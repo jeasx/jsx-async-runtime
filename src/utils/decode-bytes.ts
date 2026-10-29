@@ -1,3 +1,5 @@
+import { isByteArray } from "./is-byte-array.js";
+
 // Used without the `stream` option, it keeps no state between calls, so one instance is shared.
 const textDecoder = new TextDecoder();
 
@@ -8,4 +10,63 @@ const textDecoder = new TextDecoder();
  */
 export function decodeBytes(bytes: Uint8Array): string {
   return textDecoder.decode(bytes);
+}
+
+/**
+ * Checks if the child at `index` and the one after it are both bytes,
+ * e.g. chunks collected from a stream or yielded by a generator.
+ */
+export function isByteRun(children: JSX.Element[], index: number): boolean {
+  return isByteArray(children[index]) && isByteArray(children[index + 1]);
+}
+
+/**
+ * Decodes the bytes at `index` together with the bytes that follow it as one text,
+ * so a character split between two of them is decoded correctly, like in an async iterable.
+ * Returns the text and the index of the last bytes it decoded.
+ */
+export function decodeByteRun(children: JSX.Element[], index: number): [string, number] {
+  const decoder = new TextDecoder();
+  let text = "";
+  for (; index < children.length && isByteArray(children[index]); index++) {
+    text += decoder.decode(children[index] as Uint8Array, { stream: true });
+  }
+  // Bytes of a character cut off at the end render as the replacement character "�".
+  return [text + decoder.decode(), index - 1];
+}
+
+/**
+ * Decodes the byte items of an iterator or async iterable (e.g. the chunks of a `fetch()` body)
+ * as UTF-8 text. One decoder for consecutive byte items, so a character split between two of them
+ * is decoded correctly. Created at the first byte item, so other iterators need none.
+ */
+export type ByteDecoding = {
+  decoder: TextDecoder | undefined;
+};
+
+/**
+ * Returns what to render for the next item: bytes are decoded as text,
+ * and the text left in the decoder by the bytes before the item comes first.
+ */
+export function decodeItem(state: ByteDecoding, item: JSX.Element): JSX.Element {
+  if (isByteArray(item)) {
+    state.decoder ??= new TextDecoder();
+    return state.decoder.decode(item, { stream: true });
+  }
+  if (state.decoder) {
+    const rest = state.decoder.decode();
+    state.decoder = undefined;
+    return [rest, item];
+  }
+  return item;
+}
+
+/**
+ * Returns the text left in the decoder once the items ended, or `""`.
+ * Bytes of a character cut off at the end render as the replacement character "�".
+ */
+export function finishDecoding(state: ByteDecoding): string {
+  const rest = state.decoder?.decode() ?? "";
+  state.decoder = undefined;
+  return rest;
 }

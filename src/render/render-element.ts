@@ -1,7 +1,7 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
-import { decodeBytes } from "../utils/decode-bytes.js";
+import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
@@ -299,29 +299,6 @@ async function renderChildrenAsync(
     cancelUnreadStreams(children, error, index);
     throw error;
   }
-}
-
-/**
- * Checks if the child at `index` and the one after it are both bytes,
- * e.g. chunks collected from a stream or yielded by a generator.
- */
-function isByteRun(children: JSX.Element[], index: number): boolean {
-  return isByteArray(children[index]) && isByteArray(children[index + 1]);
-}
-
-/**
- * Decodes the bytes at `index` together with the bytes that follow it as one text,
- * so a character split between two of them is decoded correctly, like in an async iterable.
- * Returns the text and the index of the last bytes it decoded.
- */
-function decodeByteRun(children: JSX.Element[], index: number): [string, number] {
-  const decoder = new TextDecoder();
-  let text = "";
-  for (; index < children.length && isByteArray(children[index]); index++) {
-    text += decoder.decode(children[index] as Uint8Array, { stream: true });
-  }
-  // Bytes of a character cut off at the end render as the replacement character "�".
-  return [text + decoder.decode(), index - 1];
 }
 
 /**
