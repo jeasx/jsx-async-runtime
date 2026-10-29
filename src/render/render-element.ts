@@ -89,7 +89,8 @@ export function renderElement(
 
   // Bytes, e.g. a `Buffer` from `readFile()`, render as UTF-8 text, escaped like a string.
   if (isByteArray(jsxElement)) {
-    return renderElement.call(this, decodeBytes(jsxElement), writer);
+    writer.buffer += escapeHTML(decodeBytes(jsxElement));
+    return;
   }
 
   // Other iterables, e.g. a `Set` or a generator returned by a component.
@@ -108,7 +109,7 @@ export function renderElement(
     // Objects with their own string form (e.g. `Date`, `URL`, `Error`) render it, escaped like text.
     // Plain objects render nothing instead of "[object Object]".
     if (hasOwnStringForm(jsxElement)) {
-      return renderElement.call(this, String(jsxElement), writer);
+      writer.buffer += escapeHTML(String(jsxElement));
     }
     return;
   }
