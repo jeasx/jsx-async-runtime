@@ -4,7 +4,7 @@ import { handleRejection } from "../utils/handle-rejection.js";
 import { isPromise } from "../utils/is-promise.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
-import { flushAndAwait, type Writer } from "../utils/writer.js";
+import { flushAndAwait, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { renderNested } from "./render-element.js";
 
 /** The progress of reading a lazy iterator or an async iterable. */
@@ -80,9 +80,7 @@ async function renderIteratorAsync(
     await pendingItem;
     while (!state.done) {
       // Don't read more items once the stream reader is gone.
-      if (writer.cancelled) {
-        throw new Error("Stream cancelled");
-      }
+      throwIfCancelled(writer);
       const pending = renderNextItem.call(this, iterator, state, writer);
       if (isPromise(pending)) {
         await pending;
@@ -167,9 +165,7 @@ export async function renderAsyncIterable(
   try {
     while (!state.done) {
       // Don't pull more items once the stream reader is gone.
-      if (writer.cancelled) {
-        throw new Error("Stream cancelled");
-      }
+      throwIfCancelled(writer);
       // When the stream reader cancels, the wait for a slow or endless source (e.g. a live feed)
       // ends at once, and the source is stopped below.
       const result = await flushAndAwait(writer, next());

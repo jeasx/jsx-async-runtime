@@ -8,7 +8,7 @@ import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
-import { flushAndAwait, type Writer } from "../utils/writer.js";
+import { flushAndAwait, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
 import { renderAsyncIterable, renderIterator } from "./render-iterables.js";
@@ -161,9 +161,7 @@ export function renderElement(
 
   if (typeof jsxElement.tag === "function") {
     // Don't call more components once the stream reader is gone.
-    if (writer.cancelled) {
-      throw new Error("Stream cancelled");
-    }
+    throwIfCancelled(writer);
     const returned = jsxElement.tag.call(this, jsxElement.props);
     // If rendering what the component returned fails (e.g. a layout that throws),
     // cancel the streams in it that rendering didn't get to.

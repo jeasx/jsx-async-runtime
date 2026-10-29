@@ -32,6 +32,22 @@ export type Writer = {
 };
 
 /**
+ * The error that ends rendering when the stream reader cancels.
+ */
+export function cancelledError(): Error {
+  return new Error("Stream cancelled");
+}
+
+/**
+ * Throws when the stream reader cancelled, so rendering stops before doing more work.
+ */
+export function throwIfCancelled(writer: Pick<Writer, "cancelled">): void {
+  if (writer.cancelled) {
+    throw cancelledError();
+  }
+}
+
+/**
  * Sends the markup rendered so far, then waits for `value`
  * and (when the stream reader is behind) for the reader to catch up.
  * Both are awaited together, so a rejection of `value` is handled right away.

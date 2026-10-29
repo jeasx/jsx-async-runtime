@@ -1,7 +1,7 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
-import { streamWriters, type Writer } from "../utils/writer.js";
+import { cancelledError, streamWriters, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
 
 // Characters per chunk and queued in the stream before rendering pauses.
@@ -44,9 +44,7 @@ export function jsxToStream(
   const source: UnderlyingDefaultSource<string> = {
     start(controller) {
       writer.flush = () => {
-        if (writer.cancelled) {
-          throw new Error("Stream cancelled");
-        }
+        throwIfCancelled(writer);
         if (writer.buffer !== "") {
           controller.enqueue(writer.buffer);
           writer.buffer = "";
@@ -109,7 +107,7 @@ export function jsxToStream(
       // Let paused rendering continue, so it stops at the next component.
       wakeUp();
       // End the waits for promises and async iterables, so rendering stops right away.
-      const error = new Error("Stream cancelled");
+      const error = cancelledError();
       for (const reject of waits) {
         reject(error);
       }

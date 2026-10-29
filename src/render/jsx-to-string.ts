@@ -1,7 +1,7 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
-import { streamWriters, type Writer } from "../utils/writer.js";
+import { streamWriters, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
 
 /**
@@ -57,9 +57,7 @@ function createWriter(stream: Writer | undefined): Writer {
     },
     waits: stream.waits,
     flush() {
-      if (stream.cancelled) {
-        throw new Error("Stream cancelled");
-      }
+      throwIfCancelled(stream);
     },
   };
 }
