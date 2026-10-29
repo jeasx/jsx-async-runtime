@@ -3,7 +3,7 @@ import type { Html, Tag } from "./jsx.types.js";
 // Marks elements and raw markup created by jsx(), createElement() and html().
 // JSON can't contain Symbols, so parsed data (e.g. a request body) can never pass as either.
 // `Symbol.for` makes the marker work even when two copies of this package are loaded.
-export const JSX_NODE_MARKER = Symbol.for("jsx-async-runtime.node");
+export const JSX_ASYNC_RUNTIME = Symbol.for("jsx-async-runtime");
 
 /**
  * Checks for nodes created by JSX, createElement() or html(), and copies of them.
@@ -17,6 +17,6 @@ export function isJsxNode(value: unknown): value is Tag | Html {
   return (
     value !== null &&
     typeof value === "object" &&
-    (value as Record<symbol, unknown>)[JSX_NODE_MARKER] === true
+    (value as Record<symbol, unknown>)[JSX_ASYNC_RUNTIME] === true
   );
 }

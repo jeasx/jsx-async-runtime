@@ -1,5 +1,5 @@
 import { handleRejection } from "../utils/handle-rejection.js";
-import { JSX_NODE_MARKER } from "./is-jsx-node.js";
+import { JSX_ASYNC_RUNTIME } from "./is-jsx-node.js";
 
 type Tag = string | ((props: any) => JSX.Element) | ((props: any) => Promise<JSX.Element>);
 
@@ -35,7 +35,7 @@ export function html(markup: string): JSX.Element {
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
   // An own `type` tells raw markup from elements, so an `html` key inherited
   // from a polluted `Object.prototype` can't turn elements into raw markup.
-  return { [JSX_NODE_MARKER]: true, type: "html", html: markup } as unknown as JSX.Element;
+  return { [JSX_ASYNC_RUNTIME]: true, type: "html", html: markup } as unknown as JSX.Element;
 }
 
 /**
@@ -57,7 +57,7 @@ export function jsx(tag: Tag, props?: Props, _key?: unknown): JSX.Element {
 
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
   return {
-    [JSX_NODE_MARKER]: true,
+    [JSX_ASYNC_RUNTIME]: true,
     type: "tag",
     tag,
     props,
