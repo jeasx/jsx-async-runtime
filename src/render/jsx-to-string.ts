@@ -46,7 +46,8 @@ export function jsxToString(
  */
 function createWriter(stream: Writer | undefined): Writer {
   if (!stream) {
-    return { buffer: "", chunkSize: Infinity, cancelled: false, flush() {} };
+    // `waits` is set, so it isn't inherited from a polluted `Object.prototype`.
+    return { buffer: "", chunkSize: Infinity, cancelled: false, waits: undefined, flush() {} };
   }
   return {
     buffer: "",

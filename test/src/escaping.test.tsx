@@ -232,3 +232,18 @@ test("a polluted Object.prototype.jsxToString doesn't break rendering", async ()
     delete (Object.prototype as any).jsxToString;
   }
 });
+
+test("a polluted Object.prototype.waits doesn't break async rendering", async () => {
+  // E.g. from a request body like `{"__proto__": {"waits": {}}}`.
+  (Object.prototype as any).waits = {};
+  try {
+    await equal(
+      <div>
+        <p>{Promise.resolve("text")}</p>
+      </div>,
+      `<div><p>text</p></div>`,
+    );
+  } finally {
+    delete (Object.prototype as any).waits;
+  }
+});

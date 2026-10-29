@@ -28,7 +28,7 @@ export type Writer = {
    * Each wait adds its reject function and removes it once settled.
    * Shared with nested `jsxToString` writers, so they stop too.
    */
-  waits?: Set<(error: Error) => void>;
+  waits: Set<(error: Error) => void> | undefined;
   flush(): void | Promise<void>;
 };
 
