@@ -311,14 +311,14 @@ Things to keep in mind:
 
 ## Customizing rendering
 
-Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also children as written, like strings, numbers, (nested) arrays, `null` or `false`, so read its properties with optional chaining (`jsxElement?.tag`). It returns a string or a promise of one; `""`, `null` and `undefined` render nothing. Call the original `jsxToString` to fall back to the default rendering:
+Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also children as written, like strings, numbers, (nested) arrays, `null` or `false`. Check for elements with `isJsxNode` before reading `tag` or `props`; in TypeScript, it also narrows the type, so `jsxElement.tag` type-checks. It returns a string or a promise of one; `""`, `null` and `undefined` render nothing. Call the original `jsxToString` to fall back to the default rendering:
 
 ```jsx
-import { jsxToString } from "jsx-async-runtime";
+import { isJsxNode, jsxToString } from "jsx-async-runtime";
 
 const context = {
   jsxToString(jsxElement) {
-    if (jsxElement?.tag === "script") {
+    if (isJsxNode(jsxElement) && jsxElement.tag === "script") {
       return ""; // drop all scripts
     }
     return jsxToString.call(this, jsxElement);
@@ -338,6 +338,7 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 | `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits. |
 | `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                 |
 | `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'`. Other values are converted to a string first. |
+| `isJsxNode(value)`                       | Checks for an element or `html()` markup; look-alikes from JSON don't count.    |
 | `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                        |
 | `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.   |
 

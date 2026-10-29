@@ -14,10 +14,14 @@ type Props = {
   children?: JSX.Children;
 };
 
-type Html = {
+// `tag` and `props` never exist on raw markup. Declared anyway, so code that got
+// a `Tag | Html` from isJsxNode() can read `node.tag` without checking `node.type` first.
+export type Html = {
   [NODE]: true;
   type: "html";
   html: string;
+  tag?: never;
+  props?: never;
 };
 
 declare global {
