@@ -69,6 +69,12 @@ test("bigint in json attribute is encoded as string", () =>
     `<div data-x="{&quot;id&quot;:&quot;9007199254740993&quot;,&quot;list&quot;:[&quot;1&quot;]}"></div>`,
   ));
 
+test("json attribute without a JSON form renders nothing", () =>
+  equal(
+    <div data-x={{ toJSON: () => undefined }} data-y={{ toJSON: () => "ok" }} />,
+    `<div data-y="&quot;ok&quot;"></div>`,
+  ));
+
 test("escape attribute", () =>
   equal(
     <div data-props={`"><script>alert("help");</script>&amp;`}></div>,

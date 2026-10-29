@@ -100,7 +100,10 @@ function attributeToString(key: string, value: any): string {
     }
     const prototype = Object.getPrototypeOf(value);
     if (!prototype || prototype === Object.prototype || Array.isArray(value)) {
-      return `${key}="${escapeHTML(JSON.stringify(value, valueToStringTransformer))}"`;
+      const json = JSON.stringify(value, valueToStringTransformer);
+      // A `toJSON()` that returns `undefined` (or a function) gives no JSON, so render nothing
+      // instead of `key="undefined"`.
+      return json === undefined ? "" : `${key}="${escapeHTML(json)}"`;
     }
   }
   return `${key}="${escapeHTML(String(value))}"`;
