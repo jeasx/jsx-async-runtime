@@ -57,7 +57,12 @@ export function jsxToStream(this: any, jsxElement: JSX.Element): ReadableStream<
         if (writer.cancelled) {
           return;
         }
-        writer.flush();
+        // Enqueue the rest directly instead of calling flush(): nothing renders after it,
+        // so there is no need to wait for the reader to catch up.
+        if (writer.buffer !== "") {
+          controller.enqueue(writer.buffer);
+          writer.buffer = "";
+        }
         controller.close();
       };
       const fail = (error: unknown) => {
