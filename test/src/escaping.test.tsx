@@ -176,6 +176,23 @@ test("copied elements are still rendered", async () => {
   );
 });
 
+test("a polluted Object.prototype adds no children", async () => {
+  // E.g. from a request body like `{"__proto__": {"children": "pwned"}}`.
+  (Object.prototype as any).children = "pwned";
+  try {
+    await equal(
+      <div>
+        <p />
+        <br />
+        <></>
+      </div>,
+      `<div><p></p><br></div>`,
+    );
+  } finally {
+    delete (Object.prototype as any).children;
+  }
+});
+
 test("a polluted Object.prototype adds no attributes and no raw markup", async () => {
   // Simulates a prototype pollution bug elsewhere in the app, e.g. a naive deep merge
   // of a request body like `{"__proto__": {"onmouseover": "alert(1)"}}`.

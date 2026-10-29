@@ -57,6 +57,9 @@ const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x
 // it keeps no state between calls, so one instance is shared.
 const textDecoder = new TextDecoder();
 
+// Skips keys inherited from a polluted `Object.prototype`.
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 /**
  * Renders a JSX element into the writer.
  * Runs synchronously as long as possible and only returns a promise
@@ -135,7 +138,10 @@ export function renderElement(
   if (typeof jsxElement.tag === "string") {
     const tag = jsxElement.tag;
     // Children are passed as written: none, a single child (e.g. `0` or a `Set`) or an array.
-    const $children = jsxElement.props.children;
+    // Own children only, so `children` from a polluted `Object.prototype` isn't rendered
+    // in every element without children.
+    const props = jsxElement.props;
+    const $children = hasOwnProperty.call(props, "children") ? props.children : undefined;
     const children: JSX.Element[] =
       $children == null ? [] : Array.isArray($children) ? $children : [$children as JSX.Element];
     if (tag === "") {
