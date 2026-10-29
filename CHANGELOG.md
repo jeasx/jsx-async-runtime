@@ -6,8 +6,7 @@ This release adds streaming and makes rendering faster, safer and more predictab
 
 - **Faster:** #jsxToString is about 2x faster than in 2.3.0.
 - **Streaming:** The new #jsxToStream sends markup to the browser while async components are still loading.
-- **Raw HTML is opt-in:** Raw markup now needs #html, the `jsxEscapeHTML` option was removed, and plain objects that only look like elements or `{ html }` render nothing. User data can no longer inject markup.
-- **More child types:** Promises, iterables, async iterables (e.g. async generators or a `ReadableStream`), bytes and render props can now be used as children. Before, most of them rendered nothing.
+- **More child types:** Promises, iterables, async iterables (e.g. async generators or a `ReadableStream`), bytes and render props can now be used as children.
 
 Read the breaking changes below before upgrading.
 
