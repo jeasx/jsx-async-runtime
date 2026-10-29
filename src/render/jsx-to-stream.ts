@@ -24,10 +24,14 @@ export function jsxToStream(
 ): ReadableStream<string> {
   const context = resolveContext(this, "jsxToStream", jsxToStream);
 
+  let signalCancel!: () => void;
   const writer: Writer = {
     buffer: "",
     chunkSize: CHUNK_SIZE,
     cancelled: false,
+    onCancel: new Promise<void>((resolve) => {
+      signalCancel = resolve;
+    }),
     flush() {},
   };
 
@@ -106,6 +110,7 @@ export function jsxToStream(
       writer.buffer = "";
       // Let paused rendering continue, so it stops at the next component.
       wakeUp();
+      signalCancel();
     },
   };
 

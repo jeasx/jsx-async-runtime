@@ -227,6 +227,53 @@ test("stream cancel stops an async iterable", async () => {
   assert.ok(pulled <= afterCancel + 1, `pulled ${pulled - afterCancel} items after cancel`);
 });
 
+test("stream cancel stops an async iterable that is waiting for its next item", async () => {
+  // A source that never sends another item, e.g. a live feed that went quiet.
+  // Unlike an async generator, its return() runs right away, so it shows when the render stops.
+  let stopped = false;
+  let first = true;
+  const source: AsyncIterable<string> = {
+    [Symbol.asyncIterator]: () => ({
+      next: () =>
+        first
+          ? ((first = false), Promise.resolve({ done: false, value: "a" }))
+          : new Promise<IteratorResult<string>>(() => {}),
+      return: async () => {
+        stopped = true;
+        return { done: true, value: undefined };
+      },
+    }),
+  };
+  const reader = jsxToStream(<div>{source}</div>).getReader();
+  let received = "";
+  while (!received.includes("a")) {
+    received += (await reader.read()).value;
+  }
+  await reader.cancel();
+  await delay(10);
+  assert.ok(stopped, "source was not stopped");
+});
+
+test("an async iterable reached after the stream was cancelled leaves no unhandled rejection", async () => {
+  async function* items() {
+    yield "a";
+  }
+  let unhandled: unknown;
+  const onUnhandled = (error: unknown) => (unhandled = error);
+  process.on("unhandledRejection", onUnhandled);
+  try {
+    // The promise child resolves after the cancel, so the iterable is rendered
+    // with the stream already cancelled and never asked for an item.
+    const reader = jsxToStream(<div>{delay(10).then(() => items())}</div>).getReader();
+    await reader.read();
+    await reader.cancel();
+    await delay(30);
+  } finally {
+    process.off("unhandledRejection", onUnhandled);
+  }
+  assert.equal(unhandled, undefined);
+});
+
 test("stream cancel doesn't leave an override promise unhandled", async () => {
   const Slow = () => delay(20, "slow");
   const context = {

@@ -22,6 +22,8 @@ export type Writer = {
   chunkSize: number;
   /** Set when the stream reader cancels; rendering stops at the next component. */
   cancelled: boolean;
+  /** Resolves when the stream reader cancels, so waits that can't be paused (e.g. for the next item of an async iterable) stop early. */
+  onCancel?: Promise<void>;
   flush(): void | Promise<void>;
 };
 
@@ -343,6 +345,14 @@ async function renderAsyncIterable(
       throw error;
     }
   };
+  // Stops waiting for the next item when the stream reader cancels, so a slow or endless source
+  // (e.g. a live feed) doesn't keep the render going. The source is then stopped below.
+  const onCancel = writer.onCancel?.then((): never => {
+    throw new Error("Stream cancelled");
+  });
+  // A cancel after the source ended has no listener, so mark it handled.
+  handleRejection(onCancel);
+  const nextOrCancel = onCancel ? () => Promise.race([next(), onCancel]) : next;
   // The item being rendered, so its unread streams can be cancelled when it fails.
   let item: JSX.Element;
   // Decodes byte items (e.g. the chunks of a `fetch()` body) as UTF-8 text. One decoder
@@ -354,7 +364,7 @@ async function renderAsyncIterable(
       if (writer.cancelled) {
         throw new Error("Stream cancelled");
       }
-      const result = await flushAndAwait(writer, next());
+      const result = await flushAndAwait(writer, nextOrCancel());
       if (result.done) {
         // Bytes of a character cut off at the end render as the replacement character "\uFFFD".
         const rest = decoder?.decode();
