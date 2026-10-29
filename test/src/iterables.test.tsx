@@ -136,7 +136,9 @@ test("iterator without Symbol.iterator of its own is read item by item", () => {
   const iterable = {
     [Symbol.iterator]() {
       let i = 0;
-      return { next: () => (i < 2 ? { done: false, value: `${i++}` } : { done: true, value: undefined }) };
+      return {
+        next: () => (i < 2 ? { done: false, value: `${i++}` } : { done: true, value: undefined }),
+      };
     },
   };
   return equal(<p>{iterable as any}</p>, `<p>01</p>`);

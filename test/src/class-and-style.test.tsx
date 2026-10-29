@@ -75,7 +75,14 @@ test("class array skips elements and html()", () =>
 test("class skips promise names and conditions", () =>
   equal(
     <div
-      class={["a", Promise.resolve("b"), [Promise.resolve("c")], { d: Promise.resolve(true), e: true }] as any}
+      class={
+        [
+          "a",
+          Promise.resolve("b"),
+          [Promise.resolve("c")],
+          { d: Promise.resolve(true), e: true },
+        ] as any
+      }
     />,
     `<div class="a e"></div>`,
   ));
@@ -100,7 +107,15 @@ test("whole class value as promise is still awaited", () =>
 
 test("style skips promise values, even if they reject", async () => {
   await equal(
-    () => <div style={{ color: Promise.resolve("red") as any, margin: rejectAfter(1, "style") as any, padding: 0 }} />,
+    () => (
+      <div
+        style={{
+          color: Promise.resolve("red") as any,
+          margin: rejectAfter(1, "style") as any,
+          padding: 0,
+        }}
+      />
+    ),
     `<div style="padding: 0"></div>`,
   );
   await delay(10);
@@ -108,7 +123,9 @@ test("style skips promise values, even if they reject", async () => {
 
 test("style from a promise skips nested promise values", async () => {
   await equal(
-    () => <div style={Promise.resolve({ color: rejectAfter(1, "late style"), padding: 0 }) as any} />,
+    () => (
+      <div style={Promise.resolve({ color: rejectAfter(1, "late style"), padding: 0 }) as any} />
+    ),
     `<div style="padding: 0"></div>`,
   );
   await delay(10);
