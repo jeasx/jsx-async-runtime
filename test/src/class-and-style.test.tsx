@@ -161,3 +161,27 @@ test("style skips elements and html() values", () =>
     <div style={{ color: html("red") as any, margin: (<b />) as any, padding: 0 }} />,
     `<div style="padding: 0"></div>`,
   ));
+
+test("style skips functions and Symbols instead of throwing or rendering source", () =>
+  equal(
+    <div style={{ color: (() => "red") as any, margin: Symbol("x") as any, padding: 0 }} />,
+    `<div style="padding: 0"></div>`,
+  ));
+
+test("style skips plain objects and arrays, but renders objects with their own toString", () =>
+  equal(
+    <div
+      style={{
+        color: { a: 1 } as any,
+        margin: ["1px", "2px"] as any,
+        "background-image": new URL("https://example.com/a.png") as any,
+      }}
+    />,
+    `<div style="background-image: https://example.com/a.png"></div>`,
+  ));
+
+test("class skips functions and Symbols", () =>
+  equal(
+    <div class={["a", (() => "b") as any, Symbol("c") as any, ["d", Symbol("e") as any]]} />,
+    `<div class="a d"></div>`,
+  ));

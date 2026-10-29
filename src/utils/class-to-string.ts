@@ -10,7 +10,8 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
  * Joins class names from an array or an object of `name: condition` pairs.
  * Arrays may nest and contain such objects, e.g. `["a", ["b"], { c: cond }]`.
  * Booleans are skipped like in clsx, so `[isActive || "inactive"]` doesn't add a "true" class.
- * Elements and html() markup are skipped too, so their internal keys don't become class names.
+ * Elements and html() markup are skipped too, so their internal keys don't become class names,
+ * and so are functions and Symbols, like in attributes.
  * Promises are skipped as well, both as names and as conditions (unlike a promise attribute,
  * they aren't awaited), so `{ active: isActive() }` with an async `isActive` doesn't always add "active".
  */
@@ -47,7 +48,8 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
           add(key);
         }
       }
-    } else {
+    } else if (typeof value !== "function" && typeof value !== "symbol") {
+      // Like attributes, functions and Symbols render nothing instead of their source or `Symbol(...)`.
       add(String(value));
     }
   };
