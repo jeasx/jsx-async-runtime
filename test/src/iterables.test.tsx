@@ -2,6 +2,7 @@ import { jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { equal } from "./helpers/equal.js";
+import { rejects } from "./helpers/rejects.js";
 
 test("array value", () => equal([<b>a</b>, [<i>b</i>], "<c>"], `<b>a</b><i>b</i>&lt;c&gt;`));
 
@@ -85,4 +86,52 @@ test("component returning a generator", () => {
     </ul>,
     `<ul><li>a</li><li>b</li></ul>`,
   );
+});
+
+test("generator yielding bytes then a promise and text", () => {
+  function* items() {
+    yield Buffer.from([0x61, 0xc3]);
+    yield Buffer.from([0xbc]);
+    yield Promise.resolve(<b>b</b>);
+    yield "c";
+  }
+  return equal(() => <p>{items()}</p>, `<p>aü<b>b</b>c</p>`);
+});
+
+test("generator is stopped when an item fails", async () => {
+  let stopped = 0;
+  let read = 0;
+  function* items() {
+    try {
+      read++;
+      yield "a";
+      read++;
+      yield Promise.reject(new Error("item failed"));
+      read++;
+      yield "c";
+    } finally {
+      stopped++;
+    }
+  }
+  await rejects(() => <p>{items()}</p>, "item failed");
+  assert.strictEqual(stopped, 2);
+  assert.strictEqual(read, 4);
+});
+
+test("generator that throws fails the render", () => {
+  function* items() {
+    yield "a";
+    throw new Error("source failed");
+  }
+  return rejects(() => <p>{items()}</p>, "source failed");
+});
+
+test("iterator without Symbol.iterator of its own is read like an array", () => {
+  const iterable = {
+    [Symbol.iterator]() {
+      let i = 0;
+      return { next: () => (i < 2 ? { done: false, value: `${i++}` } : { done: true, value: undefined }) };
+    },
+  };
+  return equal(<p>{iterable as any}</p>, `<p>01</p>`);
 });

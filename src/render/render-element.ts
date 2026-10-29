@@ -65,6 +65,10 @@ const textDecoder = new TextDecoder();
 // Skips keys inherited from a polluted `Object.prototype`.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
+// Iterators over collections whose items already exist, so reading them up front costs no
+// extra work and lets early promise rejections in them be handled like in an array.
+const EAGER_ITERATORS = new Set(["Array Iterator", "Map Iterator", "Set Iterator"]);
+
 /**
  * Renders a JSX element into the writer.
  * Runs synchronously as long as possible and only returns a promise
@@ -111,7 +115,16 @@ export function renderElement(
 
   // Other iterables, e.g. a generator returned by a component.
   if (isIterable(jsxElement)) {
-    return renderChildren.call(this, Array.from(jsxElement), writer);
+    const iterator = jsxElement[Symbol.iterator]();
+    // Collections (e.g. a `Set` or `map.values()`) already hold their items, which may include
+    // promises that reject early, so they are rendered like an array. Lazy iterators
+    // (e.g. a generator or `iterator.map()`) are read item by item, so a long one streams
+    // without being held in memory, and an endless one can be stopped by a cancel.
+    const isCollection = (iterator as unknown) !== jsxElement;
+    if (isCollection || EAGER_ITERATORS.has((iterator as any)[Symbol.toStringTag])) {
+      return renderChildren.call(this, toArray(iterator), writer);
+    }
+    return renderIterator.call(this, iterator as Iterator<JSX.Element>, writer);
   }
 
   // Async iterables, e.g. an async generator component or a `ReadableStream`.
@@ -332,6 +345,154 @@ function decodeByteRun(children: JSX.Element[], index: number): [string, number]
   }
   // Bytes of a character cut off at the end render as the replacement character "�".
   return [text + decoder.decode(), index - 1];
+}
+
+/**
+ * Reads the rest of an iterator into an array.
+ * Works for iterators that aren't iterable themselves, unlike `Array.from()`.
+ */
+function toArray(iterator: Iterator<unknown>): JSX.Element[] {
+  const items: JSX.Element[] = [];
+  for (let result = iterator.next(); !result.done; result = iterator.next()) {
+    items.push(result.value as JSX.Element);
+  }
+  return items;
+}
+
+/** The progress of reading a lazy iterator, shared by its sync and async parts. */
+type IteratorState = {
+  /** Set once the iterator is used up. */
+  done: boolean;
+  /** Set when the source itself failed, so it isn't asked to stop. */
+  sourceFailed: boolean;
+  /** The item being rendered, so its unread streams can be cancelled when it fails. */
+  item: unknown;
+  /** Decodes byte items as UTF-8, so a character split between two of them is decoded correctly. */
+  decoder: TextDecoder | undefined;
+};
+
+/**
+ * Renders the items of a lazy iterator (e.g. a generator) in order, reading one item at a time.
+ * Stays sync until an item has to wait, then continues async. Large sync markup is flushed
+ * as it piles up, so `jsxToStream` sends it early and pauses the iterator while the reader is behind.
+ * When rendering fails or the stream is cancelled, the iterator is stopped like `for...of` does
+ * (e.g. a generator runs its `finally` block).
+ */
+function renderIterator(
+  this: any,
+  iterator: Iterator<JSX.Element>,
+  writer: Writer,
+): void | Promise<void> {
+  const state: IteratorState = {
+    done: false,
+    sourceFailed: false,
+    item: undefined,
+    decoder: undefined,
+  };
+  try {
+    while (!state.done) {
+      let pending = renderNextItem.call(this, iterator, state, writer);
+      if (!pending && writer.buffer.length >= writer.chunkSize) {
+        // Send large sync markup early; continue async if the reader is behind.
+        pending = writer.flush();
+      }
+      if (isPromise(pending)) {
+        return renderIteratorAsync.call(this, iterator, state, pending, writer);
+      }
+    }
+  } catch (error) {
+    stopIterator(iterator, state, error);
+    throw error;
+  }
+}
+
+/**
+ * Continues rendering the iterator once the current item (`pendingItem`) is done.
+ */
+async function renderIteratorAsync(
+  this: any,
+  iterator: Iterator<JSX.Element>,
+  state: IteratorState,
+  pendingItem: Promise<void>,
+  writer: Writer,
+): Promise<void> {
+  try {
+    await pendingItem;
+    while (!state.done) {
+      // Don't read more items once the stream reader is gone.
+      if (writer.cancelled) {
+        throw new Error("Stream cancelled");
+      }
+      const pending = renderNextItem.call(this, iterator, state, writer);
+      if (isPromise(pending)) {
+        await pending;
+      }
+      if (writer.buffer.length >= writer.chunkSize) {
+        await writer.flush();
+      }
+    }
+  } catch (error) {
+    stopIterator(iterator, state, error);
+    throw error;
+  }
+}
+
+/**
+ * Reads the next item of the iterator and renders it. Sets `state.done` at the end.
+ * Consecutive byte items are decoded as one text, like in an array or an async iterable.
+ */
+function renderNextItem(
+  this: any,
+  iterator: Iterator<JSX.Element>,
+  state: IteratorState,
+  writer: Writer,
+): void | Promise<void> {
+  let result: IteratorResult<JSX.Element>;
+  try {
+    result = iterator.next();
+  } catch (error) {
+    state.sourceFailed = true;
+    throw error;
+  }
+  let item: JSX.Element;
+  if (result.done) {
+    state.done = true;
+    // Bytes of a character cut off at the end render as the replacement character "�".
+    const rest = state.decoder?.decode();
+    state.decoder = undefined;
+    if (!rest) {
+      return;
+    }
+    item = rest;
+  } else {
+    item = result.value;
+    if (isByteArray(item)) {
+      state.decoder ??= new TextDecoder();
+      item = state.decoder.decode(item, { stream: true });
+    } else if (state.decoder) {
+      // The bytes ended, so the text left in the decoder comes before this item.
+      item = [state.decoder.decode(), item];
+      state.decoder = undefined;
+    }
+  }
+  state.item = item;
+  if (isPromise(item)) {
+    return flushAndAwait(writer, item).then(($item) => $renderElement.call(this, $item, writer));
+  }
+  return $renderElement.call(this, item, writer);
+}
+
+/**
+ * Cancels the unread streams of the failed item and stops the iterator, unless the iterator
+ * itself failed. Errors while stopping are ignored, so the original error wins.
+ */
+function stopIterator(iterator: Iterator<unknown>, state: IteratorState, error: unknown): void {
+  cancelUnreadStreams(state.item, error);
+  if (!state.sourceFailed) {
+    try {
+      iterator.return?.();
+    } catch {}
+  }
 }
 
 /**

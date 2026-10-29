@@ -471,3 +471,40 @@ test("stream of a long async iterable doesn't grow memory per item", async () =>
   const growth = heap.at(-1)! - heap[0]!;
   assert.ok(growth < 10_000_000, `heap grew by ${(growth / 1e6).toFixed(1)} MB`);
 });
+
+test("stream sends a long generator before reading all of it", async () => {
+  let read = 0;
+  function* rows() {
+    for (let i = 0; i < 100_000; i++) {
+      read++;
+      yield <li>{i}</li>;
+    }
+  }
+  const reader = jsxToStream(<ul>{rows()}</ul>).getReader();
+  const first = await reader.read();
+  assert.ok(first.value!.startsWith("<ul><li>0</li>"));
+  assert.ok(read < 10_000, `read ${read} items before the first chunk`);
+  await reader.cancel();
+});
+
+test("stream cancel stops an endless generator", async () => {
+  let read = 0;
+  let stopped = false;
+  function* items() {
+    try {
+      for (;;) {
+        read++;
+        yield "x".repeat(1000);
+      }
+    } finally {
+      stopped = true;
+    }
+  }
+  const reader = jsxToStream(<div>{items()}</div>).getReader();
+  await reader.read();
+  await reader.cancel();
+  const afterCancel = read;
+  await delay(20);
+  assert.ok(stopped, "generator was not stopped");
+  assert.ok(read <= afterCancel + 1, `read ${read - afterCancel} items after cancel`);
+});

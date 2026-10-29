@@ -92,7 +92,7 @@ console.log(await jsxToString(<Todos />));
 
 Promises passed as children or attribute values are awaited as well, e.g. `<div>{loadGreeting()}</div>` or `<img src={loadImageUrl()} />`. All promise attributes of a tag are awaited in parallel. The output order always matches the order in your JSX.
 
-Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well. Generators and other iterators are read when they are rendered and can be read only once, so render each one only once.
+Besides arrays, any other iterable can be used as children, e.g. a `Set`, a generator or `users.values().map((user) => <li>{user.name}</li>)`. Components may return them as well. Generators and other iterators are read when they are rendered and can be read only once, so render each one only once. They are read one item at a time, so `jsxToStream` sends a long generator as it goes instead of reading all of it first. If rendering fails or the stream reader cancels, a generator is stopped like a `for...of` loop does on `break`, so it runs its `finally` block.
 
 Bytes (a `Uint8Array` or `Buffer`) are rendered as UTF-8 text and escaped like any other string, so a file from `readFile()` or a `fetch()` body can be rendered directly, e.g. `<pre>{(await fetch(url)).body}</pre>`.
 
