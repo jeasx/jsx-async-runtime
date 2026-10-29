@@ -1,4 +1,5 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
+import type { Tag } from "../jsx/jsx.types.js";
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
@@ -41,6 +42,8 @@ const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x
 
 // Skips keys inherited from a polluted `Object.prototype`.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
+
+type Props = Tag["props"];
 
 // Iterators of the built-in collections (arrays, typed arrays, `Map` and `Set`), whose items
 // already exist, so reading them up front costs no extra work and lets early promise rejections
@@ -131,54 +134,11 @@ export function renderElement(
   }
 
   if (typeof jsxElement.tag === "string") {
-    const tag = jsxElement.tag;
-    // Children are passed as written: none, a single child (e.g. `0` or a `Set`) or an array.
-    // Own children only, so `children` from a polluted `Object.prototype` isn't rendered
-    // in every element without children.
-    const props = jsxElement.props;
-    const $children = hasOwnProperty.call(props, "children") ? props.children : undefined;
-    const children: JSX.Element[] =
-      $children == null ? [] : Array.isArray($children) ? $children : [$children as JSX.Element];
-    if (tag === "") {
-      return renderChildren.call(this, children, writer);
-    }
-    if (!isValidTagName(tag)) {
-      // The children are never rendered, so cancel their streams to not keep a connection open.
-      if (children.length) {
-        cancelUnreadStreams(children, new Error(`Children of <${tag}> are not rendered`));
-      }
-      return;
-    }
-    const attributes = attributesToString(jsxElement.props);
-    if (typeof attributes !== "string") {
-      // Promise attributes: send the markup so far while they load.
-      return flushAndAwait(writer, attributes).then(($attributes) =>
-        renderTag.call(this, tag, $attributes, children, writer),
-      );
-    }
-    return renderTag.call(this, tag, attributes, children, writer);
+    return renderTagElement.call(this, jsxElement.tag, jsxElement.props, writer);
   }
 
   if (typeof jsxElement.tag === "function") {
-    // Don't call more components once the stream reader is gone.
-    throwIfCancelled(writer);
-    const returned = jsxElement.tag.call(this, jsxElement.props);
-    // If rendering what the component returned fails (e.g. a layout that throws),
-    // cancel the streams in it that rendering didn't get to.
-    let pending: void | Promise<void>;
-    try {
-      pending = renderAwaitable.call(this, returned, writer);
-    } catch (error) {
-      cancelUnreadStreams(returned, error);
-      throw error;
-    }
-    if (isPromise(pending)) {
-      return pending.then(undefined, (error) => {
-        cancelUnreadStreams(returned, error);
-        throw error;
-      });
-    }
-    return;
+    return renderComponent.call(this, jsxElement.tag, jsxElement.props, writer);
   }
 
   // Any other tag is a mistake, e.g. `undefined` from a missing import, so fail like React does.
@@ -187,6 +147,76 @@ export function renderElement(
     `Invalid element type: expected a tag name or a component, got ${jsxElement.tag === null ? "null" : typeof jsxElement.tag}. ` +
       "Check for a missing import or a wrong default export.",
   );
+}
+
+/**
+ * Renders an element with a tag name, e.g. `<div>`, or a fragment (empty tag name).
+ */
+function renderTagElement(
+  this: any,
+  tag: string,
+  props: Props,
+  writer: Writer,
+): void | Promise<void> {
+  const children = getChildren(props);
+  if (tag === "") {
+    return renderChildren.call(this, children, writer);
+  }
+  if (!isValidTagName(tag)) {
+    // The children are never rendered, so cancel their streams to not keep a connection open.
+    if (children.length) {
+      cancelUnreadStreams(children, new Error(`Children of <${tag}> are not rendered`));
+    }
+    return;
+  }
+  const attributes = attributesToString(props);
+  if (typeof attributes !== "string") {
+    // Promise attributes: send the markup so far while they load.
+    return flushAndAwait(writer, attributes).then(($attributes) =>
+      renderTag.call(this, tag, $attributes, children, writer),
+    );
+  }
+  return renderTag.call(this, tag, attributes, children, writer);
+}
+
+/**
+ * Returns the children as an array. They are passed as written:
+ * none, a single child (e.g. `0` or a `Set`) or an array.
+ * Own children only, so `children` from a polluted `Object.prototype` isn't rendered
+ * in every element without children.
+ */
+function getChildren(props: Props): JSX.Element[] {
+  const children = hasOwnProperty.call(props, "children") ? props.children : undefined;
+  return children == null ? [] : Array.isArray(children) ? children : [children as JSX.Element];
+}
+
+/**
+ * Calls a component and renders what it returned.
+ */
+function renderComponent(
+  this: any,
+  component: (props: Props) => JSX.Element,
+  props: Props,
+  writer: Writer,
+): void | Promise<void> {
+  // Don't call more components once the stream reader is gone.
+  throwIfCancelled(writer);
+  const returned = component.call(this, props);
+  // If rendering what the component returned fails (e.g. a layout that throws),
+  // cancel the streams in it that rendering didn't get to.
+  let pending: void | Promise<void>;
+  try {
+    pending = renderAwaitable.call(this, returned, writer);
+  } catch (error) {
+    cancelUnreadStreams(returned, error);
+    throw error;
+  }
+  if (isPromise(pending)) {
+    return pending.then(undefined, (error) => {
+      cancelUnreadStreams(returned, error);
+      throw error;
+    });
+  }
 }
 
 /**
