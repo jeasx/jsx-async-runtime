@@ -2,6 +2,7 @@ import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
 import { renderElement, Writer } from "./render-element.js";
+import { streamWriters } from "./stream-writers.js";
 
 /**
  * Renders a JSX element to a string.
@@ -14,10 +15,9 @@ import { renderElement, Writer } from "./render-element.js";
  * @return The rendered markup, or a promise of it when rendering had to wait.
  */
 export function jsxToString(this: any, jsxElement: JSX.Element): string | Promise<string> {
-  // Collect all markup in the buffer, nothing is sent early.
-  const writer: Writer = { buffer: "", chunkSize: Infinity, cancelled: false, flush() {} };
   try {
     const context = resolveContext(this, "jsxToString", jsxToString);
+    const writer = createWriter(streamWriters.get(context));
     const pending = renderElement.call(context, jsxElement, writer);
     return isPromise(pending)
       ? pending.then(
@@ -34,4 +34,27 @@ export function jsxToString(this: any, jsxElement: JSX.Element): string | Promis
     // Report errors the same way, whether rendering was sync or async.
     return Promise.reject(error);
   }
+}
+
+/**
+ * Creates a writer that collects all markup in the buffer, nothing is sent early.
+ * Inside a stream (e.g. called from a `this.jsxToString` override), rendering stops
+ * like the stream does when its reader cancels: at the next component or promise.
+ */
+function createWriter(stream: Writer | undefined): Writer {
+  if (!stream) {
+    return { buffer: "", chunkSize: Infinity, cancelled: false, flush() {} };
+  }
+  return {
+    buffer: "",
+    chunkSize: Infinity,
+    get cancelled() {
+      return stream.cancelled;
+    },
+    flush() {
+      if (stream.cancelled) {
+        throw new Error("Stream cancelled");
+      }
+    },
+  };
 }

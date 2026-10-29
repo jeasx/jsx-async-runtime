@@ -250,3 +250,93 @@ test("stream cancel doesn't leave an override promise unhandled", async () => {
   // An unhandled rejection would fail this test.
   await delay(50);
 });
+
+test("stream cancel stops rendering inside a jsxToString override", async () => {
+  let calls = 0;
+  async function Item({ i }) {
+    calls++;
+    await delay(5);
+    return <li>{i}</li>;
+  }
+  // Like the README example: every element is rendered by a nested jsxToString call.
+  const context = {
+    jsxToString(element) {
+      return jsxToString.call(this, element);
+    },
+  };
+  // The root tag isn't rendered by the override, so `<div>` is sent while the list renders.
+  const reader = jsxToStream
+    .call(
+      context,
+      <div>
+        <ul>
+          {Array.from({ length: 20 }, (_, i) => (
+            <Item i={i} />
+          ))}
+        </ul>
+      </div>,
+    )
+    .getReader();
+  assert.deepStrictEqual(await reader.read(), { done: false, value: "<div>" });
+  await delay(12);
+  const atCancel = calls;
+  await reader.cancel();
+  await delay(60);
+  // The component that was running may finish, but no new one starts.
+  assert.ok(calls <= atCancel + 1, `${calls - atCancel} components called after cancel`);
+});
+
+test("stream cancel stops an async iterable inside a jsxToString override", async () => {
+  let pulled = 0;
+  let stopped = false;
+  // Limited, so the test fails instead of running forever if the source isn't stopped.
+  async function* Rows() {
+    try {
+      while (pulled < 100) {
+        await delay(5);
+        pulled++;
+        yield <li>{pulled}</li>;
+      }
+    } finally {
+      stopped = true;
+    }
+  }
+  const context = {
+    jsxToString(element) {
+      return jsxToString.call(this, element);
+    },
+  };
+  const reader = jsxToStream
+    .call(
+      context,
+      <ul>
+        <Rows />
+      </ul>,
+    )
+    .getReader();
+  await reader.read();
+  await delay(20);
+  const atCancel = pulled;
+  await reader.cancel();
+  await delay(30);
+  assert.ok(stopped, "source was not stopped");
+  assert.ok(pulled <= atCancel + 1, `pulled ${pulled - atCancel} items after cancel`);
+});
+
+test("a context can be rendered again after its stream was cancelled", async () => {
+  const Slow = () => delay(10, <p>slow</p>);
+  const context = {};
+  const reader = jsxToStream
+    .call(
+      context,
+      <div>
+        a<Slow />
+      </div>,
+    )
+    .getReader();
+  await reader.read();
+  await reader.cancel();
+  // Wait until the cancelled render has ended.
+  await delay(30);
+  assert.strictEqual(await jsxToString.call(context, <Slow />), `<p>slow</p>`);
+});

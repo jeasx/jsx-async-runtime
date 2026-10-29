@@ -26,7 +26,7 @@ Read the breaking changes below before upgrading.
 
 ### New features
 
-- Added #jsxToStream, which renders to a `ReadableStream<string>`. It sends the markup rendered so far each time rendering has to wait for an async component or promise, so the browser can start displaying the page earlier. Large pages are also sent in chunks of about 16 KB, and rendering pauses while the reader is behind, even when no component is async.
+- Added #jsxToStream, which renders to a `ReadableStream<string>`. It sends the markup rendered so far each time rendering has to wait for an async component or promise, so the browser can start displaying the page earlier. Large pages are also sent in chunks of about 16 KB, and rendering pauses while the reader is behind, even when no component is async. When the reader cancels (e.g. the client disconnects), rendering stops at the next component, also inside a `this.jsxToString` override.
 - Promises can be used directly as children (e.g. `<div>{promise}</div>`). They are awaited and rendered instead of being silently dropped.
 - Promises can be used as attribute values (e.g. `<img src={loadImageUrl()} />`). All promise attributes of a tag are awaited in parallel and rendered like their values, instead of rendering `src="[object Promise]"`.
 - Iterables other than arrays can be used as children or returned by components, e.g. a `Set`, a generator or an iterator helper like `map.values().map((value) => <li>{value}</li>)`. Previously they silently rendered nothing.
