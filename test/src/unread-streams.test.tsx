@@ -1,5 +1,6 @@
 import { createElement, jsxToStream, jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
+import { Readable } from "node:stream";
 import test from "node:test";
 import { delay } from "./helpers/delay.js";
 import { streamToChunks } from "./helpers/stream-to-chunks.js";
@@ -261,3 +262,74 @@ test("stream in the children of an undefined component is cancelled", () =>
     "Invalid element type: expected a tag name or a component, got undefined. " +
       "Check for a missing import or a wrong default export.",
   ));
+
+// Creates a Node.js stream that records whether it was destroyed.
+// Without text, it never ends, so Node doesn't destroy it on its own after the end.
+function createNodeStream(text?: string) {
+  const state = { destroyed: false };
+  const stream = new Readable({
+    read() {
+      if (text !== undefined) {
+        this.push(text);
+        this.push(null);
+      }
+    },
+    destroy(error, callback) {
+      state.destroyed = true;
+      callback(error);
+    },
+  });
+  return { stream, state };
+}
+
+test("unread Node.js stream is destroyed when an earlier sibling throws", async () => {
+  const Boom = () => {
+    throw new Error("sibling");
+  };
+  const renders = [
+    (jsx: JSX.Element) => jsxToString.call({}, jsx),
+    (jsx: JSX.Element) => streamToChunks(jsxToStream.call({}, jsx)),
+  ];
+  for (const render of renders) {
+    const { stream, state } = createNodeStream("x");
+    await assert.rejects(
+      async () =>
+        render(
+          <div>
+            <Boom />
+            <p>{stream as any}</p>
+          </div>,
+        ),
+      { message: "sibling" },
+    );
+    await delay(5);
+    // Destroyed without an error, so no "error" event without listener crashes Node.
+    assert.strictEqual(state.destroyed, true, "stream was not destroyed");
+  }
+});
+
+test("Node.js stream that is being read is rendered and not destroyed early", async () => {
+  const { stream } = createNodeStream("<b>");
+  assert.strictEqual(await jsxToString(<p>{stream as any}</p>), "<p>&lt;b&gt;</p>");
+});
+
+test("Node.js stream that is already read elsewhere is left alone", async () => {
+  const Boom = () => {
+    throw new Error("sibling");
+  };
+  const { stream, state } = createNodeStream();
+  stream.on("data", () => {});
+  await assert.rejects(
+    async () =>
+      jsxToString(
+        <div>
+          <Boom />
+          {stream as any}
+        </div>,
+      ),
+    { message: "sibling" },
+  );
+  await delay(5);
+  assert.strictEqual(state.destroyed, false);
+  stream.destroy();
+});

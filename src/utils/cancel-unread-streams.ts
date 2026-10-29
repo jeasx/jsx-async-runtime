@@ -8,7 +8,8 @@ import { handleRejection } from "./handle-rejection.js";
  *
  * Walks arrays (from `start` on), the children of elements and what promises resolve to.
  * Other props aren't walked: a component that never ran doesn't own them.
- * Streams that are being read are locked and left alone.
+ * Node.js readable streams (e.g. from `fs.createReadStream()`) are destroyed, so they don't keep
+ * a file open. Streams that are being read are left alone.
  */
 export function cancelUnreadStreams(value: unknown, reason: unknown, start = 0): void {
   try {
@@ -16,6 +17,25 @@ export function cancelUnreadStreams(value: unknown, reason: unknown, start = 0):
   } catch {
     // The render error wins, e.g. over a stack overflow from an array that contains itself.
   }
+}
+
+type NodeStream = { destroy(): void; destroyed?: boolean; readableFlowing: boolean | null };
+
+/**
+ * Checks for a Node.js readable stream (e.g. from `fs.createReadStream()`) that nobody reads yet.
+ * Checked by shape, so the package doesn't import `node:stream` and works in other runtimes.
+ * `readableFlowing` is `null` until the stream is read, piped or paused, so streams that are
+ * in use (e.g. iterated by the renderer) are left alone, like a locked `ReadableStream`.
+ */
+function isUnreadNodeStream(value: object): value is NodeStream {
+  const stream = value as Partial<NodeStream> & { pipe?: unknown };
+  return (
+    typeof stream.pipe === "function" &&
+    typeof stream.destroy === "function" &&
+    "readableFlowing" in stream &&
+    stream.readableFlowing === null &&
+    stream.destroyed !== true
+  );
 }
 
 function walk(value: unknown, reason: unknown, start: number): void {
@@ -36,6 +56,10 @@ function walk(value: unknown, reason: unknown, start: number): void {
     if (!value.locked) {
       handleRejection(value.cancel(reason));
     }
+  } else if (isUnreadNodeStream(value)) {
+    // Without the reason: `destroy(error)` emits an "error" event, which crashes Node
+    // when nobody listens for it.
+    value.destroy();
   } else if (isJsxNode(value)) {
     walk((value as { props?: { children?: unknown } }).props?.children, reason, 0);
   }
