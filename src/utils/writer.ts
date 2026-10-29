@@ -1,4 +1,5 @@
 import { handleRejection } from "./handle-rejection.js";
+import { noOp } from "./no-op.js";
 
 /**
  * The writer of the stream that a context is rendered to, set by `jsxToStream` while rendering.
@@ -16,7 +17,7 @@ const streamWriters = new WeakMap<object, Writer>();
  */
 export function attachStreamWriter(context: unknown, writer: Writer): () => void {
   if (typeof context !== "function" && (typeof context !== "object" || context === null)) {
-    return () => {};
+    return noOp;
   }
   streamWriters.set(context, writer);
   return () => {

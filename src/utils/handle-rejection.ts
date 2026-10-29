@@ -1,5 +1,6 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { forEachInCollection, forEachItem, isCollection } from "./for-each-item.js";
+import { noOp } from "./no-op.js";
 
 /**
  * Promises start before rendering gets to them and may reject in the meantime.
@@ -17,7 +18,7 @@ export function handleRejection(value: unknown, start = 0): void {
   }
   // Checked from cheap to costly, since this runs for every prop of every element.
   if (value instanceof Promise) {
-    value.then(undefined, ignore);
+    ignoreRejection(value);
   } else if (isCollection(value)) {
     forEachInCollection(value, ignoreRejection, start);
   } else if (!isJsxNode(value)) {
@@ -36,8 +37,6 @@ function ignoreRejection(item: object): void {
   // Deliberately not isPromise(): only native promises report unhandled rejections,
   // and calling then() on other thenables can start work early (e.g. a lazy query builder).
   if (item instanceof Promise) {
-    item.then(undefined, ignore);
+    item.then(undefined, noOp);
   }
 }
-
-function ignore(): void {}

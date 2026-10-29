@@ -1,6 +1,7 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { forEachItem } from "./for-each-item.js";
 import { handleRejection } from "./handle-rejection.js";
+import { noOp } from "./no-op.js";
 
 /**
  * Called when rendering failed or the stream reader cancelled. Cancels the `ReadableStream`s
@@ -53,10 +54,7 @@ function isUnreadNodeStream(value: object): value is NodeStream {
 function cancelItem(item: object, reason: unknown): void {
   if (item instanceof Promise) {
     // Deliberately not isPromise(): calling then() on other thenables can start work early.
-    item.then(
-      ($item) => cancelUnreadStreams($item, reason),
-      () => {},
-    );
+    item.then(($item) => cancelUnreadStreams($item, reason), noOp);
   } else if (typeof ReadableStream === "function" && item instanceof ReadableStream) {
     if (!item.locked) {
       handleRejection(item.cancel(reason));
