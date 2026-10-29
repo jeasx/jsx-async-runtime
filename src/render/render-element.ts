@@ -421,7 +421,9 @@ async function renderAsyncIterable(
  */
 function $renderElement(this: any, jsxElement: JSX.Element, writer: Writer): void | Promise<void> {
   const $jsxToString = this?.jsxToString;
-  if (!$jsxToString) {
+  // Only functions count, so a `jsxToString` value inherited from a polluted `Object.prototype`
+  // (e.g. a string from a naive deep merge of a request body) can't break every render.
+  if (typeof $jsxToString !== "function") {
     return renderElement.call(this, jsxElement, writer);
   }
   const result = $jsxToString.call(this, jsxElement);

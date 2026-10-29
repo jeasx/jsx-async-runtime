@@ -216,3 +216,19 @@ test("a polluted Object.prototype adds no attributes and no raw markup", async (
     }
   }
 });
+
+test("a polluted Object.prototype.jsxToString doesn't break rendering", async () => {
+  // E.g. from a request body like `{"__proto__": {"jsxToString": "x"}}`.
+  // The default context `{}` inherits it, but only a function counts as an override.
+  (Object.prototype as any).jsxToString = "x";
+  try {
+    await equal(
+      <div>
+        <p>text</p>
+      </div>,
+      `<div><p>text</p></div>`,
+    );
+  } finally {
+    delete (Object.prototype as any).jsxToString;
+  }
+});
