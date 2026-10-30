@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-Adds streaming, renders about 2x faster than 2.3.0, supports many more child types and closes several injection paths.
+Adds streaming, renders about 2x faster than v2, supports many more child types and closes several injection paths.
 
 ### Breaking changes
 
