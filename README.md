@@ -96,7 +96,7 @@ Besides arrays, any other iterable can be used as children, e.g. a `Set`, a gene
 
 Bytes (a `Uint8Array` or `Buffer`) are rendered as UTF-8 text and escaped like any other string, so a file from `readFile()` or a `fetch()` body can be rendered directly, e.g. `<pre>{(await fetch(url)).body}</pre>`.
 
-Objects with their own `toString` method, e.g. a `Date`, `URL`, `Error` or an instance of your own class, render their string form, escaped like any other string: `<p>{new URL("https://example.com")}</p>` renders `<p>https://example.com/</p>`. Plain objects (e.g. parsed JSON) and class instances without their own `toString` render nothing instead of `[object Object]`.
+Objects with their own `toString` method, e.g. a `Date`, `URL`, `Error` or an instance of your own class, render their string form, escaped like any other string: `<p>{new URL("https://example.com")}</p>` renders `<p>https://example.com/</p>`. Plain objects (e.g. parsed JSON) and class instances without their own `toString` render nothing instead of `[object Object]`. In TypeScript, `createElement` doesn't accept such objects as children, so convert them first, e.g. `createElement("p", null, String(url))`.
 
 A component receives its children as written, like in React and as TypeScript types them: a single child as is (e.g. a string or an element), several children as an array, and no `children` prop without children. So a single function child works as a render prop:
 
@@ -253,7 +253,9 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `Map`, `Set` or other object without `toString` | nothing                                                                         |
 | anything else (`URL`, `Date`, numbers)          | its string form, e.g. `href={new URL("https://example.com")}`                   |
 
-Style properties use CSS names (`background-color`, not `backgroundColor`). Keys are rendered exactly as written and camelCase isn't converted, so `style={{ fontSize: "1rem" }}` renders `style="fontSize: 1rem"`, which browsers ignore. Custom properties work as written, e.g. `style={{ "--gap": "1rem" }}`. Promises inside `style` and `class` values aren't awaited and are skipped, so `class={{ active: isActive() }}` with an async `isActive` adds nothing; await them before rendering, or pass the whole value as a promise (e.g. `class={loadClasses()}`). `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
+Style properties use CSS names (`background-color`, not `backgroundColor`). Keys are rendered exactly as written and camelCase isn't converted, so `style={{ fontSize: "1rem" }}` renders `style="fontSize: 1rem"`, which browsers ignore. Custom properties work as written, e.g. `style={{ "--gap": "1rem" }}`. Class names are strings: `true` and numbers in a `class` array don't type-check, so write `[!isActive && "inactive"]` instead of `[isActive || "inactive"]`, and `` `col-${n}` `` instead of `n`. Promises inside `style` and `class` values aren't awaited and are skipped, so `class={{ active: isActive() }}` with an async `isActive` adds nothing; await them before rendering, or pass the whole value as a promise (e.g. `class={loadClasses()}`). `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
+
+Void tags like `<br />`, `<img />` or `<meta />` render as a single tag without a closing tag, e.g. `<br>`. Their children are ignored, so `<br>text</br>` renders `<br>` instead of invalid HTML. Void tags are recognized in lowercase, uppercase and capitalized (`br`, `BR`, `Br`), but not in other mixed case like `bR`.
 
 ## The `this` context
 
