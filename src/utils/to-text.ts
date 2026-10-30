@@ -22,4 +22,3 @@ export function toText(value: unknown): string | undefined {
   }
   return String(value);
 }
-

@@ -1,5 +1,4 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
-import type { ElementNode, Html } from "../jsx/jsx.types.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeBytes } from "../utils/decode-bytes.js";
 import { isByteArray } from "../utils/is-byte-array.js";
@@ -130,9 +129,7 @@ function attributeToString(key: string, value: unknown): string {
 /**
  * Checks for values that render nothing as attributes.
  */
-function rendersNothing(
-  value: unknown,
-): value is null | undefined | false | Function | symbol | ElementNode | Html {
+function rendersNothing(value: unknown): boolean {
   return (
     value === null ||
     value === undefined ||
