@@ -193,6 +193,8 @@ function readStream(stream: ReadableStream<JSX.Element>): AsyncIterator<JSX.Elem
  * The markup rendered so far is sent while waiting for each item, so items stream as they arrive.
  * When rendering fails or the stream is cancelled, the source is stopped like `for await` does
  * (e.g. an async generator runs its `finally` block and can close a database cursor).
+ * An async generator waiting inside an `await` can't be interrupted: its `return()` runs
+ * only once that `await` settles. A `ReadableStream` is cancelled right away (see readStream()).
  */
 export async function renderAsyncIterable(
   this: any,
