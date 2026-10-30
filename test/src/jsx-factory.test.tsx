@@ -1,6 +1,6 @@
 import { createElement as classicCreateElement, Fragment } from "jsx-async-runtime";
 import { jsxDEV } from "jsx-async-runtime/jsx-dev-runtime";
-import { createElement, jsx } from "jsx-async-runtime/jsx-runtime";
+import { createElement } from "jsx-async-runtime/jsx-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { equal } from "./helpers/equal.js";
@@ -37,16 +37,13 @@ test("key is not passed to components", () => {
   return equal(<Props key="k">x</Props>, `{&quot;children&quot;:&quot;x&quot;}`);
 });
 
-test("key is not passed to components, however the element was created", async () => {
+test("key is not passed to components with createElement", async () => {
   const Props = (props: Record<string, unknown>) => JSON.stringify(props);
   const node = { id: "i", key: "k" };
   const expected = `{&quot;id&quot;:&quot;i&quot;}`;
   // With `key` after a spread, the compiler calls createElement instead of jsx().
   await equal(<Props {...node} key="k2" />, expected);
-  // A spread `key` ends up in the props passed to jsx().
-  await equal(<Props {...node} />, expected);
   await equal(createElement(Props, node), expected);
-  await equal(jsx(Props, node), expected);
   assert.deepStrictEqual(node, { id: "i", key: "k" });
 });
 

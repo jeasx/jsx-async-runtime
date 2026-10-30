@@ -11,8 +11,12 @@ export function createElement(
   props?: ElementProps | null,
   ...children: ElementChild[]
 ): JSX.Element {
-  // Copy props, so the caller's object is never changed.
-  const $props = { ...props };
+  // Copy props without `key`, so the caller's object is never changed. `key` only identifies
+  // list items in React and is never passed to components, like in React. Compiled JSX passes
+  // it to jsx() as an argument, but calls createElement with `key` in props when it comes
+  // after a spread (e.g. `<Row {...node} key={id} />`). jsx() doesn't check for `key`,
+  // since that would slow down every element.
+  const { key: _, ...$props } = props ?? {};
   if (children.length) {
     // Positional children replace props.children, like in React. Compiled JSX
     // calls createElement when `key` comes after a spread, so this keeps
@@ -29,15 +33,6 @@ export function createElement(
  */
 export function jsx(tag: JSX.ElementType, props?: ElementProps, _key?: unknown): JSX.Element {
   props ??= {};
-
-  // `key` only identifies list items in React and is never passed to components, like in React.
-  // Compiled JSX passes it as an argument, but it ends up in props with createElement()
-  // (e.g. `key` after a spread) or when spread in (e.g. `<Row {...node} />`). Copied without it,
-  // so the caller's object is never changed.
-  if (hasOwnProperty.call(props, "key")) {
-    const { key: _, ...rest } = props;
-    props = rest;
-  }
 
   // Children are passed to components as written, like in React and as TypeScript types them:
   // a single child as is (e.g. a string or a render prop), several children as an array,

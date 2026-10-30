@@ -48,7 +48,7 @@ Adds streaming, renders about 2x faster than 2.3.0, supports many more child typ
 
 **Elements and API**
 
-- `key` is never rendered and never passed to components, however it is written (JSX, #createElement, spread). The dev runtime no longer adds its source info as children.
+- `key` is never rendered. Components don't receive it in their props when it is written in JSX or passed to #createElement; a `key` that is only spread in (e.g. `<Row {...node} />`) is passed through, so creating elements stays fast. The dev runtime no longer adds its source info as children.
 - #createElement no longer modifies the props you pass in, and argument children replace `props.children` like in React (fixes `<Row {...node} key={id}>label</Row>` also rendering `node.children`).
 - Array or `Set` props that contain themselves no longer overflow the stack.
 - A `this.jsxToString` override that returns a non-string renders it like a child (elements as markup, `false` as nothing).
