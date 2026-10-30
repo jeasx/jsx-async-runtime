@@ -248,7 +248,11 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `Map`, `Set` or other object without `toString` | nothing                                                                         |
 | anything else (`URL`, `Date`, numbers)          | its string form, e.g. `href={new URL("https://example.com")}`                   |
 
+The table shows how values render at runtime. TypeScript is stricter: known attributes accept only their HTML value types, e.g. `href` and `title` accept strings, so convert other values first, e.g. `href={String(url)}`. Unknown attributes like `data-*` accept any value.
+
 `class` and `style` are plain string attributes, like in HTML. Objects and arrays follow the rules above, so `class={{ active: true }}` renders JSON, not `class="active"`. To build class names from conditions, use a library like [clsx](https://github.com/lukeed/clsx), e.g. `class={clsx("btn", { active: isActive })}`. Write styles as strings, e.g. ``style={`--columns: ${n}; gap: 1rem`}``. `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
+
+The table applies to the attribute value itself. Values nested in an object or array attribute are converted by `JSON.stringify` and follow its rules instead: a `Map` or `Set` becomes `{}`, bytes become `{"0":104,"1":105}`, a `Date` becomes its ISO string, and BigInts become strings. Functions and elements are left out of objects and become `null` in arrays. Convert such values first, e.g. `data-tags={[...tags]}` for a `Set`.
 
 Only a promise passed as the attribute value itself is awaited. A promise nested in an object or array attribute (e.g. `data-ids={[loadId()]}`) fails the render with a `TypeError`, so await it first.
 
