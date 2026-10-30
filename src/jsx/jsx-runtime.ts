@@ -1,16 +1,9 @@
 import { handleRejection } from "../utils/handle-rejection.js";
 import { JSX_ASYNC_RUNTIME } from "./is-jsx-node.js";
-import type { ElementNode } from "./jsx.types.js";
+import type { Child, Props } from "./jsx-props.js";
 
 // Module-local for V8's fast path, see attributes-to-string.ts.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
-
-// A function child, e.g. a render prop: `<Loader>{(data) => <p>{data}</p>}</Loader>`.
-type RenderProp = (...args: any[]) => unknown;
-type Child = JSX.Children | RenderProp;
-
-// The props of an element, where children may also be render props.
-type Props = Omit<ElementNode["props"], "children"> & { children?: Child | Child[] };
 
 // `props` may be `null`, like in React, e.g. `createElement(Fragment, null, a, b)`.
 export function createElement(

@@ -1,8 +1,9 @@
+import type { Props } from "./jsx-props.js";
 import { Fragment, _Fragment, _jsx, _jsxs, createElement, jsx, jsxs } from "./jsx-runtime.js";
 
 export function jsxDEV(
   tag: JSX.ElementType,
-  props?: Parameters<typeof jsx>[1],
+  props?: Props,
   _key?: unknown,
   _isStaticChildren?: boolean,
   _source?: unknown,
