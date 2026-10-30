@@ -1,5 +1,12 @@
-import { html, isJsxNode, jsxToStream, jsxToString } from "jsx-async-runtime";
+import { isJsxNode, jsxToStream, jsxToString } from "jsx-async-runtime";
 import { run } from "./harness.js";
+import { Layout } from "./layout.js";
+import { AccountPage, createAccountContext, ORDER_COUNT } from "./pages/account.js";
+import { Article } from "./pages/article.js";
+import { COMMENT_COUNT, CommentThread } from "./pages/comment-thread.js";
+import { Dashboard } from "./pages/dashboard.js";
+import { PRODUCT_COUNT, ProductGrid } from "./pages/product-grid.js";
+import { SettingsForm } from "./pages/settings-form.js";
 
 // Usage: npm run bench [-- <filter>...], e.g. `npm run bench -- stream`.
 
@@ -19,39 +26,6 @@ const comments = Array.from({ length: 1000 }, (_, i) => ({
 }));
 
 // --- Components ---
-
-function Layout({ title, children }) {
-  return (
-    <>
-      {html("<!DOCTYPE html>")}
-      <html lang="en">
-        <head>
-          <meta charset="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <title>{title}</title>
-          <link rel="stylesheet" href="/styles.css" />
-        </head>
-        <body>
-          <nav>
-            <ul>
-              {["Home", "Products", "About", "Contact"].map((label) => (
-                <li>
-                  <a href={`/${label.toLowerCase()}`} class={{ active: label === "Products" }}>
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <main>{children}</main>
-          <footer>
-            <p>© 2026 Example</p>
-          </footer>
-        </body>
-      </html>
-    </>
-  );
-}
 
 function Row({ row }) {
   return (
@@ -158,6 +132,35 @@ function SmallPage() {
   );
 }
 
+// Iterator helpers instead of an array, e.g. `map.values().map(...)`.
+function IteratorTable() {
+  return (
+    <Layout title="Products">
+      <table>
+        <tbody>
+          {rows.values().map((row) => (
+            <Row row={row} />
+          ))}
+        </tbody>
+      </table>
+    </Layout>
+  );
+}
+
+// A small HTML fragment without a layout, like the response to an htmx or fetch request,
+// so the per-render overhead dominates.
+const searchHits = rows.slice(0, 10);
+
+function SearchResults() {
+  return (
+    <tbody id="results" hx-swap-oob="true">
+      {searchHits.map((row) => (
+        <Row row={row} />
+      ))}
+    </tbody>
+  );
+}
+
 // --- Cases ---
 
 async function streamToString(stream) {
@@ -190,6 +193,28 @@ await run(
     {
       name: "stream: async iterable, 1,000 rows",
       fn: () => streamToString(jsxToStream(<AsyncIterableTable />)),
+    },
+    { name: "string: iterator, 1,000 rows", fn: () => jsxToString(<IteratorTable />) },
+    // Typical pages, see ./pages.
+    { name: "string: partial, 10 rows", fn: () => jsxToString(<SearchResults />) },
+    {
+      name: `string: product grid, ${PRODUCT_COUNT} cards`,
+      fn: () => jsxToString(<ProductGrid />),
+    },
+    { name: "string: article with CMS html", fn: () => jsxToString(<Article />) },
+    {
+      name: `string: comment thread, ${COMMENT_COUNT} comments`,
+      fn: () => jsxToString(<CommentThread />),
+    },
+    { name: "string: settings form", fn: () => jsxToString(<SettingsForm />) },
+    {
+      name: `string: this context, ${ORDER_COUNT} orders`,
+      fn: () => jsxToString.call(createAccountContext(), <AccountPage />),
+    },
+    { name: "string: dashboard, parallel promises", fn: () => jsxToString(<Dashboard />) },
+    {
+      name: "stream: dashboard, parallel promises",
+      fn: () => streamToString(jsxToStream(<Dashboard />)),
     },
   ],
   process.argv.slice(2),
