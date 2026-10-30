@@ -28,8 +28,5 @@ test("JSX compiled for the dev runtime type-checks and renders", async () => {
     </>
   );
   // Neither `key` nor the source info that jsxDEV receives is rendered.
-  assert.strictEqual(
-    await jsxToString(page),
-    `<ul><li>a</li><li>b</li></ul><p class="x">text</p>`,
-  );
+  assert.strictEqual(await jsxToString(page), `<ul><li>a</li><li>b</li></ul><p class="x">text</p>`);
 });

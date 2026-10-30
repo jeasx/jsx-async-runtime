@@ -1,4 +1,4 @@
-import { html, jsxToStream, jsxToString } from "jsx-async-runtime";
+import { html, isJsxNode, jsxToStream, jsxToString } from "jsx-async-runtime";
 import { run } from "./harness.js";
 
 // Usage: npm run bench [-- <filter>...], e.g. `npm run bench -- stream`.
@@ -118,6 +118,37 @@ function AsyncTable() {
   );
 }
 
+// Yields the rows one by one, like a database cursor or a paginated API.
+async function* AsyncRows() {
+  for (const row of rows) {
+    yield <Row row={row} />;
+  }
+}
+
+function AsyncIterableTable() {
+  return (
+    <Layout title="Products">
+      <table>
+        <tbody>
+          <AsyncRows />
+        </tbody>
+      </table>
+    </Layout>
+  );
+}
+
+// A pass-through override like in the README, so every nested element takes the override path.
+function createOverrideContext() {
+  return {
+    jsxToString(jsxElement) {
+      if (isJsxNode(jsxElement) && jsxElement.tag === "script") {
+        return "";
+      }
+      return jsxToString.call(this, jsxElement);
+    },
+  };
+}
+
 function SmallPage() {
   return (
     <Layout title="Hello">
@@ -147,6 +178,18 @@ await run(
     {
       name: "stream: async table, 1,000 rows",
       fn: () => streamToString(jsxToStream(<AsyncTable />)),
+    },
+    {
+      name: "string: override, 1,000 rows",
+      fn: () => jsxToString.call(createOverrideContext(), <Table />),
+    },
+    {
+      name: "string: async iterable, 1,000 rows",
+      fn: () => jsxToString(<AsyncIterableTable />),
+    },
+    {
+      name: "stream: async iterable, 1,000 rows",
+      fn: () => streamToString(jsxToStream(<AsyncIterableTable />)),
     },
   ],
   process.argv.slice(2),

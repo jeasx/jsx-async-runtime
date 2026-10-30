@@ -91,7 +91,9 @@ export function renderElement(
     return;
   }
 
-  // Other iterables, e.g. a `Set` or a generator returned by a component.
+  // Other iterables, e.g. a `Set` or a generator returned by a component. Checked before
+  // the string form, so iterables with their own `toString` (e.g. a `URLSearchParams` or an
+  // Immutable.js `List`) render their items, like in React.
   if (isIterable(jsxElement)) {
     return renderIterable.call(this, jsxElement, writer);
   }
@@ -336,6 +338,7 @@ export function renderAwaitable(
 
 /**
  * Renders a nested element, honoring a `this.jsxToString` override.
+ * Callers await promises first (see renderAwaitable()), so the override never gets one.
  * See writeOverrideResult() for how its result is rendered.
  */
 export function renderNested(
@@ -352,7 +355,12 @@ export function renderNested(
   if (typeof $jsxToString !== "function" || $jsxToString === jsxToString) {
     return renderElement.call(this, jsxElement, writer);
   }
-  const result = $jsxToString.call(this, jsxElement);
+  // The override gets bytes as text, like the decoded runs of bytes in arrays and iterables,
+  // so it doesn't have to handle both.
+  const result = $jsxToString.call(
+    this,
+    isByteArray(jsxElement) ? decodeBytes(jsxElement) : jsxElement,
+  );
   if (isPromise(result)) {
     return flushAndAwait(writer, result).then(($result) =>
       writeOverrideResult.call(this, $result, writer),

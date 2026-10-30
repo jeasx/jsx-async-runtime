@@ -87,6 +87,22 @@ test("class instances with a toString method render it", () => {
   return equal(<p>{values}</p>, `<p>1.50 €|0.99 €</p>`);
 });
 
+test("iterables render their items, even with their own toString", () => {
+  // Like in React, so collections with a debug toString (e.g. Immutable.js) render their elements.
+  class Path {
+    *[Symbol.iterator]() {
+      yield <b>a</b>;
+      yield <b>b</b>;
+    }
+    toString() {
+      return "/a/b";
+    }
+  }
+  const params = new URLSearchParams("a=1&b=2");
+  const values: any = [new Path(), "|", params, "|", String(params)];
+  return equal(<p>{values}</p>, `<p><b>a</b><b>b</b>|a1b2|a=1&amp;b=2</p>`);
+});
+
 test("plain objects and class instances without toString render nothing", () => {
   class Point {
     x = 1;

@@ -30,11 +30,10 @@ test("removed jsxEscapeHTML context option doesn't turn escaping off", () =>
 
 test("jsxToString override renders text raw", async () => {
   // Migration path for the removed `jsxEscapeHTML: false` (see CHANGELOG).
-  const decoder = new TextDecoder();
+  // Bytes reach the override as text, so checking for strings covers them too.
   const context = {
     jsxToString(element: JSX.Element) {
       if (typeof element === "string") return element;
-      if (element instanceof Uint8Array) return decoder.decode(element);
       return jsxToString.call(this, element);
     },
   };
@@ -83,6 +82,16 @@ test("escapeEntities with null, undefined and booleans", () => {
   assert.strictEqual(escapeEntities(undefined), "");
   assert.strictEqual(escapeEntities(false), "");
   assert.strictEqual(escapeEntities(true), "");
+});
+
+test("escapeEntities with functions and Symbols", () => {
+  // Nothing, like as children or attributes, instead of the function's source code.
+  assert.strictEqual(
+    escapeEntities(() => "<b>secret</b>"),
+    "",
+  );
+  assert.strictEqual(escapeEntities(class User {}), "");
+  assert.strictEqual(escapeEntities(Symbol("<s>")), "");
 });
 
 test("escapeEntities with objects without their own string form", () => {

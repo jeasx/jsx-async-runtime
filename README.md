@@ -96,7 +96,7 @@ Besides arrays, any other iterable can be used as children, e.g. a `Set`, a gene
 
 Bytes (a `Uint8Array` or `Buffer`) are rendered as UTF-8 text and escaped like any other string, so a file from `readFile()` or a `fetch()` body can be rendered directly, e.g. `<pre>{(await fetch(url)).body}</pre>`.
 
-Objects with their own `toString` method, e.g. a `Date`, `URL`, `Error` or an instance of your own class, render their string form, escaped like any other string: `<p>{new URL("https://example.com")}</p>` renders `<p>https://example.com/</p>`. Plain objects (e.g. parsed JSON) and class instances without their own `toString` render nothing instead of `[object Object]`. In TypeScript, `createElement` doesn't accept such objects as children, so convert them first, e.g. `createElement("p", null, String(url))`.
+Objects with their own `toString` method, e.g. a `Date`, `URL`, `Error` or an instance of your own class, render their string form, escaped like any other string: `<p>{new URL("https://example.com")}</p>` renders `<p>https://example.com/</p>`. Plain objects (e.g. parsed JSON) and class instances without their own `toString` render nothing instead of `[object Object]`. Iterables render their items instead, even when they have their own `toString`, so convert them first if you want their string form: a `URLSearchParams` renders `a1b2`, while `{String(params)}` renders `a=1&amp;b=2`. In TypeScript, `createElement` doesn't accept such objects as children, so convert them first, e.g. `createElement("p", null, String(url))`.
 
 A component receives its children as written, like in React and as TypeScript types them: a single child as is (e.g. a string or an element), several children as an array, and no `children` prop without children. So a single function child works as a render prop:
 
@@ -203,11 +203,10 @@ import { escapeEntities, html } from "jsx-async-runtime";
 Escaping can't be turned off for the whole page, so a `<p>{comment}</p>` can't render unescaped by accident. If you really need raw text everywhere (e.g. a trusted HTML stream from `fetch()`, which `html()` can't wrap), let a [`this.jsxToString` override](#customizing-rendering) return text as is:
 
 ```jsx
-const decoder = new TextDecoder();
 const context = {
   jsxToString(jsxElement) {
+    // Bytes (e.g. the chunks of a `fetch()` body) arrive as text, too.
     if (typeof jsxElement === "string") return jsxElement;
-    if (jsxElement instanceof Uint8Array) return decoder.decode(jsxElement);
     return jsxToString.call(this, jsxElement);
   },
 };
@@ -315,7 +314,7 @@ Things to keep in mind:
 
 ## Customizing rendering
 
-Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also children as written, like strings, numbers, (nested) arrays, `null` or `false`. Check for elements with `isJsxNode` before reading `tag` or `props`; in TypeScript, it also narrows the type, so `jsxElement.tag` type-checks. It returns a string of markup, which is rendered as is, or a promise of one. Anything else it returns is rendered like a child: an element (e.g. a replacement) as markup, a number as text, and `null`, `undefined` and `false` as nothing. Call the original `jsxToString` to fall back to the default rendering:
+Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also children as written, like strings, numbers, (nested) arrays, `null` or `false`. Promises are awaited before they reach the override, and bytes arrive as decoded text, so an override doesn't have to handle either. Check for elements with `isJsxNode` before reading `tag` or `props`; in TypeScript, it also narrows the type, so `jsxElement.tag` type-checks. It returns a string of markup, which is rendered as is, or a promise of one. Anything else it returns is rendered like a child: an element (e.g. a replacement) as markup, a number as text, and `null`, `undefined` and `false` as nothing. Call the original `jsxToString` to fall back to the default rendering:
 
 ```jsx
 import { isJsxNode, jsxToString } from "jsx-async-runtime";
@@ -336,15 +335,15 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 
 ## API
 
-| Export                                   | Description                                                                                                      |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.                                            |
-| `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits.                                  |
-| `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                                                  |
-| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a value's string form; `null`, booleans and objects without one give `""`. |
-| `isJsxNode(value)`                       | Checks for an element or `html()` markup; look-alikes from JSON don't count.                                     |
-| `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                                                         |
-| `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.                                    |
+| Export                                   | Description                                                                                                                          |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.                                                                |
+| `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits.                                                      |
+| `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                                                                      |
+| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a value's string form; `null`, booleans, functions, Symbols and objects without one give `""`. |
+| `isJsxNode(value)`                       | Checks for an element or `html()` markup; look-alikes from JSON don't count.                                                         |
+| `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                                                                             |
+| `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.                                                        |
 
 Context properties read by the runtime:
 

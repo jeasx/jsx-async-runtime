@@ -5,7 +5,7 @@ import { isPromise } from "../utils/is-promise.js";
 import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
-import { renderAwaitable, renderChildren, renderNested } from "./render-element.js";
+import { renderAwaitable, renderChildren } from "./render-element.js";
 
 // Iterators of the built-in collections (arrays, typed arrays, `Map` and `Set`), whose items
 // already exist, so reading them up front costs no extra work and lets early promise rejections
@@ -203,7 +203,9 @@ export async function renderAsyncIterable(
       if (!takeItem(state, result)) {
         return;
       }
-      const pending = renderNested.call(this, state.item, writer);
+      // Awaitable, so a promise item (e.g. from a `ReadableStream`) reaches a `this.jsxToString`
+      // override resolved, like in arrays and sync iterables.
+      const pending = renderAwaitable.call(this, state.item, writer);
       if (isPromise(pending)) {
         await pending;
       }

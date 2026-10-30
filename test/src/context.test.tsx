@@ -148,6 +148,43 @@ test("custom jsxToString via context", async () => {
   );
 });
 
+test("override gets bytes as text and promises resolved", async () => {
+  const seen: string[] = [];
+  const ctx = {
+    jsxToString(element: any) {
+      if (element instanceof Uint8Array || isPromise(element)) {
+        seen.push(Object.prototype.toString.call(element));
+      }
+      return typeof element === "string" ? `[${element}]` : jsxToString.call(this, element);
+    },
+  };
+  const bytes = (text: string) => new TextEncoder().encode(text);
+  const Bytes = () => bytes("c");
+  // A source that yields promises as is, unlike an async generator, which awaits them.
+  const promises: AsyncIterable<JSX.Element> = {
+    [Symbol.asyncIterator]: () => {
+      const items = [Promise.resolve("e"), Promise.resolve(bytes("f"))];
+      return { next: async () => ({ done: !items.length, value: items.shift() }) };
+    },
+  };
+  assert.strictEqual(
+    await jsxToString.call(
+      ctx,
+      <p>
+        {bytes("a")}
+        {[bytes("b1"), bytes("b2")]}
+        <Bytes />
+        {Promise.resolve(bytes("d"))}
+        {promises}
+      </p>,
+    ),
+    `<p>[a][b1b2][c][d][e][f]</p>`,
+  );
+  assert.deepStrictEqual(seen, []);
+});
+
+const isPromise = (value: unknown) => typeof (value as any)?.then === "function";
+
 test("override returning undefined or null renders nothing", async () => {
   const ctx = {
     jsxToString(element: any) {

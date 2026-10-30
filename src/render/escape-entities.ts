@@ -4,11 +4,15 @@ import { toText } from "../utils/to-text.js";
  * Escapes `&`, `<`, `>`, `"` and `'`. Other values are converted to a string first,
  * e.g. a number or a `URL`. Like JSX children, `null`, `undefined` and booleans give `""`,
  * so `escapeEntities(cond && name)` renders nothing instead of "false", and so do objects
- * without their own string form (e.g. a plain object or a `Map`) instead of "[object Object]".
+ * without their own string form (e.g. a plain object or a `Map`) instead of "[object Object]",
+ * and functions and Symbols instead of their source code or "Symbol(...)".
  */
 export function escapeEntities(value: unknown): string {
-  if (typeof value === "boolean") {
-    return "";
+  switch (typeof value) {
+    case "boolean":
+    case "function":
+    case "symbol":
+      return "";
   }
   const text = toText(value);
   return text === undefined ? "" : escapeHTML(text);

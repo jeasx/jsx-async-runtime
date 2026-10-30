@@ -12,13 +12,5 @@ export function jsxDEV(
   return jsx(tag, props);
 }
 
-export {
-  Fragment,
-  _Fragment,
-  _jsx,
-  _jsxs,
-  createElement,
-  jsx,
-  jsxs,
-} from "./jsx/jsx-runtime.js";
+export { Fragment, _Fragment, _jsx, _jsxs, createElement, jsx, jsxs } from "./jsx/jsx-runtime.js";
 export * from "./jsx/jsx.types.js";
