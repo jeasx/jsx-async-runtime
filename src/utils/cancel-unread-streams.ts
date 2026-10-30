@@ -33,7 +33,7 @@ export function cancelUnreadStreamsOnRejection<T>(pending: Promise<T>, value: un
   });
 }
 
-type NodeStream ={ destroy(): void; destroyed?: boolean; readableFlowing: boolean | null };
+type NodeStream = { destroy(): void; destroyed?: boolean; readableFlowing: boolean | null };
 
 /**
  * Checks for a Node.js readable stream (e.g. from `fs.createReadStream()`) that nobody reads yet.
