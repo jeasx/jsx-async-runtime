@@ -177,6 +177,22 @@ test("promise attribute waits for earlier siblings", () =>
 test("rejected promise attribute rejects", () =>
   rejects(() => <div title={delay(5).then(() => Promise.reject(new Error("attr")))} />, "attr"));
 
+const NESTED_PROMISE_ERROR =
+  "A promise nested in an object or array attribute can't be rendered. " +
+  "Await it first, or pass it as the attribute value itself.";
+
+test("promise nested in an array attribute rejects", () =>
+  rejects(() => <div data-x={[1, Promise.resolve(2)]} />, NESTED_PROMISE_ERROR));
+
+test("promise nested in an object attribute rejects", () =>
+  rejects(() => <div data-x={{ a: { b: Promise.resolve(1) } }} />, NESTED_PROMISE_ERROR));
+
+test("promise nested in what a promise attribute resolves to rejects", () =>
+  rejects(() => <div data-x={delay(1, { a: Promise.resolve(1) })} />, NESTED_PROMISE_ERROR));
+
+test("rejected promise nested in an attribute rejects instead of being lost", () =>
+  rejects(() => <div data-x={[Promise.reject(new Error("nested"))]} />, NESTED_PROMISE_ERROR));
+
 test("props that aren't rendered as attributes are not awaited", async () => {
   const never = Promise.reject(new Error("never awaited"));
   let thenCalled = false;

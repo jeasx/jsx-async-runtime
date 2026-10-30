@@ -144,6 +144,14 @@ function valueToStringTransformer(_key: string, value: unknown): unknown {
   if (typeof value === "bigint") {
     return String(value);
   }
+  // Only promise attribute values are awaited. A nested promise would render as `{}`,
+  // and its rejection (already marked as handled by jsx()) would be lost, so fail instead.
+  if (isPromise(value)) {
+    throw new TypeError(
+      "A promise nested in an object or array attribute can't be rendered. " +
+        "Await it first, or pass it as the attribute value itself.",
+    );
+  }
   // Nested elements are left out like functions: dropped from objects, `null` in arrays.
   return isJsxNode(value) ? undefined : value;
 }

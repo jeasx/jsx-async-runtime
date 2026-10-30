@@ -250,6 +250,8 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 
 `class` and `style` are plain string attributes, like in HTML. Objects and arrays follow the rules above, so `class={{ active: true }}` renders JSON, not `class="active"`. To build class names from conditions, use a library like [clsx](https://github.com/lukeed/clsx), e.g. `class={clsx("btn", { active: isActive })}`. Write styles as strings, e.g. ``style={`--columns: ${n}; gap: 1rem`}``. `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
 
+Only a promise passed as the attribute value itself is awaited. A promise nested in an object or array attribute (e.g. `data-ids={[loadId()]}`) fails the render with a `TypeError`, so await it first.
+
 Void tags like `<br />`, `<img />` or `<meta />` render as a single tag without a closing tag, e.g. `<br>`. Their children are ignored, so `<br>text</br>` renders `<br>` instead of invalid HTML. Void tags are recognized in lowercase, uppercase and capitalized (`br`, `BR`, `Br`), but not in other mixed case like `bR`.
 
 ## The `this` context
