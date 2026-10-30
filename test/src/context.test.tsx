@@ -60,12 +60,14 @@ test("render via namespace import gets a new empty context", async () => {
 
 test("render via CommonJS interop copy of the module gets a new empty context", async () => {
   // TypeScript's `esModuleInterop` compiles `import * as runtime` to a plain object
-  // with a getter per export, which `runtime.jsxToString(...)` passes as `this`.
+  // with a getter per export and `default` set to the module itself (like Babel and esbuild),
+  // which `runtime.jsxToString(...)` passes as `this`.
   const namespace = await import("jsx-async-runtime");
   const runtime: any = {};
   for (const key of Object.keys(namespace)) {
     Object.defineProperty(runtime, key, { enumerable: true, get: () => (namespace as any)[key] });
   }
+  Object.defineProperty(runtime, "default", { enumerable: true, value: namespace });
   function App(this: any) {
     const seen = this.user ?? "none";
     this.user = "ada";
@@ -124,6 +126,20 @@ test("context holding several runtime exports is kept", async () => {
     return <p>{this.user}</p>;
   }
   const context = () => ({ jsxToString, jsxToStream, isJsxNode, html, user: "ada" });
+  assert.strictEqual(await jsxToString.call(context(), <App />), `<p>ada</p>`);
+  assert.strictEqual(
+    (await streamToChunks(jsxToStream.call(context(), <App />))).join(""),
+    `<p>ada</p>`,
+  );
+});
+
+test("context spread from the module is kept", async () => {
+  // It holds every export, but its own data too, so it must not be replaced by an empty context.
+  const runtime = await import("jsx-async-runtime");
+  function App(this: any) {
+    return <p>{this.user}</p>;
+  }
+  const context = () => ({ ...runtime, user: "ada" });
   assert.strictEqual(await jsxToString.call(context(), <App />), `<p>ada</p>`);
   assert.strictEqual(
     (await streamToChunks(jsxToStream.call(context(), <App />))).join(""),
