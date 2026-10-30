@@ -1,5 +1,5 @@
 /** The collections whose items are rendered and can be read without using them up. */
-export type Collection = unknown[] | Set<unknown> | Map<unknown, unknown>;
+type Collection = unknown[] | Set<unknown> | Map<unknown, unknown>;
 
 /**
  * Calls `visit` with `value`, or, when it is an array, a Set or a Map, with each item in it
