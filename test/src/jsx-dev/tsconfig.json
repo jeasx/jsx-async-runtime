@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsxdev",
+    "tsBuildInfoFile": "../../dist/jsx-dev/tsconfig.tsbuildinfo"
+  },
+  "include": ["."],
+  "exclude": []
+}

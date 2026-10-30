@@ -2,10 +2,10 @@
   "name": "jsx-async-runtime-test",
   "type": "module",
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.jsxdev.json",
+    "build": "tsc && tsc -p src/jsx-dev/tsconfig.json",
     "test": "node --test \"dist/**/*.test.js\"",
-    "dev": "npm run build && (tsc --watch & tsc -p tsconfig.jsxdev.json --watch & node --test --watch \"dist/**/*.test.js\" & wait)",
-    "clean": "tsc --build --clean && tsc --build --clean tsconfig.jsxdev.json"
+    "dev": "npm run build && (tsc --watch & tsc -p src/jsx-dev/tsconfig.json --watch & node --test --watch \"dist/**/*.test.js\" & wait)",
+    "clean": "tsc --build --clean && tsc --build --clean src/jsx-dev/tsconfig.json"
   },
   "dependencies": {
     "jsx-async-runtime": "file:.."
