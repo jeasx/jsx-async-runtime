@@ -56,16 +56,6 @@ export function renderElement(
   jsxElement: JSX.Element | PromiseLike<JSX.Element>,
   writer: Writer,
 ): void | Promise<void> {
-  if (jsxElement === null) {
-    return;
-  }
-
-  if (isPromise(jsxElement)) {
-    return flushAndAwait(writer, jsxElement).then((element) =>
-      renderElement.call(this, element, writer),
-    );
-  }
-
   switch (typeof jsxElement) {
     case "string":
       writer.buffer += escapeHTML(jsxElement);
@@ -79,6 +69,44 @@ export function renderElement(
     case "symbol":
     case "undefined":
       return;
+  }
+
+  if (jsxElement === null) {
+    return;
+  }
+
+  // Elements are the most common objects, so they are checked first and skip the checks below.
+  // Only nodes created by jsx(), createElement() or html() are rendered as markup.
+  if (isJsxNode(jsxElement)) {
+    // Raw markup from html(). Checked by its own `type`, since `html` could be inherited
+    // from a polluted `Object.prototype` and would turn every element into raw markup.
+    if (jsxElement.type === "html") {
+      if (typeof jsxElement.html === "string") {
+        writer.buffer += jsxElement.html;
+      }
+      return;
+    }
+
+    if (typeof jsxElement.tag === "string") {
+      return renderTagElement.call(this, jsxElement.tag, jsxElement.props, writer);
+    }
+
+    if (typeof jsxElement.tag === "function") {
+      return renderComponent.call(this, jsxElement.tag, jsxElement.props, writer);
+    }
+
+    // Any other tag is a mistake, e.g. `undefined` from a missing import, so fail like React does.
+    // The render error handling cancels the streams in the children, which are never rendered.
+    throw new TypeError(
+      `Invalid element type: expected a tag name or a component, got ${jsxElement.tag === null ? "null" : typeof jsxElement.tag}. ` +
+        "Check for a missing import or a wrong default export.",
+    );
+  }
+
+  if (isPromise(jsxElement)) {
+    return flushAndAwait(writer, jsxElement).then((element) =>
+      renderElement.call(this, element, writer),
+    );
   }
 
   if (Array.isArray(jsxElement)) {
@@ -103,41 +131,14 @@ export function renderElement(
     return renderAsyncIterable.call(this, jsxElement as AsyncIterable<JSX.Element>, writer);
   }
 
-  // Only nodes created by jsx(), createElement() or html() are rendered as markup. Look-alike objects,
-  // e.g. from JSON.parse() or a database record, render nothing, so user data can't inject markup.
-  if (!isJsxNode(jsxElement)) {
-    // Objects with their own string form (e.g. `Date`, `URL`, `Error`) render it, escaped like text.
-    // Plain objects render nothing instead of "[object Object]".
-    const text = toText(jsxElement);
-    if (text !== undefined) {
-      writer.buffer += escapeHTML(text);
-    }
-    return;
+  // Other objects aren't elements: look-alikes, e.g. from JSON.parse() or a database record,
+  // render nothing, so user data can't inject markup. Objects with their own string form
+  // (e.g. `Date`, `URL`, `Error`) render it, escaped like text. Plain objects render nothing
+  // instead of "[object Object]".
+  const text = toText(jsxElement);
+  if (text !== undefined) {
+    writer.buffer += escapeHTML(text);
   }
-
-  // Raw markup from html(). Checked by its own `type`, since `html` could be inherited
-  // from a polluted `Object.prototype` and would turn every element into raw markup.
-  if (jsxElement.type === "html") {
-    if (typeof jsxElement.html === "string") {
-      writer.buffer += jsxElement.html;
-    }
-    return;
-  }
-
-  if (typeof jsxElement.tag === "string") {
-    return renderTagElement.call(this, jsxElement.tag, jsxElement.props, writer);
-  }
-
-  if (typeof jsxElement.tag === "function") {
-    return renderComponent.call(this, jsxElement.tag, jsxElement.props, writer);
-  }
-
-  // Any other tag is a mistake, e.g. `undefined` from a missing import, so fail like React does.
-  // The render error handling cancels the streams in the children, which are never rendered.
-  throw new TypeError(
-    `Invalid element type: expected a tag name or a component, got ${jsxElement.tag === null ? "null" : typeof jsxElement.tag}. ` +
-      "Check for a missing import or a wrong default export.",
-  );
 }
 
 /**
