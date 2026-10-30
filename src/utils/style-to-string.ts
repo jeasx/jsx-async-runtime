@@ -1,7 +1,7 @@
 import { handleRejection } from "./handle-rejection.js";
-import { hasOwnStringForm } from "./has-own-string-form.js";
 import { isPromise } from "./is-promise.js";
 import { rendersNothing } from "./renders-nothing.js";
+import { toText } from "./to-text.js";
 
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
 // see attributes-to-string.ts.
@@ -34,12 +34,16 @@ export function styleToString(obj: Record<string, unknown>): string {
       handleRejection(value);
       continue;
     }
-    // Objects without their own string form, e.g. plain objects, are skipped,
-    // and so are arrays: "a,b" is never a useful CSS value.
-    if (typeof value === "object" && (Array.isArray(value) || !hasOwnStringForm(value))) {
+    // Arrays are skipped: "a,b" is never a useful CSS value.
+    if (Array.isArray(value)) {
       continue;
     }
-    result += `${separator}${key}: ${value}`;
+    // Objects without their own string form, e.g. plain objects, are skipped too.
+    const text = toText(value);
+    if (text === undefined) {
+      continue;
+    }
+    result += `${separator}${key}: ${text}`;
     separator = "; ";
   }
   return result;

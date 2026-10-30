@@ -8,11 +8,11 @@ import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
 import { getOwnChildren } from "../utils/get-own-children.js";
 import { handleRejection } from "../utils/handle-rejection.js";
-import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isIterable } from "../utils/is-iterable.js";
 import { isPromise } from "../utils/is-promise.js";
+import { toText } from "../utils/to-text.js";
 import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
@@ -108,8 +108,9 @@ export function renderElement(
   if (!isJsxNode(jsxElement)) {
     // Objects with their own string form (e.g. `Date`, `URL`, `Error`) render it, escaped like text.
     // Plain objects render nothing instead of "[object Object]".
-    if (hasOwnStringForm(jsxElement)) {
-      writer.buffer += escapeHTML(String(jsxElement));
+    const text = toText(jsxElement);
+    if (text !== undefined) {
+      writer.buffer += escapeHTML(text);
     }
     return;
   }

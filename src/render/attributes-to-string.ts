@@ -2,11 +2,11 @@ import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { classToString } from "../utils/class-to-string.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeBytes } from "../utils/decode-bytes.js";
-import { hasOwnStringForm } from "../utils/has-own-string-form.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 import { rendersNothing } from "../utils/renders-nothing.js";
 import { styleToString } from "../utils/style-to-string.js";
+import { toText } from "../utils/to-text.js";
 import { escapeHTML } from "./escape-entities.js";
 
 // Skips keys inherited from a polluted `Object.prototype` (e.g. by a naive deep merge
@@ -108,14 +108,12 @@ function attributeToString(key: string, value: unknown): string {
     if (isByteArray(value)) {
       return `${key}="${escapeHTML(decodeBytes(value))}"`;
     }
-    // Like children, only objects with their own string form (e.g. `Date`, `URL`) render it.
-    // Others (e.g. a `Map`, a `Set` or a class instance without `toString`) render nothing
-    // instead of `[object Map]`.
-    if (!hasOwnStringForm(value)) {
-      return "";
-    }
   }
-  return `${key}="${escapeHTML(String(value))}"`;
+  // Like children, only objects with their own string form (e.g. `Date`, `URL`) render it.
+  // Others (e.g. a `Map`, a `Set` or a class instance without `toString`) render nothing
+  // instead of `[object Map]`.
+  const text = toText(value);
+  return text === undefined ? "" : `${key}="${escapeHTML(text)}"`;
 }
 
 function valueToStringTransformer(_key: string, value: unknown): unknown {

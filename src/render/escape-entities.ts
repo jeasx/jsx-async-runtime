@@ -1,4 +1,4 @@
-import { hasOwnStringForm } from "../utils/has-own-string-form.js";
+import { toText } from "../utils/to-text.js";
 
 /**
  * Escapes `&`, `<`, `>`, `"` and `'`. Other values are converted to a string first,
@@ -7,17 +7,11 @@ import { hasOwnStringForm } from "../utils/has-own-string-form.js";
  * without their own string form (e.g. a plain object or a `Map`) instead of "[object Object]".
  */
 export function escapeEntities(value: unknown): string {
-  if (typeof value === "string") {
-    return escapeHTML(value);
-  }
-  if (value == null || typeof value === "boolean") {
+  if (typeof value === "boolean") {
     return "";
   }
-  // `Object.create(null)` objects have no `toString`, so this also avoids a TypeError from String().
-  if (typeof value === "object" && !hasOwnStringForm(value)) {
-    return "";
-  }
-  return escapeHTML(String(value));
+  const text = toText(value);
+  return text === undefined ? "" : escapeHTML(text);
 }
 
 /*
