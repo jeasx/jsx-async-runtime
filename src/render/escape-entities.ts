@@ -1,7 +1,8 @@
 /**
  * Escapes `&`, `<`, `>`, `"` and `'` in a string, e.g. for building markup with `html()`.
  * Values that aren't strings (in JavaScript or via `any`) are converted with `String()` first,
- * so the result is always an escaped string.
+ * e.g. a number or a `URL`. Like `String()`, it throws for objects without a string form,
+ * e.g. `Object.create(null)`.
  */
 export function escapeEntities(input: string): string {
   return escapeHTML(String(input));
