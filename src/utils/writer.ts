@@ -39,7 +39,12 @@ export function getStreamWriter(context: unknown): Writer | undefined {
  * `flush` is called before rendering waits for a promise and whenever the buffer
  * reaches `chunkSize`, so a writer can send the markup rendered so far
  * (or ignore it to collect a string).
- * It returns a promise when rendering should pause until the reader catches up.
+ * It returns a promise when rendering should pause until the reader catches up,
+ * and `resume` ends that pause.
+ *
+ * String and stream writers have the same properties in the same order, so V8 gives them the same
+ * hidden class and the renderer's property accesses stay fast when a process renders both.
+ * Keep it that way when adding properties (e.g. `resume`, which only stream writers need).
  */
 export type Writer = {
   buffer: string;
@@ -55,6 +60,11 @@ export type Writer = {
    */
   waits: Set<(error: Error) => void> | undefined;
   flush(): void | Promise<void>;
+  /**
+   * Ends the pause of a flush, so rendering continues. Called when the stream reader
+   * wants more (the stream's `pull`) and by cancelWriter(). Writers that never pause do nothing.
+   */
+  resume(): void;
 };
 
 /**
@@ -65,7 +75,14 @@ export type Writer = {
 export function createStringWriter(stream: Writer | undefined): Writer {
   if (!stream) {
     // `waits` is set, so it isn't inherited from a polluted `Object.prototype`.
-    return { buffer: "", chunkSize: Infinity, cancelled: false, waits: undefined, flush() {} };
+    return {
+      buffer: "",
+      chunkSize: Infinity,
+      cancelled: false,
+      waits: undefined,
+      flush() {},
+      resume() {},
+    };
   }
   return {
     buffer: "",
@@ -77,19 +94,21 @@ export function createStringWriter(stream: Writer | undefined): Writer {
     flush() {
       throwIfCancelled(stream);
     },
+    resume() {},
   };
 }
 
 /**
  * Creates the writer of a stream. `flush` sends the markup rendered so far as a chunk.
- * When the reader has enough queued markup (backpressure), it returns `waitForReader()`,
- * so rendering pauses until the reader wants more.
+ * When the reader has enough queued markup (backpressure), it returns a promise,
+ * so rendering pauses until `resume()` is called.
  */
 export function createStreamWriter(
   controller: ReadableStreamDefaultController<string>,
   chunkSize: number,
-  waitForReader: () => Promise<void>,
 ): Writer {
+  // Resolves the promise of the paused flush, if any. Rendering waits for one flush at a time.
+  let endPause: (() => void) | undefined;
   const writer: Writer = {
     buffer: "",
     chunkSize,
@@ -99,8 +118,14 @@ export function createStreamWriter(
       throwIfCancelled(writer);
       enqueueBuffer(writer, controller);
       if ((controller.desiredSize ?? 1) <= 0) {
-        return waitForReader();
+        return new Promise<void>((resolve) => {
+          endPause = resolve;
+        });
       }
+    },
+    resume() {
+      endPause?.();
+      endPause = undefined;
     },
   };
   return writer;
@@ -127,12 +152,15 @@ function cancelledError(): Error {
 }
 
 /**
- * Marks the writer as cancelled when the stream reader is gone: drops the unsent markup
- * and rejects the pending waits (for promises and async iterables), so rendering stops right away.
+ * Marks the writer as cancelled when the stream reader is gone: drops the unsent markup,
+ * ends a pause and rejects the pending waits (for promises and async iterables),
+ * so rendering stops right away.
  */
 export function cancelWriter(writer: Writer): void {
   writer.cancelled = true;
   writer.buffer = "";
+  // Let a paused render continue, so it stops at its next check (e.g. the next component).
+  writer.resume();
   const waits = writer.waits;
   if (waits) {
     const error = cancelledError();

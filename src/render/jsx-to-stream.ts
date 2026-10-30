@@ -45,21 +45,9 @@ export function jsxToStream(
   // Set in `start`, which the stream calls right away (the controller only exists there).
   let writer: Writer;
 
-  // Resolves the pause when the reader wants more (or cancels).
-  let resume: (() => void) | undefined;
-
-  const wakeUp = () => {
-    resume?.();
-    resume = undefined;
-  };
-
   const source: UnderlyingDefaultSource<string> = {
     start(controller) {
-      writer = createStreamWriter(controller, CHUNK_SIZE, () => {
-        return new Promise<void>((resolve) => {
-          resume = resolve;
-        });
-      });
+      writer = createStreamWriter(controller, CHUNK_SIZE);
       const end = attachStreamWriter(context, writer);
       const done = () => {
         end();
@@ -91,10 +79,11 @@ export function jsxToStream(
         fail(error);
       }
     },
-    pull: wakeUp,
+    // The reader wants more, so a render paused by backpressure continues.
+    pull() {
+      writer.resume();
+    },
     cancel() {
-      // Let paused rendering continue, so it stops at the next component.
-      wakeUp();
       cancelWriter(writer);
     },
   };
