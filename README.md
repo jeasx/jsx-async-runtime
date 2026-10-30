@@ -329,6 +329,14 @@ const context = {
 const html = await jsxToString.call(context, <App />);
 ```
 
+**Returned strings are not escaped.** Text children reach the override unescaped, so returning one as is or changed (e.g. `return jsxElement.trim()`) renders user input as raw markup. Escape text yourself, or pass it on to the default rendering:
+
+```jsx
+if (typeof jsxElement === "string") {
+  return escapeEntities(jsxElement.trim()); // or: jsxToString.call(this, jsxElement.trim())
+}
+```
+
 This lets you patch markup you don't control (e.g. third-party components) or collect elements during rendering. The [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) uses it to replace components for a custom theme and to merge all `<head>` elements into one.
 
 ## API
