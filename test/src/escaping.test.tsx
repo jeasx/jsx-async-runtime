@@ -112,7 +112,27 @@ test("escapeEntities with objects without their own string form", () => {
     ),
     "&lt;u&gt;",
   );
-  assert.strictEqual(escapeEntities(["<a>", "b"]), "&lt;a&gt;,b");
+});
+
+test("escapeEntities with arrays gives the same text as children", () => {
+  // Joined without commas and with `null` and booleans skipped, like `{["<a>", "b"]}`.
+  assert.strictEqual(escapeEntities(["<a>", "b"]), "&lt;a&gt;b");
+  assert.strictEqual(escapeEntities(["a", null, false, true, undefined, 0, ["b", ["c"]]]), "a0bc");
+  assert.strictEqual(escapeEntities([]), "");
+  // Elements have no text form, like on their own.
+  assert.strictEqual(escapeEntities(["a", <b>x</b>, html("<i>"), "c"]), "ac");
+  // Other iterables keep their own string form, e.g. for building a URL.
+  assert.strictEqual(escapeEntities(new URLSearchParams("a=1&b=2")), "a=1&amp;b=2");
+});
+
+test("escapeEntities with bytes gives their UTF-8 text, like children", () => {
+  const encoder = new TextEncoder();
+  assert.strictEqual(escapeEntities(encoder.encode("<ä>")), "&lt;ä&gt;");
+  assert.strictEqual(escapeEntities(Buffer.from("<ä>")), "&lt;ä&gt;");
+  // A character split between two chunks is decoded as one.
+  const bytes = encoder.encode("<ä>");
+  assert.strictEqual(escapeEntities([bytes.subarray(0, 2), bytes.subarray(2)]), "&lt;ä&gt;");
+  assert.strictEqual(escapeEntities(["a", encoder.encode("b"), "c"]), "abc");
 });
 
 test("escapeEntities on a non-string renders escaped inside raw html", () =>

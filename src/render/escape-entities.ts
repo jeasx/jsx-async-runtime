@@ -1,3 +1,5 @@
+import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
+import { isByteArray } from "../utils/is-byte-array.js";
 import { toText } from "../utils/to-text.js";
 
 /**
@@ -6,6 +8,8 @@ import { toText } from "../utils/to-text.js";
  * so `escapeEntities(cond && name)` renders nothing instead of "false", and so do objects
  * without their own string form (e.g. a plain object or a `Map`) instead of "[object Object]",
  * and functions and Symbols instead of their source code or "Symbol(...)".
+ * Also like JSX children, bytes give their UTF-8 text, and arrays give their items' text
+ * joined without commas, so `escapeEntities(["a", null, "b"])` gives "ab" like `{["a", null, "b"]}`.
  */
 export function escapeEntities(value: unknown): string {
   switch (typeof value) {
@@ -14,8 +18,33 @@ export function escapeEntities(value: unknown): string {
     case "symbol":
       return "";
   }
+  if (Array.isArray(value)) {
+    return escapeItems(value);
+  }
+  if (isByteArray(value)) {
+    return escapeHTML(decodeBytes(value));
+  }
   const text = toText(value);
   return text === undefined ? "" : escapeHTML(text);
+}
+
+/**
+ * Escapes the items of an array (and nested arrays) one after another.
+ * Consecutive bytes are decoded as one text, like in children, so a character split
+ * between two chunks is decoded correctly.
+ */
+function escapeItems(items: unknown[]): string {
+  let result = "";
+  for (let i = 0; i < items.length; i++) {
+    if (isByteRun(items as JSX.Element[], i)) {
+      const [text, last] = decodeByteRun(items as JSX.Element[], i);
+      result += escapeHTML(text);
+      i = last;
+    } else {
+      result += escapeEntities(items[i]);
+    }
+  }
+  return result;
 }
 
 /*
