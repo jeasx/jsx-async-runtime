@@ -16,6 +16,8 @@ import { isPromise } from "../utils/is-promise.js";
 import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 import { attributesToString } from "./attributes-to-string.js";
 import { escapeHTML } from "./escape-entities.js";
+// Circular import, like render-iterables.ts: only used while rendering, never while loading.
+import { jsxToString } from "./jsx-to-string.js";
 import { renderAsyncIterable, renderIterable } from "./render-iterables.js";
 
 // HTML tag names are case-insensitive, so the uppercase and capitalized variants are void too
@@ -346,7 +348,10 @@ export function renderNested(
   const $jsxToString = this?.jsxToString;
   // Only functions count, so a `jsxToString` value inherited from a polluted `Object.prototype`
   // (e.g. a string from a naive deep merge of a request body) can't break every render.
-  if (typeof $jsxToString !== "function") {
+  // The runtime's own `jsxToString` (e.g. in `{ jsxToString, user }`) renders the same
+  // as no override, so it is skipped: that keeps streaming in chunks and avoids a nested render
+  // per element.
+  if (typeof $jsxToString !== "function" || $jsxToString === jsxToString) {
     return renderElement.call(this, jsxElement, writer);
   }
   const result = $jsxToString.call(this, jsxElement);

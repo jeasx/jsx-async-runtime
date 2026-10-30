@@ -90,6 +90,34 @@ test("render via CommonJS interop copy of the module gets a new empty context", 
   }
 });
 
+test("context holding the runtime's jsxToString is kept", async () => {
+  // A context may hold `jsxToString`, so components can call `this.jsxToString(...)`.
+  // It must not be taken for a copy of the module and replaced by an empty context.
+  function App(this: any) {
+    return (
+      <div>
+        <section>
+          <Greeting />
+        </section>
+      </div>
+    );
+  }
+  async function Greeting(this: any) {
+    await delay(1);
+    return <p>{this.user}</p>;
+  }
+  const context = () => ({ jsxToString, jsxToStream, user: "ada" });
+  assert.strictEqual(
+    await jsxToString.call(context(), <App />),
+    `<div><section><p>ada</p></section></div>`,
+  );
+  // It renders like no override, so nested markup is still sent before the async component.
+  assert.deepStrictEqual(await streamToChunks(jsxToStream.call(context(), <App />)), [
+    `<div><section>`,
+    `<p>ada</p></section></div>`,
+  ]);
+});
+
 test("custom jsxToString via context", async () => {
   const ctx = {
     async jsxToString(element: any) {
