@@ -1,4 +1,4 @@
-import { jsxToString } from "jsx-async-runtime";
+import { createElement, jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { equal } from "./helpers/equal.js";
@@ -40,8 +40,21 @@ test("promise resolving to a promise", () =>
   ));
 
 test("component returning a thenable", () => {
-  const Thenable: any = () => thenable(<i>t</i>);
+  const Thenable = () => thenable(<i>t</i>);
   return equal(<Thenable />, `<i>t</i>`);
+});
+
+test("thenables type-check wherever promises do", () => {
+  // The build type-checks this: thenables must be accepted like promises.
+  const Card = ({ children }: { children: JSX.Element }) => <div>{children}</div>;
+  return equal(
+    <>
+      <img src={thenable("a.png")} alt={thenable(null)} />
+      <Card>{thenable("b")}</Card>
+      {createElement("p", null, thenable("c"))}
+    </>,
+    `<img src="a.png"><div>b</div><p>c</p>`,
+  );
 });
 
 test("functions with a then method are not awaited", async () => {

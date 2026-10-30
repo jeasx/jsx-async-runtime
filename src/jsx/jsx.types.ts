@@ -39,7 +39,8 @@ declare global {
   namespace JSX {
     // Async iterables, e.g. an async generator component or a `ReadableStream`.
     type AsyncIterableElement = AsyncIterable<Element>;
-    type AsyncElement = Promise<SyncElement | AsyncIterableElement> | AsyncIterableElement;
+    // Any thenable is awaited, not just a native `Promise`, e.g. a promise from another library.
+    type AsyncElement = PromiseLike<SyncElement | AsyncIterableElement> | AsyncIterableElement;
     type SyncElement =
       | ElementNode
       | Html
@@ -878,9 +879,9 @@ declare global {
     }
 
     // Every attribute also accepts `null`, which renders nothing like `undefined`,
-    // and a promise, which is awaited before the tag is rendered.
+    // and a promise (or any thenable), which is awaited before the tag is rendered.
     type AwaitableAttributes<T> = T extends object
-      ? { [K in keyof T]: T[K] | null | Promise<T[K] | null> }
+      ? { [K in keyof T]: T[K] | null | PromiseLike<T[K] | null> }
       : T;
     type AwaitableElements = {
       [E in keyof IntrinsicElementAttributes]: AwaitableAttributes<IntrinsicElementAttributes[E]>;
