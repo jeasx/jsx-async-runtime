@@ -1,9 +1,9 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
+import type { ElementNode, Html } from "../jsx/jsx.types.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeBytes } from "../utils/decode-bytes.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
-import { rendersNothing } from "../utils/renders-nothing.js";
 import { toText } from "../utils/to-text.js";
 import { escapeHTML } from "./escape-entities.js";
 
@@ -125,6 +125,22 @@ function attributeToString(key: string, value: unknown): string {
   // instead of `[object Map]`.
   const text = toText(value);
   return text === undefined ? "" : `${key}="${escapeHTML(text)}"`;
+}
+
+/**
+ * Checks for values that render nothing as attributes.
+ */
+function rendersNothing(
+  value: unknown,
+): value is null | undefined | false | Function | symbol | ElementNode | Html {
+  return (
+    value === null ||
+    value === undefined ||
+    value === false ||
+    typeof value === "function" ||
+    typeof value === "symbol" ||
+    isJsxNode(value)
+  );
 }
 
 function valueToStringTransformer(_key: string, value: unknown): unknown {
