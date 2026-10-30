@@ -7,22 +7,23 @@ export type ElementNode = {
   [NODE]: true;
   type: "tag";
   tag: JSX.ElementType;
-  props: Props;
+  props: ElementProps;
 };
 
-type Props = {
+/**
+ * The props of an element, as passed to createElement() or jsx().
+ * Children are kept as written, so they may include render props for components.
+ */
+export type ElementProps = {
   [k: string]: any;
-  children?: JSX.Children;
+  children?: ElementChild | ElementChild[];
 };
+
+/** A child passed to createElement() or jsx(): what JSX renders, or a render prop. */
+export type ElementChild = JSX.Children | RenderProp;
 
 // A function child, e.g. a render prop: `<Loader>{(data) => <p>{data}</p>}</Loader>`.
 type RenderProp = (...args: any[]) => unknown;
-
-/** A child passed to createElement() or jsx(): what JSX renders, or a render prop. */
-export type JsxChild = JSX.Children | RenderProp;
-
-/** The props passed to createElement() or jsx(), where children may also be render props. */
-export type JsxProps = Omit<Props, "children"> & { children?: JsxChild | JsxChild[] };
 
 // `tag` and `props` never exist on raw markup. Declared anyway, so code that got
 // an `ElementNode | Html` from isJsxNode() can read `node.tag` without checking `node.type` first.

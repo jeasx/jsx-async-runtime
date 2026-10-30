@@ -213,7 +213,7 @@ const context = {
 };
 ```
 
-Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, so a name from untrusted input can't break out of the tag and inject markup.
+Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, as are tag names that don't start with an ASCII letter. This way, a name from untrusted input can't break out of the tag and inject markup.
 
 Valid names are still rendered as written, and some of them run code. Spreading untrusted data onto an element, e.g. `<div {...body} />` with a request body like `{"onmouseover": "alert(1)"}`, adds a working event handler, and `srcdoc` on an `<iframe>` runs any script in its value. Dynamic tags work the same way: `createElement(props.as, null, text)` with `"script"` as the tag runs `text` as code. Pass only the attributes you expect, and allow only known tags:
 
@@ -334,15 +334,15 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 
 ## API
 
-| Export                                   | Description                                                                       |
-| ---------------------------------------- | --------------------------------------------------------------------------------- |
-| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.             |
-| `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits.   |
-| `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                   |
-| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'`. Other values are converted to a string first. |
-| `isJsxNode(value)`                       | Checks for an element or `html()` markup; look-alikes from JSON don't count.      |
-| `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                          |
-| `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.     |
+| Export                                   | Description                                                                                                      |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.                                            |
+| `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits.                                  |
+| `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                                                  |
+| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a value's string form; `null`, booleans and objects without one give `""`. |
+| `isJsxNode(value)`                       | Checks for an element or `html()` markup; look-alikes from JSON don't count.                                     |
+| `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                                                         |
+| `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.                                    |
 
 Context properties read by the runtime:
 
@@ -352,7 +352,7 @@ Context properties read by the runtime:
 
 ## Example project
 
-The [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) shows all features in a small web server. Here is a shortened version:
+The [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example) shows async components, escaping, the `this` context and `this.jsxToString` overrides in a small web server. Here is a simplified version:
 
 ```jsx
 import { html, jsxToString } from "jsx-async-runtime";
@@ -402,12 +402,8 @@ async function TodoList({ quantity }) {
       <tbody class="tbody striped">
         {todos.slice(0, quantity).map(({ todo, completed }) => (
           <tr>
-            <td>
-              <label for="todo">{todo}</label>
-            </td>
-            <td>
-              <label for="status">{completed ? "yes" : "no"}</label>
-            </td>
+            <td>{todo}</td>
+            <td>{completed ? "yes" : "no"}</td>
           </tr>
         ))}
       </tbody>

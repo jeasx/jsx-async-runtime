@@ -1,5 +1,5 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
-import type { ElementNode } from "../jsx/jsx.types.js";
+import type { ElementProps } from "../jsx/jsx.types.js";
 import {
   cancelUnreadStreams,
   cancelUnreadStreamsOnRejection,
@@ -45,8 +45,6 @@ const VOID_TAGS = new Set(
 // A tag must start with an ASCII letter and must not contain characters
 // that end the tag name or break the markup.
 const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x9f]*$/);
-
-type Props = ElementNode["props"];
 
 /**
  * Renders a JSX element into the writer.
@@ -146,7 +144,7 @@ export function renderElement(
 function renderTagElement(
   this: any,
   tag: string,
-  props: Props,
+  props: ElementProps,
   writer: Writer,
 ): void | Promise<void> {
   const children = getChildren(props);
@@ -171,7 +169,7 @@ function renderTagElement(
  * Returns the own children as an array. They are passed as written:
  * none, a single child (e.g. `0` or a `Set`) or an array.
  */
-function getChildren(props: Props): JSX.Element[] {
+function getChildren(props: ElementProps): JSX.Element[] {
   const children = getOwnChildren(props) as JSX.Children | undefined;
   return children == null ? [] : Array.isArray(children) ? children : [children as JSX.Element];
 }
@@ -182,7 +180,7 @@ function getChildren(props: Props): JSX.Element[] {
 function renderComponent(
   this: any,
   component: Exclude<JSX.ElementType, string>,
-  props: Props,
+  props: ElementProps,
   writer: Writer,
 ): void | Promise<void> {
   // Don't call more components once the stream reader is gone.

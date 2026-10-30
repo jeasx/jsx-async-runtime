@@ -1,6 +1,6 @@
 import { handleRejection } from "../utils/handle-rejection.js";
 import { JSX_ASYNC_RUNTIME } from "./is-jsx-node.js";
-import type { JsxChild, JsxProps } from "./jsx.types.js";
+import type { ElementChild, ElementProps } from "./jsx.types.js";
 
 // Module-local for V8's fast path, see attributes-to-string.ts.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -8,8 +8,8 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
 // `props` may be `null`, like in React, e.g. `createElement(Fragment, null, a, b)`.
 export function createElement(
   tag: JSX.ElementType,
-  props?: JsxProps | null,
-  ...children: JsxChild[]
+  props?: ElementProps | null,
+  ...children: ElementChild[]
 ): JSX.Element {
   // Copy props, so the caller's object is never changed.
   const $props = { ...props };
@@ -27,7 +27,7 @@ export function createElement(
  * Creates the element and keeps the given props object without copying it,
  * since compiled JSX always creates a fresh object.
  */
-export function jsx(tag: JSX.ElementType, props?: JsxProps, _key?: unknown): JSX.Element {
+export function jsx(tag: JSX.ElementType, props?: ElementProps, _key?: unknown): JSX.Element {
   props ??= {};
 
   // Children are passed to components as written, like in React and as TypeScript types them:
