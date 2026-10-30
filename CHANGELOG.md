@@ -34,6 +34,7 @@ Read the breaking changes below before upgrading.
 - Async iterables can be used as children or returned by components, e.g. an async generator component (`async function* Rows() { for await (const row of cursor) yield <tr>...</tr>; }`) or a `ReadableStream`. Items are rendered in order as they arrive, and #jsxToStream sends the markup rendered so far while waiting for each item. If rendering fails or the stream is cancelled, the source is stopped (its `return()` is called, like `break` in a `for await` loop), so an async generator can close its cursor in `finally`. Previously they silently rendered nothing.
 - Bytes (a `Uint8Array` or `Buffer`) are rendered as UTF-8 text and escaped like a string, e.g. a file from `readFile()` or a `fetch()` body (`<pre>{response.body}</pre>`). Previously bytes rendered nothing.
 - Function children are passed to components, so render props work, e.g. `<Loader>{(data) => <p>{data}</p>}</Loader>`, where the component calls `children(data)`. Previously function children were dropped and the component got `children: []`. Tags still render functions as nothing.
+- Added the `JsxProps` and `JsxChild` types, which describe what #createElement and `jsx()` accept, e.g. for typing your own wrapper around #createElement.
 
 ### Fixes
 
