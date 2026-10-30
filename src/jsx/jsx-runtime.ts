@@ -2,6 +2,9 @@ import { handleRejection } from "../utils/handle-rejection.js";
 import { JSX_ASYNC_RUNTIME } from "./is-jsx-node.js";
 import type { ElementNode } from "./jsx.types.js";
 
+// Module-local for V8's fast path, see attributes-to-string.ts.
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 // A function child, e.g. a render prop: `<Loader>{(data) => <p>{data}</p>}</Loader>`.
 type RenderProp = (...args: any[]) => unknown;
 type Child = JSX.Children | RenderProp;
@@ -40,8 +43,12 @@ export function jsx(tag: JSX.ElementType, props?: Props, _key?: unknown): JSX.El
 
   // Promise props (children, component props and attributes) are only awaited
   // once earlier siblings have rendered, so they may reject before that.
+  // Own props only, so values inherited from a polluted `Object.prototype` aren't walked
+  // for every element.
   for (const key in props) {
-    handleRejection(props[key]);
+    if (hasOwnProperty.call(props, key)) {
+      handleRejection(props[key]);
+    }
   }
 
   // The cast pairs the runtime marker with the type-only marker in jsx.types.ts.
