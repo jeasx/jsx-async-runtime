@@ -26,7 +26,10 @@ export function jsxToString(
     const writer = createStringWriter(getStreamWriter(context));
     const pending = renderElement.call(context, jsxElement, writer);
     return isPromise(pending)
-      ? cancelUnreadStreamsOnRejection(pending.then(() => writer.buffer), jsxElement)
+      ? cancelUnreadStreamsOnRejection(
+          pending.then(() => writer.buffer),
+          jsxElement,
+        )
       : writer.buffer;
   } catch (error) {
     cancelUnreadStreams(jsxElement, error);

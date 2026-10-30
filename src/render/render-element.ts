@@ -242,7 +242,11 @@ function discardChildren(tag: string, children: JSX.Element[]): void {
  * Renders children in order. Stays sync until a child has to wait,
  * then continues the remaining children sequentially.
  */
-export function renderChildren(this: any, children: JSX.Element[], writer: Writer): void | Promise<void> {
+export function renderChildren(
+  this: any,
+  children: JSX.Element[],
+  writer: Writer,
+): void | Promise<void> {
   let i = 0;
   try {
     for (; i < children.length; i++) {
