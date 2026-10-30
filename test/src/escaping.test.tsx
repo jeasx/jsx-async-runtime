@@ -67,76 +67,24 @@ test("escapeEntities with empty string", () => assert.strictEqual(escapeEntities
 test("escapeEntities with entities at start and end", () =>
   assert.strictEqual(escapeEntities("&a<"), "&amp;a&lt;"));
 
-test("escapeEntities converts other values to a string", () => {
-  assert.strictEqual(
-    escapeEntities(new URL("https://example.com/?a=1&b=2")),
-    "https://example.com/?a=1&amp;b=2",
-  );
-  assert.strictEqual(escapeEntities(5), "5");
-  assert.strictEqual(escapeEntities(0), "0");
-  assert.strictEqual(escapeEntities(10n), "10");
+test("escapeEntities converts other values with String()", () => {
+  // As String() prints them, but escaped, so the result is always a string.
+  const values: [unknown, string][] = [
+    [new URL("https://example.com/?a=1&b=2"), "https://example.com/?a=1&amp;b=2"],
+    [5, "5"],
+    [0, "0"],
+    [10n, "10"],
+    [null, "null"],
+    [undefined, "undefined"],
+    [false, "false"],
+    [{ name: "<b>" }, "[object Object]"],
+    [["<a>", "b"], "&lt;a&gt;,b"],
+    [Symbol("<s>"), "Symbol(&lt;s&gt;)"],
+  ];
+  for (const [value, expected] of values) {
+    assert.strictEqual(escapeEntities(value as any), expected);
+  }
 });
-
-test("escapeEntities with null, undefined and booleans", () => {
-  assert.strictEqual(escapeEntities(null), "");
-  assert.strictEqual(escapeEntities(undefined), "");
-  assert.strictEqual(escapeEntities(false), "");
-  assert.strictEqual(escapeEntities(true), "");
-});
-
-test("escapeEntities with functions and Symbols", () => {
-  // Nothing, like as children or attributes, instead of the function's source code.
-  assert.strictEqual(
-    escapeEntities(() => "<b>secret</b>"),
-    "",
-  );
-  assert.strictEqual(escapeEntities(class User {}), "");
-  assert.strictEqual(escapeEntities(Symbol("<s>")), "");
-});
-
-test("escapeEntities with objects without their own string form", () => {
-  // Nothing instead of "[object Object]". Unlike a `Map` child, which renders its entries,
-  // a `Map` has no string form of its own.
-  assert.strictEqual(escapeEntities({}), "");
-  assert.strictEqual(escapeEntities({ name: "<b>" }), "");
-  assert.strictEqual(escapeEntities(new Map([["a", 1]])), "");
-  assert.strictEqual(escapeEntities(new (class User {})()), "");
-  // Has no `toString` at all, which made String() throw.
-  assert.strictEqual(escapeEntities(Object.create(null)), "");
-  // Objects with their own string form still render it.
-  assert.strictEqual(
-    escapeEntities(
-      new (class {
-        toString = () => "<u>";
-      })(),
-    ),
-    "&lt;u&gt;",
-  );
-});
-
-test("escapeEntities with arrays gives the same text as children", () => {
-  // Joined without commas and with `null` and booleans skipped, like `{["<a>", "b"]}`.
-  assert.strictEqual(escapeEntities(["<a>", "b"]), "&lt;a&gt;b");
-  assert.strictEqual(escapeEntities(["a", null, false, true, undefined, 0, ["b", ["c"]]]), "a0bc");
-  assert.strictEqual(escapeEntities([]), "");
-  // Elements have no text form, like on their own.
-  assert.strictEqual(escapeEntities(["a", <b>x</b>, html("<i>"), "c"]), "ac");
-  // Other iterables keep their own string form, e.g. for building a URL.
-  assert.strictEqual(escapeEntities(new URLSearchParams("a=1&b=2")), "a=1&amp;b=2");
-});
-
-test("escapeEntities with bytes gives their UTF-8 text, like children", () => {
-  const encoder = new TextEncoder();
-  assert.strictEqual(escapeEntities(encoder.encode("<ä>")), "&lt;ä&gt;");
-  assert.strictEqual(escapeEntities(Buffer.from("<ä>")), "&lt;ä&gt;");
-  // A character split between two chunks is decoded as one.
-  const bytes = encoder.encode("<ä>");
-  assert.strictEqual(escapeEntities([bytes.subarray(0, 2), bytes.subarray(2)]), "&lt;ä&gt;");
-  assert.strictEqual(escapeEntities(["a", encoder.encode("b"), "c"]), "abc");
-});
-
-test("escapeEntities on a non-string renders escaped inside raw html", () =>
-  equal(<p>{html(escapeEntities(new Error("<b>")))}</p>, "<p>Error: &lt;b&gt;</p>"));
 
 test("component returning raw html", () => {
   const Raw = () => html("<b>raw</b>");

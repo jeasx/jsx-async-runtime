@@ -56,7 +56,7 @@ export function Article() {
         <header>
           <h1>{article.title}</h1>
           {html(
-            `<p class="byline">By <a href="${escapeEntities(article.author.url)}">${escapeEntities(article.author.name)}</a></p>`,
+            `<p class="byline">By <a href="${escapeEntities(article.author.url.href)}">${escapeEntities(article.author.name)}</a></p>`,
           )}
           <time datetime={article.published.toISOString()}>
             {article.published.toISOString().slice(0, 10)}
