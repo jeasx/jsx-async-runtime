@@ -337,8 +337,7 @@ export function renderAwaitable(
 
 /**
  * Renders a nested element, honoring a `this.jsxToString` override.
- * The override returns a string, which is appended to the writer.
- * `undefined` and `null` render nothing, so `return;` drops an element.
+ * See writeOverrideResult() for how its result is rendered.
  */
 export function renderNested(
   this: any,
@@ -356,9 +355,24 @@ export function renderNested(
   }
   const result = $jsxToString.call(this, jsxElement);
   if (isPromise(result)) {
-    return flushAndAwait(writer, result).then(($result) => {
-      writer.buffer += $result ?? "";
-    });
+    return flushAndAwait(writer, result).then(($result) =>
+      writeOverrideResult.call(this, $result, writer),
+    );
   }
-  writer.buffer += result ?? "";
+  return writeOverrideResult.call(this, result, writer);
+}
+
+/**
+ * Writes what a `this.jsxToString` override returned. A string is markup and is written as is.
+ * Anything else renders like a child instead of `[object Object]`: an element (e.g. a replacement)
+ * as markup, a number as text, and `undefined`, `null` and `false` as nothing, so `return;` drops
+ * an element. Like `jsxToString.call(this, result)`, the override applies to its children,
+ * but not to the result itself, so returning the given element doesn't loop.
+ */
+function writeOverrideResult(this: any, result: unknown, writer: Writer): void | Promise<void> {
+  if (typeof result === "string") {
+    writer.buffer += result;
+    return;
+  }
+  return renderElement.call(this, result as JSX.Element, writer);
 }

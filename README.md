@@ -313,7 +313,7 @@ Things to keep in mind:
 
 ## Customizing rendering
 
-Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also children as written, like strings, numbers, (nested) arrays, `null` or `false`. Check for elements with `isJsxNode` before reading `tag` or `props`; in TypeScript, it also narrows the type, so `jsxElement.tag` type-checks. It returns a string or a promise of one; `""`, `null` and `undefined` render nothing. Call the original `jsxToString` to fall back to the default rendering:
+Set `this.jsxToString` to intercept the rendering of every nested element. The override receives everything that is about to be rendered: elements (`{ tag, props }`), but also children as written, like strings, numbers, (nested) arrays, `null` or `false`. Check for elements with `isJsxNode` before reading `tag` or `props`; in TypeScript, it also narrows the type, so `jsxElement.tag` type-checks. It returns a string of markup, which is rendered as is, or a promise of one. Anything else it returns is rendered like a child: an element (e.g. a replacement) as markup, a number as text, and `null`, `undefined` and `false` as nothing. Call the original `jsxToString` to fall back to the default rendering:
 
 ```jsx
 import { isJsxNode, jsxToString } from "jsx-async-runtime";

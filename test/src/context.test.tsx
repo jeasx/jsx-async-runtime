@@ -164,6 +164,44 @@ test("override returning undefined or null renders nothing", async () => {
   );
 });
 
+test("override returning something other than a string renders it like a child", async () => {
+  const ctx = {
+    jsxToString(element: any): any {
+      switch (element?.tag) {
+        case "b":
+          // A replacement element; the override applies to its children too.
+          return <strong>{element.props.children}</strong>;
+        case "i":
+          return element; // returning the given element must not loop
+        case "em":
+          return Promise.resolve(<span>{"<em>"}</span>);
+        case "data":
+          return 42;
+        case "del":
+          return false;
+      }
+      if (element === "secret") {
+        return "***";
+      }
+      return jsxToString.call(this, element);
+    },
+  };
+  const page = (
+    <p>
+      <b>
+        <u>secret</u>
+      </b>
+      <i>x</i>
+      <em />
+      <data />
+      <del />
+    </p>
+  );
+  const expected = `<p><strong><u>***</u></strong><i>x</i><span>&lt;em&gt;</span>42</p>`;
+  assert.strictEqual(await jsxToString.call(ctx, page), expected);
+  assert.strictEqual((await streamToChunks(jsxToStream.call(ctx, page))).join(""), expected);
+});
+
 test("override installed by a component applies to later siblings", async () => {
   const Footer = () => <footer>f</footer>;
   function installOverride(this: any) {

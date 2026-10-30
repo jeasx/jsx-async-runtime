@@ -85,6 +85,19 @@ test("escapeEntities with null, undefined and booleans", () => {
   assert.strictEqual(escapeEntities(true), "");
 });
 
+test("escapeEntities with objects without their own string form", () => {
+  // Like children: nothing instead of "[object Object]".
+  assert.strictEqual(escapeEntities({}), "");
+  assert.strictEqual(escapeEntities({ name: "<b>" }), "");
+  assert.strictEqual(escapeEntities(new Map([["a", 1]])), "");
+  assert.strictEqual(escapeEntities(new (class User {})()), "");
+  // Has no `toString` at all, which made String() throw.
+  assert.strictEqual(escapeEntities(Object.create(null)), "");
+  // Objects with their own string form still render it.
+  assert.strictEqual(escapeEntities(new (class { toString = () => "<u>" })()), "&lt;u&gt;");
+  assert.strictEqual(escapeEntities(["<a>", "b"]), "&lt;a&gt;,b");
+});
+
 test("escapeEntities on a non-string renders escaped inside raw html", () =>
   equal(<p>{html(escapeEntities(new Error("<b>")))}</p>, "<p>Error: &lt;b&gt;</p>"));
 
