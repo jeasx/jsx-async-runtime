@@ -33,7 +33,9 @@ function Row({ row }) {
     <tr id={`row-${row.id}`} class={cx("row", { active: row.active })} data-id={row.id}>
       <td>{row.id}</td>
       <td>{row.name}</td>
-      <td style={row.active ? "text-align: right; color: green" : "text-align: right"}>{row.price}</td>
+      <td style={row.active ? "text-align: right; color: green" : "text-align: right"}>
+        {row.price}
+      </td>
       <td>
         {row.tags.map((tag) => (
           <span class="tag">{tag}</span>

@@ -237,18 +237,18 @@ The same goes for styles. Style values are escaped for HTML, but not checked as 
 
 Attributes use their HTML names (`class`, `for`, `onclick`), not the React names (`className`, `htmlFor`, `onClick`).
 
-| Value                                           | Renders as                                                                      |
-| ----------------------------------------------- | ------------------------------------------------------------------------------- |
-| `"text"`                                        | `name="text"` (escaped)                                                         |
-| `true`                                          | `name`                                                                          |
-| `false`, `null`, `undefined`                    | nothing                                                                         |
-| function or symbol                              | nothing                                                                         |
-| element or `html()`, e.g. `title={<b />}`       | nothing                                                                         |
-| promise, e.g. `title={loadTitle()}`             | awaited, then rendered like its value                                           |
-| plain object or array                           | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                                    |
-| bytes, e.g. a `Buffer`                          | UTF-8 text (escaped), like bytes as children                                    |
-| `Map`, `Set` or other object without `toString` | nothing                                                                         |
-| anything else (`URL`, `Date`, numbers)          | its string form, e.g. `href={new URL("https://example.com")}`                   |
+| Value                                           | Renders as                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------- |
+| `"text"`                                        | `name="text"` (escaped)                                       |
+| `true`                                          | `name`                                                        |
+| `false`, `null`, `undefined`                    | nothing                                                       |
+| function or symbol                              | nothing                                                       |
+| element or `html()`, e.g. `title={<b />}`       | nothing                                                       |
+| promise, e.g. `title={loadTitle()}`             | awaited, then rendered like its value                         |
+| plain object or array                           | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                  |
+| bytes, e.g. a `Buffer`                          | UTF-8 text (escaped), like bytes as children                  |
+| `Map`, `Set` or other object without `toString` | nothing                                                       |
+| anything else (`URL`, `Date`, numbers)          | its string form, e.g. `href={new URL("https://example.com")}` |
 
 The table shows how values render at runtime. TypeScript is stricter: known attributes accept only their HTML value types, e.g. `href` and `title` accept strings, so convert other values first, e.g. `href={String(url)}`. Unknown attributes like `data-*` accept any value.
 
@@ -347,15 +347,15 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 
 ## API
 
-| Export                                   | Description                                                                                                                          |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.                                                                |
-| `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits.                                                      |
-| `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                                                                      |
-| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a string.                                                                                      |
-| `isJsxNode(value)`                       | Checks for an element or `html()` markup; look-alikes from JSON don't count.                                                         |
-| `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                                                                             |
-| `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.                                                        |
+| Export                                   | Description                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.           |
+| `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits. |
+| `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                 |
+| `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a string.                                 |
+| `isJsxNode(value)`                       | Checks for an element or `html()` markup; look-alikes from JSON don't count.    |
+| `createElement(tag, props, ...children)` | Creates an element without JSX syntax (classic runtime).                        |
+| `Fragment`                               | Fragment tag for `createElement`, e.g. `createElement(Fragment, null, a, b)`.   |
 
 Context properties read by the runtime:
 

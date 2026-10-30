@@ -235,4 +235,3 @@ test("Map, Set and class instances without toString render nothing", () => {
     `<div id="x"></div>`,
   );
 });
-

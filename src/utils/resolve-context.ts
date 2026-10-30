@@ -13,7 +13,9 @@ export function resolveContext(thisArg: any, name: string, method: Function): an
     return {};
   }
   const namespace = thisArg[name] === method ? thisArg.default : undefined;
-  return namespace != null && namespace[Symbol.toStringTag] === "Module" && namespace[name] === method
+  return namespace != null &&
+    namespace[Symbol.toStringTag] === "Module" &&
+    namespace[name] === method
     ? {}
     : thisArg;
 }
