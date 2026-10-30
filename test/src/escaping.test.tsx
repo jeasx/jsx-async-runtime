@@ -247,3 +247,26 @@ test("a polluted Object.prototype.waits doesn't break async rendering", async ()
     delete (Object.prototype as any).waits;
   }
 });
+
+test("a polluted Object.prototype isn't walked in object props", async () => {
+  // E.g. from a request body like `{"__proto__": {"tracked": ...}}`. Object props are checked
+  // for early promise rejections, which must skip inherited keys like the rest of the runtime.
+  let reads = 0;
+  Object.defineProperty(Object.prototype, "tracked", {
+    enumerable: true,
+    configurable: true,
+    get() {
+      reads++;
+      return undefined;
+    },
+  });
+  try {
+    await equal(
+      <div data-user={{ name: "a" }} />,
+      `<div data-user="{&quot;name&quot;:&quot;a&quot;}"></div>`,
+    );
+    assert.strictEqual(reads, 0);
+  } finally {
+    delete (Object.prototype as any).tracked;
+  }
+});

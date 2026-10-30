@@ -2,6 +2,10 @@ import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { forEachInCollection, forEachItem, isCollection } from "./for-each-item.js";
 import { noOp } from "./no-op.js";
 
+// Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
+// see attributes-to-string.ts.
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 /**
  * Promises start before rendering gets to them and may reject in the meantime.
  * Marks such a rejection as handled, so Node doesn't crash with an unhandled rejection.
@@ -27,7 +31,9 @@ export function handleRejection(value: unknown, start = 0): void {
     if (prototype === Object.prototype || prototype === null) {
       const record = value as Record<string, unknown>;
       for (const key in record) {
-        forEachItem(record[key], ignoreRejection);
+        if (hasOwnProperty.call(record, key)) {
+          forEachItem(record[key], ignoreRejection);
+        }
       }
     }
   }
