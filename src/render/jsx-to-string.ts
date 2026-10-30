@@ -9,8 +9,8 @@ import { renderElement } from "./render-element.js";
 
 /**
  * Renders a JSX element to a string.
- * Runs synchronously as long as possible and only returns a promise
- * when an async component (or promise child) is encountered.
+ * Runs synchronously as long as possible and only returns a promise once rendering
+ * has to wait, e.g. for an async component, a promise or an async iterable.
  *
  * @param this - Optional context passed to all components (e.g. `jsxToString.call({}, jsx)`).
  *   Without one, the render gets a new empty object, so components can always write to `this`.

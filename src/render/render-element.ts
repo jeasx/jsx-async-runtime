@@ -48,8 +48,8 @@ const isValidTagName = createNameValidator(/^[a-zA-Z][^\s"'<>/=&\x00-\x1f\x7f-\x
 
 /**
  * Renders a JSX element into the writer.
- * Runs synchronously as long as possible and only returns a promise
- * when an async component (or promise child) is encountered.
+ * Runs synchronously as long as possible and only returns a promise once rendering
+ * has to wait, e.g. for an async component, a promise or an async iterable.
  */
 export function renderElement(
   this: any,

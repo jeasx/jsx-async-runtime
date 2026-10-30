@@ -155,7 +155,7 @@ async function UserCard({ user }) {
 
 Starting promises early is safe: if one rejects before rendering gets to it, the error is reported when the promise is rendered or awaited, like any other component error, instead of crashing Node as an unhandled rejection. Promises inside an array prop (e.g. `users={[loadUser(1), loadUser(2)]}`) or directly inside an object prop (e.g. `data={{ user }}`) are covered too. Objects inside objects or arrays aren't checked, so passing large data stays cheap. Pass promises nested that deep (e.g. `data={{ profile: { user } }}` or `users={[{ avatar }]}`) as their own prop. Arrays, `Set`s and `Map`s are checked, but iterators are not, since checking would use them up: pass `[...map.values()]` instead of `map.values()` when the values are promises that are already running.
 
-`jsxToString` returns a plain `string` as long as no component had to wait, and a `Promise<string>` otherwise. Using `await` works in both cases.
+`jsxToString` returns a plain `string` as long as rendering never had to wait, and a `Promise<string>` as soon as it waits for anything: an async component, a promise (as a child or an attribute value) or an async iterable. Using `await` works in both cases.
 
 `jsxToString` never throws. If a component throws (sync or async), it returns a rejected promise, so one `try`/`catch` around `await` handles all errors:
 
@@ -214,7 +214,7 @@ const context = {
 };
 ```
 
-Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, as are tag names that don't start with an ASCII letter. This way, a name from untrusted input can't break out of the tag and inject markup.
+Attribute values are always escaped. Tag and attribute names containing whitespace, quotes, `<`, `>`, `/`, `=`, `&` or control characters are skipped, as are tag names that don't start with an ASCII letter. A skipped tag is left out together with its children. This way, a name from untrusted input can't break out of the tag and inject markup.
 
 Valid names are still rendered as written, and some of them run code. Spreading untrusted data onto an element, e.g. `<div {...body} />` with a request body like `{"onmouseover": "alert(1)"}`, adds a working event handler, and `srcdoc` on an `<iframe>` runs any script in its value. Dynamic tags work the same way: `createElement(props.as, null, text)` with `"script"` as the tag runs `text` as code. Pass only the attributes you expect, and allow only known tags:
 
@@ -254,7 +254,7 @@ The table shows how values render at runtime. TypeScript is stricter: known attr
 
 `class` and `style` are plain string attributes, like in HTML. Objects and arrays follow the rules above, so `class={{ active: true }}` renders JSON, not `class="active"`. To build class names from conditions, use a library like [clsx](https://github.com/lukeed/clsx), e.g. `class={clsx("btn", { active: isActive })}`. Write styles as strings, e.g. ``style={`--columns: ${n}; gap: 1rem`}``. `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
 
-The table applies to the attribute value itself. Values nested in an object or array attribute are converted by `JSON.stringify` and follow its rules instead: a `Map` or `Set` becomes `{}`, bytes become `{"0":104,"1":105}`, a `Date` becomes its ISO string, and BigInts become strings. Functions and elements are left out of objects and become `null` in arrays. Convert such values first, e.g. `data-tags={[...tags]}` for a `Set`.
+The table applies to the attribute value itself. Values nested in an object or array attribute are converted by `JSON.stringify` and follow its rules instead: a `Map` or `Set` becomes `{}`, a `Uint8Array` becomes `{"0":104,"1":105}`, a `Buffer` becomes `{"type":"Buffer","data":[104,105]}`, a `Date` becomes its ISO string, and BigInts become strings. Functions and elements are left out of objects and become `null` in arrays. Convert such values first, e.g. `data-tags={[...tags]}` for a `Set`.
 
 Only a promise passed as the attribute value itself is awaited. A promise nested in an object or array attribute (e.g. `data-ids={[loadId()]}`) fails the render with a `TypeError`, so await it first.
 
@@ -279,7 +279,7 @@ Components using `this` must be regular `function`s, not arrow functions. Create
 
 ## Streaming
 
-Instead of waiting for the complete document, you can stream the markup with `jsxToStream`. It renders in the same order as `jsxToString`, but returns a `ReadableStream<string>`. Markup rendered so far is sent as a chunk whenever rendering waits for an async component, so the browser can start loading styles and scripts from the `<head>` while slow data is still being fetched. Large pages are also sent in chunks of about 16 KB, even when no component is async, and rendering pauses while the client is slow to read, so the complete page doesn't have to be held in memory.
+Instead of waiting for the complete document, you can stream the markup with `jsxToStream`. It renders in the same order as `jsxToString`, but returns a `ReadableStream<string>`. Markup rendered so far is sent as a chunk whenever rendering waits for an async component, so the browser can start loading styles and scripts from the `<head>` while slow data is still being fetched. Large pages are also sent in chunks of about 16,000 characters, even when no component is async, and rendering pauses while the client is slow to read, so the complete page doesn't have to be held in memory. Chunks end between children, so a single large value (e.g. a long text or `html()` string) is sent as one chunk.
 
 ```jsx
 import { jsxToStream } from "jsx-async-runtime";
@@ -349,7 +349,7 @@ This lets you patch markup you don't control (e.g. third-party components) or co
 
 | Export                                   | Description                                                                     |
 | ---------------------------------------- | ------------------------------------------------------------------------------- |
-| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if a component had to wait.           |
+| `jsxToString.call(context, jsx)`         | Renders to `string`, or `Promise<string>` if rendering had to wait.             |
 | `jsxToStream.call(context, jsx)`         | Renders to a `ReadableStream<string>`, sending chunks whenever rendering waits. |
 | `html(markup)`                           | Marks a string as raw markup that is rendered without escaping.                 |
 | `escapeEntities(input)`                  | Escapes `&`, `<`, `>`, `"` and `'` in a string.                                 |

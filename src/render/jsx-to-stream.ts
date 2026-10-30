@@ -16,8 +16,8 @@ const CHUNK_SIZE = 16 * 1024;
 /**
  * Renders a JSX element to a stream of strings.
  * Markup rendered so far is sent as a chunk whenever rendering waits
- * for an async component (or promise child), and whenever about 16 KB
- * of markup has piled up, so large sync pages are streamed as well.
+ * (e.g. for an async component, a promise or an async iterable), and whenever
+ * about 16,000 characters of markup have piled up, so large sync pages are streamed as well.
  *
  * @param this - Optional context passed to all components (e.g. `jsxToStream.call({}, jsx)`).
  *   Without one, the render gets a new empty object, so components can always write to `this`.
