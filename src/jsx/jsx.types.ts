@@ -52,7 +52,9 @@ declare global {
       | bigint
       | Iterable<Element>;
     type Element = SyncElement | AsyncElement;
-    type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
+    // What a component's `children` prop can hold: the same as `Element`, which already includes
+    // (nested) arrays as iterables. Kept for typing props, e.g. `{ children?: JSX.Children }`.
+    type Children = Element;
 
     // Valid tags: element names and components (TypeScript 5.1+). A component may return
     // a promise of any element, so `async function Page(): Promise<JSX.Element>` type-checks,
