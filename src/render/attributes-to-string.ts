@@ -72,7 +72,7 @@ async function resolveAttributes(props: Record<string, unknown>): Promise<Record
   return resolved;
 }
 
-function attributeToString(key: string, value: any): string {
+function attributeToString(key: string, value: unknown): string {
   if (typeof value === "string") {
     return `${key}="${escapeHTML(value)}"`;
   }
@@ -88,11 +88,11 @@ function attributeToString(key: string, value: any): string {
       if (Array.isArray(value)) {
         return "";
       }
-      const styles = styleToString(value);
+      const styles = styleToString(value as Record<string, unknown>);
       return styles && `style="${escapeHTML(styles)}"`;
     }
     if (key === "class") {
-      const classes = classToString(value);
+      const classes = classToString(value as unknown[] | Record<string, unknown>);
       return classes && `class="${escapeHTML(classes)}"`;
     }
     const prototype = Object.getPrototypeOf(value);
