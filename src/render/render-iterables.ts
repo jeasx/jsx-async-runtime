@@ -51,6 +51,12 @@ function takeItem(state: IteratorState, result: IteratorResult<JSX.Element>): bo
     state.item = decodeItem(state, item);
     return true;
   }
+  // A promise after bytes may resolve to bytes that complete a character, so the decoder
+  // stays open until renderItem() knows what it resolved to.
+  if (state.decoder && isPromise(item)) {
+    state.item = item;
+    return true;
+  }
   // Bytes cut off within a character leave "�" in the decoder. It renders first, as its own
   // item, so the item itself reaches an override as is (a promise resolved), not in an array.
   const rest = finishDecoding(state);
@@ -61,6 +67,21 @@ function takeItem(state: IteratorState, result: IteratorResult<JSX.Element>): bo
   }
   state.item = item;
   return true;
+}
+
+/**
+ * Renders `state.item`. A promise after bytes is awaited first and taken like an item of its own,
+ * so bytes it resolves to continue the text of the bytes before it.
+ */
+function renderItem(this: any, state: IteratorState, writer: Writer): void | Promise<void> {
+  const item = state.item;
+  if (state.decoder && isPromise(item)) {
+    return flushAndAwait(writer, item).then((value) => {
+      takeItem(state, { done: false, value });
+      return renderAwaitable.call(this, state.item, writer);
+    });
+  }
+  return renderAwaitable.call(this, item, writer);
 }
 
 /**
@@ -187,7 +208,7 @@ function renderNextItem(
       return;
     }
   }
-  return renderAwaitable.call(this, state.item, writer);
+  return renderItem.call(this, state, writer);
 }
 
 /**
@@ -267,7 +288,7 @@ export async function renderAsyncIterable(
       }
       // Awaitable, so a promise item (e.g. from a `ReadableStream`) reaches a `this.jsxToString`
       // override resolved, like in arrays and sync iterables.
-      const pending = renderAwaitable.call(this, state.item, writer);
+      const pending = renderItem.call(this, state, writer);
       if (isPromise(pending)) {
         await pending;
       }

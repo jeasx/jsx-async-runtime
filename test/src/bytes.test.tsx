@@ -1,3 +1,5 @@
+import { jsxToString } from "jsx-async-runtime";
+import { strict as assert } from "node:assert";
 import test from "node:test";
 import { equal } from "./helpers/equal.js";
 
@@ -90,4 +92,75 @@ test("bytes mixed with other async iterable items", () => {
     yield "y";
   }
   return equal(() => <p>{items()}</p>, `<p>ü<b>x</b>\uFFFDy</p>`);
+});
+
+test("character split between bytes and a promise of bytes", () =>
+  equal(
+    <p>
+      {new Uint8Array([0x61, 0xc3])}
+      {Promise.resolve(new Uint8Array([0xbc, 0x62]))}
+    </p>,
+    `<p>aüb</p>`,
+  ));
+
+test("character split between a promise of bytes and bytes", () =>
+  equal(
+    <p>
+      {Promise.resolve(new Uint8Array([0xc3]))}
+      {new Uint8Array([0xbc])}
+    </p>,
+    `<p>ü</p>`,
+  ));
+
+test("character split between promises of bytes", () =>
+  equal(
+    <p>
+      {Promise.resolve(new Uint8Array([0xe2]))}
+      {Promise.resolve(new Uint8Array([0x82]))}
+      {new Uint8Array([0xac])}
+    </p>,
+    `<p>€</p>`,
+  ));
+
+test("character cut off before a promise that isn't bytes", () =>
+  equal(
+    <p>
+      {new Uint8Array([0x61, 0xc3])}
+      {Promise.resolve(<b>x</b>)}
+      {Promise.resolve(new Uint8Array([0xbc]))}
+    </p>,
+    `<p>a�<b>x</b>�</p>`,
+  ));
+
+test("character split between bytes and a promise of bytes in a generator", () => {
+  function* items() {
+    yield new Uint8Array([0xc3]);
+    yield Promise.resolve(new Uint8Array([0xbc]));
+    // Cut off by a promise that isn't bytes.
+    yield new Uint8Array([0xc3]);
+    yield Promise.resolve("y");
+  }
+  return equal(() => <p>{items()}</p>, `<p>ü�y</p>`);
+});
+
+test("override gets bytes split before a promise as text", async () => {
+  const seen: unknown[] = [];
+  const context = {
+    jsxToString(element: JSX.Element) {
+      seen.push(element);
+      return jsxToString.call(this, element);
+    },
+  };
+  const html = await jsxToString.call(
+    context,
+    <p>
+      {new Uint8Array([0xc3])}
+      {Promise.resolve(new Uint8Array([0xbc]))}
+    </p>,
+  );
+  assert.strictEqual(html, `<p>ü</p>`);
+  assert.ok(
+    seen.every((item) => !(item instanceof Uint8Array)),
+    "the override got bytes",
+  );
 });

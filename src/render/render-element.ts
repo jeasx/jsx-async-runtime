@@ -5,7 +5,7 @@ import {
   cancelUnreadStreamsOnRejection,
 } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
-import { decodeByteRun, decodeBytes, isByteRun } from "../utils/decode-bytes.js";
+import { decodeByteRun, decodeBytes } from "../utils/decode-bytes.js";
 import { getOwnChildren } from "../utils/get-own-children.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
@@ -251,29 +251,27 @@ export function renderChildren(
   writer: Writer,
 ): void | Promise<void> {
   let i = 0;
+  // Open only between bytes and a promise right after them, see decodeByteRun().
+  let decoder: TextDecoder | undefined;
   try {
     for (; i < children.length; i++) {
       const child = children[i]!;
-      // Inlined instead of renderAwaitable(), since this loop runs for every child
-      // (about 5% faster in the benchmark).
-      let pending: void | Promise<void>;
       if (isPromise(child)) {
-        pending = flushAndAwait(writer, child).then(($child) =>
-          renderNested.call(this, $child, writer),
-        );
-      } else {
-        let element = child;
-        // `typeof` first, so text children skip the byte check.
-        if (typeof child === "object" && isByteRun(children, i)) {
-          [element, i] = decodeByteRun(children, i);
-        }
-        // Send large sync markup early; continue async if the reader is behind.
-        pending = renderNested.call(this, element, writer) || flushIfFull(writer);
-      }
-      if (isPromise(pending)) {
         // Rendering won't get to the later children right away.
         handleRejection(children, i + 1);
-        return renderChildrenAsync.call(this, children, i, pending, writer);
+        // Continues with this child, which renderChildrenAsync() awaits right away.
+        return renderChildrenAsync.call(this, children, i - 1, undefined, writer, decoder);
+      }
+      let element = child;
+      // `typeof` first, so text children skip the byte check.
+      if (typeof child === "object" && isByteArray(child)) {
+        [element, i, decoder] = decodeByteRun(children, i, child);
+      }
+      // Send large sync markup early; continue async if the reader is behind.
+      const pending = renderNested.call(this, element, writer) || flushIfFull(writer);
+      if (isPromise(pending)) {
+        handleRejection(children, i + 1);
+        return renderChildrenAsync.call(this, children, i, pending, writer, decoder);
       }
     }
   } catch (error) {
@@ -285,24 +283,38 @@ export function renderChildren(
 }
 
 /**
- * Continues rendering the children once the child at `index` (`pendingChild`) is done.
+ * Continues rendering the children after the child at `index`, once `pendingChild`
+ * (the rendering of that child, if any) is done. `decoder` continues the bytes before
+ * the next child, a promise, see decodeByteRun().
  */
 async function renderChildrenAsync(
   this: any,
   children: JSX.Element[],
   index: number,
-  pendingChild: Promise<void>,
+  pendingChild: void | Promise<void>,
   writer: Writer,
+  decoder: TextDecoder | undefined,
 ): Promise<void> {
   try {
-    await pendingChild;
+    if (pendingChild) {
+      await pendingChild;
+    }
     while (++index < children.length) {
       const child = children[index]!;
-      let element: JSX.Element = child;
-      if (isPromise(child)) {
-        element = await flushAndAwait(writer, child);
-      } else if (typeof child === "object" && isByteRun(children, index)) {
-        [element, index] = decodeByteRun(children, index);
+      let element: JSX.Element = isPromise(child) ? await flushAndAwait(writer, child) : child;
+      if (typeof element === "object" && isByteArray(element)) {
+        [element, index, decoder] = decodeByteRun(children, index, element, decoder);
+      } else if (decoder) {
+        // The bytes before a promise ended within a character: render the "�" left in the decoder
+        // before what the promise resolved to.
+        const rest = decoder.decode();
+        decoder = undefined;
+        if (rest !== "") {
+          const pending = renderNested.call(this, rest, writer);
+          if (isPromise(pending)) {
+            await pending;
+          }
+        }
       }
       // Only wait when the child has to, so sync siblings don't cost extra microtasks.
       const pending = renderNested.call(this, element, writer);

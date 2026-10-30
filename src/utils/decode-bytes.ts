@@ -1,4 +1,5 @@
 import { isByteArray } from "./is-byte-array.js";
+import { isPromise } from "./is-promise.js";
 
 // Used without the `stream` option, it keeps no state between calls, so one instance is shared.
 const textDecoder = new TextDecoder();
@@ -13,26 +14,28 @@ export function decodeBytes(bytes: Uint8Array): string {
 }
 
 /**
- * Checks if the child at `index` and the one after it are both bytes,
- * e.g. chunks collected from a stream or yielded by a generator.
+ * Decodes `bytes` (the child at `index`, or what the promise there resolved to) together with
+ * the bytes that follow it as one text, so a character split between them is decoded correctly,
+ * like in an async iterable. `decoder` continues the bytes before a promise, if any.
+ * Returns the text, the index of the last bytes it decoded, and the decoder when it is still open:
+ * a promise after the bytes may resolve to bytes that complete a character, so the caller passes
+ * the decoder on, and finishes it with `decoder.decode()` when the promise resolves to anything else.
  */
-export function isByteRun(children: JSX.Element[], index: number): boolean {
-  return isByteArray(children[index]) && isByteArray(children[index + 1]);
-}
-
-/**
- * Decodes the bytes at `index` together with the bytes that follow it as one text,
- * so a character split between two of them is decoded correctly, like in an async iterable.
- * Returns the text and the index of the last bytes it decoded.
- */
-export function decodeByteRun(children: JSX.Element[], index: number): [string, number] {
-  const decoder = new TextDecoder();
-  let text = "";
-  for (; index < children.length && isByteArray(children[index]); index++) {
-    text += decoder.decode(children[index] as Uint8Array, { stream: true });
+export function decodeByteRun(
+  children: JSX.Element[],
+  index: number,
+  bytes: Uint8Array,
+  decoder = new TextDecoder(),
+): [string, number, TextDecoder | undefined] {
+  let text = decoder.decode(bytes, { stream: true });
+  while (isByteArray(children[index + 1])) {
+    text += decoder.decode(children[++index] as Uint8Array, { stream: true });
+  }
+  if (isPromise(children[index + 1])) {
+    return [text, index, decoder];
   }
   // Bytes of a character cut off at the end render as the replacement character "�".
-  return [text + decoder.decode(), index - 1];
+  return [text + decoder.decode(), index, undefined];
 }
 
 /**
