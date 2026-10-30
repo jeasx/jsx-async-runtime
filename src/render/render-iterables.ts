@@ -173,6 +173,22 @@ function stopIterator(
 }
 
 /**
+ * Reads a `ReadableStream` with its own reader instead of its async iterator. The iterator's
+ * `return()` waits for a pending read, so a stalled source (e.g. a `fetch()` body whose server
+ * stopped sending) would never be cancelled. `reader.cancel()` ends a pending read right away.
+ */
+function readStream(stream: ReadableStream<JSX.Element>): AsyncIterator<JSX.Element> {
+  const reader = stream.getReader();
+  return {
+    next: () => reader.read() as Promise<IteratorResult<JSX.Element>>,
+    return: async () => {
+      await reader.cancel();
+      return { done: true, value: undefined };
+    },
+  };
+}
+
+/**
  * Renders the items of an async iterable in order.
  * The markup rendered so far is sent while waiting for each item, so items stream as they arrive.
  * When rendering fails or the stream is cancelled, the source is stopped like `for await` does
@@ -183,7 +199,10 @@ export async function renderAsyncIterable(
   iterable: AsyncIterable<JSX.Element>,
   writer: Writer,
 ): Promise<void> {
-  const iterator = iterable[Symbol.asyncIterator]();
+  const iterator =
+    typeof ReadableStream === "function" && iterable instanceof ReadableStream
+      ? readStream(iterable)
+      : iterable[Symbol.asyncIterator]();
   const state = createIteratorState();
   const next = async () => {
     try {

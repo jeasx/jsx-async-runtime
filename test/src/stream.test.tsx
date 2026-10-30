@@ -317,6 +317,52 @@ test("stream cancel stops an async iterable that is waiting for its next item", 
   assert.ok(stopped, "source was not stopped");
 });
 
+test("stream cancel cancels a ReadableStream child that is waiting for its next chunk", async () => {
+  // E.g. a `fetch()` body whose server stopped sending. The stream's own async iterator
+  // waits for the pending read before it cancels, so the source would stay open.
+  let cancelled = false;
+  let pulls = 0;
+  const body = new ReadableStream<string>({
+    pull(controller) {
+      if (++pulls === 1) {
+        controller.enqueue("a");
+        return;
+      }
+      return new Promise<void>(() => {});
+    },
+    cancel() {
+      cancelled = true;
+    },
+  });
+  const reader = jsxToStream(<div>{body}</div>).getReader();
+  let received = "";
+  while (!received.includes("a")) {
+    received += (await reader.read()).value;
+  }
+  await reader.cancel();
+  await delay(10);
+  assert.ok(cancelled, "source was not cancelled");
+});
+
+test("a failing item cancels the rest of a ReadableStream child", async () => {
+  let cancelled = false;
+  const Fail = () => {
+    throw new Error("fail");
+  };
+  const body = new ReadableStream<JSX.Element>({
+    start(controller) {
+      controller.enqueue(<Fail />);
+      controller.enqueue("never rendered");
+    },
+    cancel() {
+      cancelled = true;
+    },
+  });
+  await assert.rejects(async () => jsxToString(<div>{body}</div>), /fail/);
+  await delay(10);
+  assert.ok(cancelled, "source was not cancelled");
+});
+
 test("an async iterable reached after the stream was cancelled leaves no unhandled rejection", async () => {
   async function* items() {
     yield "a";
