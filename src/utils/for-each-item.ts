@@ -1,5 +1,4 @@
-/** The collections whose items are rendered and can be read without using them up. */
-type Collection = unknown[] | Set<unknown> | Map<unknown, unknown>;
+import { type Collection, isCollection } from "./is-collection.js";
 
 /**
  * Calls `visit` with `value`, or, when it is an array, a Set or a Map, with each item in it
@@ -29,11 +28,6 @@ export function forEachInCollection(
   start = 0,
 ): void {
   walk(collection, start, visit, undefined);
-}
-
-/** Checks for the collections that are walked: arrays, Sets and Maps. */
-export function isCollection(value: object): value is Collection {
-  return Array.isArray(value) || value instanceof Set || value instanceof Map;
 }
 
 /**

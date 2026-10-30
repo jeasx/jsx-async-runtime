@@ -1,5 +1,6 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
-import { forEachInCollection, forEachItem, isCollection } from "./for-each-item.js";
+import { forEachInCollection, forEachItem } from "./for-each-item.js";
+import { isCollection } from "./is-collection.js";
 import { noOp } from "./no-op.js";
 
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
