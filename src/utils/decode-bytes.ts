@@ -56,7 +56,11 @@ export function decodeItem(state: ByteDecoding, item: JSX.Element): JSX.Element 
   if (state.decoder) {
     const rest = state.decoder.decode();
     state.decoder = undefined;
-    return [rest, item];
+    // The decoder only holds text when the bytes ended within a character (rendered as "�").
+    // Otherwise the item is passed on as is, so a promise item reaches an override resolved.
+    if (rest !== "") {
+      return [rest, item];
+    }
   }
   return item;
 }

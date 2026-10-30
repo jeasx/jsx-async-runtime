@@ -183,6 +183,23 @@ test("override gets bytes as text and promises resolved", async () => {
   assert.deepStrictEqual(seen, []);
 });
 
+test("override gets a promise after bytes in an iterator resolved, not in an array", async () => {
+  const seen: unknown[] = [];
+  const ctx = {
+    jsxToString(element: any) {
+      seen.push(element);
+      return jsxToString.call(this, element);
+    },
+  };
+  function* items() {
+    yield new TextEncoder().encode("a");
+    yield Promise.resolve("b");
+  }
+  assert.strictEqual(await jsxToString.call(ctx, <p>{items()}</p>), `<p>ab</p>`);
+  assert.ok(!seen.some(Array.isArray), "override got the promise wrapped in an array");
+  assert.ok(seen.includes("b"), "override didn't get the resolved promise");
+});
+
 const isPromise = (value: unknown) => typeof (value as any)?.then === "function";
 
 test("override returning undefined or null renders nothing", async () => {
