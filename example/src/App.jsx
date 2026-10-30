@@ -88,8 +88,7 @@ input[type="text"] {border: 1px solid #aaa; padding: 4px; width: 40em;}
   );
 }
 
-// Provide default value for 'children' to avoid type errors
-function Layout({ title, children = [] }) {
+function Layout({ title, children }) {
   return (
     <main style="text-align: center">
       <head>
