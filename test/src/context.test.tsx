@@ -216,6 +216,41 @@ test("override gets a promise after bytes in an iterator resolved, not in an arr
   assert.ok(seen.includes("b"), "override didn't get the resolved promise");
 });
 
+test("override gets a promise after cut-off bytes resolved, not in an array", async () => {
+  const seen: unknown[] = [];
+  const ctx = {
+    jsxToString(element: any) {
+      seen.push(element);
+      return jsxToString.call(this, element);
+    },
+  };
+  // The first byte of "ü" without the second, so the decoder is left with "\uFFFD".
+  function* items() {
+    yield new Uint8Array([0x61, 0xc3]);
+    yield Promise.resolve("b");
+  }
+  // A source that yields promises as is, unlike an async generator, which awaits them.
+  const asyncItems: AsyncIterable<JSX.Element> = {
+    [Symbol.asyncIterator]: () => {
+      const queue = [new Uint8Array([0x63, 0xc3]), Promise.resolve("d")];
+      return { next: async () => ({ done: !queue.length, value: queue.shift() }) };
+    },
+  };
+  assert.strictEqual(
+    await jsxToString.call(
+      ctx,
+      <p>
+        {items()}
+        {asyncItems}
+      </p>,
+    ),
+    `<p>a\uFFFDbc\uFFFDd</p>`,
+  );
+  assert.ok(!seen.some(Array.isArray), "override got the promise wrapped in an array");
+  assert.ok(!seen.some(isPromise), "override got an unresolved promise");
+  assert.ok(seen.includes("\uFFFD") && seen.includes("b") && seen.includes("d"));
+});
+
 const isPromise = (value: unknown) => typeof (value as any)?.then === "function";
 
 test("override returning undefined or null renders nothing", async () => {

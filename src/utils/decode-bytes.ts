@@ -45,29 +45,18 @@ export type ByteDecoding = {
 };
 
 /**
- * Returns what to render for the next item: bytes are decoded as text,
- * and the text left in the decoder by the bytes before the item comes first.
+ * Decodes a byte item as text. A character split between this item and the next
+ * stays in the decoder until the next bytes (or finishDecoding()) complete it.
  */
-export function decodeItem(state: ByteDecoding, item: JSX.Element): JSX.Element {
-  if (isByteArray(item)) {
-    state.decoder ??= new TextDecoder();
-    return state.decoder.decode(item, { stream: true });
-  }
-  if (state.decoder) {
-    const rest = state.decoder.decode();
-    state.decoder = undefined;
-    // The decoder only holds text when the bytes ended within a character (rendered as "�").
-    // Otherwise the item is passed on as is, so a promise item reaches an override resolved.
-    if (rest !== "") {
-      return [rest, item];
-    }
-  }
-  return item;
+export function decodeItem(state: ByteDecoding, bytes: Uint8Array): string {
+  state.decoder ??= new TextDecoder();
+  return state.decoder.decode(bytes, { stream: true });
 }
 
 /**
- * Returns the text left in the decoder once the items ended, or `""`.
- * Bytes of a character cut off at the end render as the replacement character "�".
+ * Returns the text left in the decoder once the byte items ended, or `""`.
+ * The decoder only holds text when the bytes ended within a character,
+ * which renders as the replacement character "�".
  */
 export function finishDecoding(state: ByteDecoding): string {
   const rest = state.decoder?.decode() ?? "";

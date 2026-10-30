@@ -180,6 +180,31 @@ test("unread stream in an async iterable item is cancelled", () => {
   }, "item");
 });
 
+test("unread stream after cut-off bytes in an iterator is cancelled when the bytes fail", async () => {
+  let reason: Error | undefined;
+  const stream = new ReadableStream({
+    cancel(r: Error) {
+      reason = r;
+    },
+  });
+  // The "\uFFFD" left by the cut-off bytes renders before the stream, and fails here.
+  const ctx = {
+    jsxToString(element: any) {
+      if (element === "\uFFFD") {
+        throw new Error("cut off");
+      }
+      return jsxToString.call(this, element);
+    },
+  };
+  function* items() {
+    yield new Uint8Array([0xc3]);
+    yield stream;
+  }
+  await assert.rejects(async () => jsxToString.call(ctx, <p>{items()}</p>), { message: "cut off" });
+  await delay(5);
+  assert.strictEqual(reason?.message, "cut off", "stream was not cancelled");
+});
+
 test("unread stream is cancelled when the stream reader cancels", async () => {
   let cancelled = false;
   const body = new ReadableStream({
