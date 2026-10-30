@@ -1,7 +1,5 @@
 import { strict as assert } from "node:assert";
-import { renderers } from "./renderers.js";
-
-type Renderable = JSX.Element | PromiseLike<JSX.Element>;
+import { renderers, type Renderable } from "./renderers.js";
 
 // Takes the JSX, or a factory for JSX that can be read only once (e.g. with a generator
 // or a stream as child), so each render gets its own.
