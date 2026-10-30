@@ -1,4 +1,4 @@
-import { jsxToString } from "jsx-async-runtime";
+import { isJsxNode, jsxToString } from "jsx-async-runtime";
 import { createServer } from "node:http";
 import App from "./App.js";
 import unifyHead from "./unifyHead.js";
@@ -10,7 +10,7 @@ createServer(async (request, response) => {
 
   const context = {
     jsxToString: (jsxElement) => {
-      if (jsxElement?.tag === "head") {
+      if (isJsxNode(jsxElement) && jsxElement.tag === "head") {
         headGroups.push(jsxElement.props.children);
         return headGroups.length === 1 ? HEAD_MARK : "";
       }

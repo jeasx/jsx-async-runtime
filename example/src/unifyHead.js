@@ -1,3 +1,5 @@
+import { isJsxNode } from "jsx-async-runtime";
+
 /**
  * Unifies title and meta tags (keywords and description).
  *
@@ -8,7 +10,11 @@ export default function unifyHead(jsxElements) {
   const lastIndex = {};
   for (let i = 0; i < jsxElements.length; i++) {
     const jsxElement = jsxElements[i];
-    switch (jsxElement?.["tag"]) {
+    // Text, html() markup and look-alike objects have no tag to unify.
+    if (!isJsxNode(jsxElement)) {
+      continue;
+    }
+    switch (jsxElement.tag) {
       case "title":
         if (lastIndex["title"] !== undefined) {
           delete jsxElements[lastIndex["title"]];
@@ -17,10 +23,10 @@ export default function unifyHead(jsxElements) {
         break;
 
       case "meta":
-        switch (jsxElement?.["props"]?.["name"]) {
+        switch (jsxElement.props["name"]) {
           case "keywords":
           case "description": {
-            const name = jsxElement["props"]["name"];
+            const name = jsxElement.props["name"];
             if (lastIndex[name] !== undefined) {
               delete jsxElements[lastIndex[name]];
             }

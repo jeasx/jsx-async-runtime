@@ -1,4 +1,4 @@
-import { html, jsxToString } from "jsx-async-runtime";
+import { html, isJsxNode, jsxToString } from "jsx-async-runtime";
 
 export default function App({ url = "/" }) {
   // In the given setup you can use "this" as context
@@ -14,12 +14,16 @@ export default function App({ url = "/" }) {
   if (this.customTheme) {
     const $jsxToString = this.jsxToString ?? jsxToString;
     this.jsxToString = (jsxElement) => {
+      // The override also gets text, arrays and html() markup, which have no tag to patch.
+      if (!isJsxNode(jsxElement) || jsxElement.type !== "tag") {
+        return $jsxToString.call(this, jsxElement);
+      }
       // '$jsx' is used as marker prop for processed elements
       // to avoid endless recursion
-      if (jsxElement?.props?.["$jsx"]) {
+      if (jsxElement.props["$jsx"]) {
         delete jsxElement.props["$jsx"];
       } else {
-        switch (typeof jsxElement?.tag) {
+        switch (typeof jsxElement.tag) {
           case "string":
             switch (jsxElement.tag) {
               case "body":
