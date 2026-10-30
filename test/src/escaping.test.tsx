@@ -94,7 +94,14 @@ test("escapeEntities with objects without their own string form", () => {
   // Has no `toString` at all, which made String() throw.
   assert.strictEqual(escapeEntities(Object.create(null)), "");
   // Objects with their own string form still render it.
-  assert.strictEqual(escapeEntities(new (class { toString = () => "<u>" })()), "&lt;u&gt;");
+  assert.strictEqual(
+    escapeEntities(
+      new (class {
+        toString = () => "<u>";
+      })(),
+    ),
+    "&lt;u&gt;",
+  );
   assert.strictEqual(escapeEntities(["<a>", "b"]), "&lt;a&gt;,b");
 });
 

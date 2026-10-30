@@ -210,10 +210,10 @@ test("Map, Set and class instances without toString render nothing", () => {
   }
   return equal(
     <div
-      data-a={new Map([[1, 2]]) as any}
-      data-b={new Set([1]) as any}
-      data-c={new Point() as any}
-      data-d={Object.create(Object.create(null)) as any}
+      data-a={new Map([[1, 2]])}
+      data-b={new Set([1])}
+      data-c={new Point()}
+      data-d={Object.create(Object.create(null))}
       id="x"
     />,
     `<div id="x"></div>`,

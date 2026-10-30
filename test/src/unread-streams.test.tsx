@@ -69,7 +69,7 @@ test("unread stream as a Map key or value is cancelled when an earlier sibling t
     (stream) => (
       <div>
         <Boom />
-        {new Map([[stream, "x"]]) as any}
+        {new Map([[stream, "x"]])}
       </div>
     ),
     "sibling",
@@ -78,7 +78,7 @@ test("unread stream as a Map key or value is cancelled when an earlier sibling t
     (stream) => (
       <div>
         <Boom />
-        {new Map([["x", stream]]) as any}
+        {new Map([["x", stream]])}
       </div>
     ),
     "sibling",
@@ -340,7 +340,7 @@ test("unread Node.js stream is destroyed when an earlier sibling throws", async 
         render(
           <div>
             <Boom />
-            <p>{stream as any}</p>
+            <p>{stream}</p>
           </div>,
         ),
       { message: "sibling" },
@@ -353,7 +353,7 @@ test("unread Node.js stream is destroyed when an earlier sibling throws", async 
 
 test("Node.js stream that is being read is rendered and not destroyed early", async () => {
   const { stream } = createNodeStream("<b>");
-  assert.strictEqual(await jsxToString(<p>{stream as any}</p>), "<p>&lt;b&gt;</p>");
+  assert.strictEqual(await jsxToString(<p>{stream}</p>), "<p>&lt;b&gt;</p>");
 });
 
 test("Node.js stream that is already read elsewhere is left alone", async () => {
@@ -367,7 +367,7 @@ test("Node.js stream that is already read elsewhere is left alone", async () => 
       jsxToString(
         <div>
           <Boom />
-          {stream as any}
+          {stream}
         </div>,
       ),
     { message: "sibling" },

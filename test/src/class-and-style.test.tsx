@@ -103,7 +103,7 @@ test("class skips rejecting promises nested in objects", async () => {
 });
 
 test("whole class value as promise is still awaited", () =>
-  equal(<div class={Promise.resolve({ a: true, b: false }) as any} />, `<div class="a"></div>`));
+  equal(<div class={Promise.resolve({ a: true, b: false })} />, `<div class="a"></div>`));
 
 test("style skips promise values, even if they reject", async () => {
   await equal(

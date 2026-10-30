@@ -51,7 +51,7 @@ test("promise in a Map child rejects while an earlier sibling is pending", () =>
     () => (
       <div>
         <Slow />
-        {new Map([["key", rejectAfter(5, "map value")]]) as any}
+        {new Map([["key", rejectAfter(5, "map value")]])}
       </div>
     ),
     "map value",
@@ -64,7 +64,7 @@ test("promise as a Map key rejects while an earlier sibling is pending", () => {
     () => (
       <div>
         <Slow />
-        {new Map([[rejectAfter(5, "map key"), "value"]]) as any}
+        {new Map([[rejectAfter(5, "map key"), "value"]])}
       </div>
     ),
     "map key",
@@ -77,7 +77,7 @@ test("promise in an array in a Map child rejects while an earlier sibling is pen
     () => (
       <div>
         <Slow />
-        {new Map([["key", [delay(1, "b"), rejectAfter(5, "array in map")]]]) as any}
+        {new Map([["key", [delay(1, "b"), rejectAfter(5, "array in map")]]])}
       </div>
     ),
     "array in map",

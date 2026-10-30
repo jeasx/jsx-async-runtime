@@ -498,7 +498,7 @@ test("stream sends a long iterable object before reading all of it", async () =>
       }
     },
   };
-  const reader = jsxToStream(<ul>{rows as any}</ul>).getReader();
+  const reader = jsxToStream(<ul>{rows}</ul>).getReader();
   const first = await reader.read();
   assert.ok(first.value!.startsWith("<ul><li>0</li>"));
   assert.ok(read < 10_000, `read ${read} items before the first chunk`);
@@ -520,7 +520,7 @@ test("stream cancel stops an endless iterable object", async () => {
       }
     },
   };
-  const reader = jsxToStream(<div>{items as any}</div>).getReader();
+  const reader = jsxToStream(<div>{items}</div>).getReader();
   await reader.read();
   await reader.cancel();
   const afterCancel = read;
