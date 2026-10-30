@@ -86,7 +86,8 @@ test("escapeEntities with null, undefined and booleans", () => {
 });
 
 test("escapeEntities with objects without their own string form", () => {
-  // Like children: nothing instead of "[object Object]".
+  // Nothing instead of "[object Object]". Unlike a `Map` child, which renders its entries,
+  // a `Map` has no string form of its own.
   assert.strictEqual(escapeEntities({}), "");
   assert.strictEqual(escapeEntities({ name: "<b>" }), "");
   assert.strictEqual(escapeEntities(new Map([["a", 1]])), "");

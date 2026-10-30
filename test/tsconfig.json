@@ -12,5 +12,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "jsx-async-runtime"
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Compiled for the dev runtime by tsconfig.jsxdev.json.
+  "exclude": ["src/jsx-dev"]
 }

@@ -1,4 +1,4 @@
-import { jsxToStream, jsxToString } from "jsx-async-runtime";
+import { html, isJsxNode, jsxToStream, jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { delay } from "./helpers/delay.js";
@@ -116,6 +116,19 @@ test("context holding the runtime's jsxToString is kept", async () => {
     `<div><section>`,
     `<p>ada</p></section></div>`,
   ]);
+});
+
+test("context holding several runtime exports is kept", async () => {
+  // Only a context holding all function exports is taken for a copy of the module.
+  function App(this: any) {
+    return <p>{this.user}</p>;
+  }
+  const context = () => ({ jsxToString, jsxToStream, isJsxNode, html, user: "ada" });
+  assert.strictEqual(await jsxToString.call(context(), <App />), `<p>ada</p>`);
+  assert.strictEqual(
+    (await streamToChunks(jsxToStream.call(context(), <App />))).join(""),
+    `<p>ada</p>`,
+  );
 });
 
 test("custom jsxToString via context", async () => {
