@@ -596,3 +596,13 @@ test("stream cancel stops an endless generator", async () => {
   assert.ok(stopped, "generator was not stopped");
   assert.ok(read <= afterCancel + 1, `read ${read - afterCancel} items after cancel`);
 });
+
+test("stream reports a bad context through the stream instead of throwing", async () => {
+  const { proxy, revoke } = Proxy.revocable({}, {});
+  revoke();
+  const body = new ReadableStream<string>();
+  const stream = jsxToStream.call(proxy, <p>{body}</p>);
+  await assert.rejects(stream.getReader().read(), TypeError);
+  // Streams in the tree that are never rendered are cancelled.
+  await body.getReader().closed;
+});

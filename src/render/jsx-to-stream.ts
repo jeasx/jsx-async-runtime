@@ -28,7 +28,19 @@ export function jsxToStream(
   this: any,
   jsxElement: JSX.Element | PromiseLike<JSX.Element>,
 ): ReadableStream<string> {
-  const context = resolveContext(this, "jsxToStream", jsxToStream);
+  let context: any;
+  try {
+    context = resolveContext(this, "jsxToStream", jsxToStream);
+  } catch (error) {
+    // Report errors through the stream, like a component that throws,
+    // and like jsxToString(), which returns a rejected promise.
+    cancelUnreadStreams(jsxElement, error);
+    return new ReadableStream<string>({
+      start(controller) {
+        controller.error(error);
+      },
+    });
+  }
 
   // Set in `start`, which the stream calls right away (the controller only exists there).
   let writer: Writer;
