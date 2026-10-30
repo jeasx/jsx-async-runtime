@@ -143,6 +143,30 @@ test("character split between bytes and a promise of bytes in a generator", () =
   return equal(() => <p>{items()}</p>, `<p>ü�y</p>`);
 });
 
+test("character split between a promise of bytes and bytes in a generator and an async iterable", () => {
+  // "ü" is 0xc3 0xbc in UTF-8.
+  const items = () => [Promise.resolve(new Uint8Array([0xc3])), new Uint8Array([0xbc])];
+  function* generator() {
+    yield* items();
+  }
+  // A source that yields promises as is, unlike an async generator, which awaits them.
+  const asyncIterable = (): AsyncIterable<JSX.Element> => ({
+    [Symbol.asyncIterator]: () => {
+      const queue = items();
+      return { next: async () => ({ done: !queue.length, value: queue.shift() }) };
+    },
+  });
+  return equal(
+    () => (
+      <p>
+        {generator()}
+        {asyncIterable()}
+      </p>
+    ),
+    `<p>üü</p>`,
+  );
+});
+
 test("override gets bytes split before a promise as text", async () => {
   const seen: unknown[] = [];
   const context = {

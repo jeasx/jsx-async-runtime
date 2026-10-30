@@ -1,12 +1,11 @@
 import { cancelUnreadStreams } from "../utils/cancel-unread-streams.js";
-import { decodeItem, finishDecoding, type ByteDecoding } from "../utils/decode-bytes.js";
+import type { ByteDecoding } from "../utils/decode-bytes.js";
 import { handleRejection } from "../utils/handle-rejection.js";
-import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 import { flushAndAwait, flushIfFull, throwIfCancelled, type Writer } from "../utils/writer.js";
 // Circular import: render-element.ts renders iterables with this module. Safe, since
 // neither module calls the other while loading, only while rendering.
-import { renderAwaitable, renderChildren } from "./render-element.js";
+import { finishSequence, renderChildren, renderSequenceItem } from "./render-element.js";
 
 // Iterators of the built-in collections (arrays, typed arrays, `Map` and `Set`), whose items
 // already exist, so reading them up front costs no extra work and lets early promise rejections
@@ -21,8 +20,6 @@ type IteratorState = ByteDecoding & {
   sourceFailed: boolean;
   /** The item being rendered, so its unread streams can be cancelled when it fails. */
   item: JSX.Element;
-  /** An item held back by takeItem() for the next turn, so the text before it renders first. */
-  queued: { item: JSX.Element } | undefined;
 };
 
 function createIteratorState(): IteratorState {
@@ -30,71 +27,35 @@ function createIteratorState(): IteratorState {
     done: false,
     sourceFailed: false,
     item: undefined,
-    queued: undefined,
     decoder: undefined,
   };
 }
 
 /**
- * Takes the next result of the iterator into `state.item`, with bytes decoded as text.
- * At the end, it sets `state.done` and takes the text left in the decoder.
- * Returns `false` when there is nothing to render.
+ * Renders the next result of the iterator, or ends it once it is used up (`state.done`).
+ * A promise item is awaited first, like a promise child, so it reaches a `this.jsxToString`
+ * override resolved, and bytes it resolves to continue the bytes before it.
  */
-function takeItem(state: IteratorState, result: IteratorResult<JSX.Element>): boolean {
+function renderResult(
+  this: any,
+  result: IteratorResult<JSX.Element>,
+  state: IteratorState,
+  writer: Writer,
+): void | Promise<void> {
   if (result.done) {
     state.done = true;
-    state.item = finishDecoding(state);
-    return state.item !== "";
+    state.item = undefined;
+    return finishSequence.call(this, state, writer);
   }
   const item = result.value;
-  if (isByteArray(item)) {
-    state.item = decodeItem(state, item);
-    return true;
-  }
-  // A promise after bytes may resolve to bytes that complete a character, so the decoder
-  // stays open until renderItem() knows what it resolved to.
-  if (state.decoder && isPromise(item)) {
-    state.item = item;
-    return true;
-  }
-  // Bytes cut off within a character leave "�" in the decoder. It renders first, as its own
-  // item, so the item itself reaches an override as is (a promise resolved), not in an array.
-  const rest = finishDecoding(state);
-  if (rest !== "") {
-    state.item = rest;
-    state.queued = { item };
-    return true;
-  }
   state.item = item;
-  return true;
-}
-
-/**
- * Renders `state.item`. A promise after bytes is awaited first and taken like an item of its own,
- * so bytes it resolves to continue the text of the bytes before it.
- */
-function renderItem(this: any, state: IteratorState, writer: Writer): void | Promise<void> {
-  const item = state.item;
-  if (state.decoder && isPromise(item)) {
+  if (isPromise(item)) {
     return flushAndAwait(writer, item).then((value) => {
-      takeItem(state, { done: false, value });
-      return renderAwaitable.call(this, state.item, writer);
+      state.item = value;
+      return renderSequenceItem.call(this, value, state, writer);
     });
   }
-  return renderAwaitable.call(this, item, writer);
-}
-
-/**
- * Takes the item held back by takeItem() into `state.item`.
- * Returns `false` when there is none, so the next item must be read from the iterator.
- */
-function takeQueuedItem(state: IteratorState): boolean {
-  if (!state.queued) {
-    return false;
-  }
-  state.item = state.queued.item;
-  state.queued = undefined;
-  return true;
+  return renderSequenceItem.call(this, item, state, writer);
 }
 
 /**
@@ -187,8 +148,7 @@ async function renderIteratorAsync(
 }
 
 /**
- * Reads the next item of the iterator and renders it. Sets `state.done` at the end.
- * Consecutive byte items are decoded as one text, like in an array or an async iterable.
+ * Reads the next item of the iterator and renders it, see renderResult().
  */
 function renderNextItem(
   this: any,
@@ -196,19 +156,14 @@ function renderNextItem(
   state: IteratorState,
   writer: Writer,
 ): void | Promise<void> {
-  if (!takeQueuedItem(state)) {
-    let result: IteratorResult<JSX.Element>;
-    try {
-      result = iterator.next();
-    } catch (error) {
-      state.sourceFailed = true;
-      throw error;
-    }
-    if (!takeItem(state, result)) {
-      return;
-    }
+  let result: IteratorResult<JSX.Element>;
+  try {
+    result = iterator.next();
+  } catch (error) {
+    state.sourceFailed = true;
+    throw error;
   }
-  return renderItem.call(this, state, writer);
+  return renderResult.call(this, result, state, writer);
 }
 
 /**
@@ -221,9 +176,9 @@ function stopIterator(
   state: IteratorState,
   error: unknown,
 ): void {
+  // Also when the "�" of cut-off bytes before it failed (e.g. in an override), since the item
+  // (e.g. a `fetch()` body) is never rendered then either.
   cancelUnreadStreams(state.item, error);
-  // A held-back item (e.g. a `fetch()` body after cut-off bytes) is never rendered either.
-  cancelUnreadStreams(state.queued?.item, error);
   if (!state.sourceFailed) {
     try {
       // Async iterators return a promise, whose rejection must not crash Node.
@@ -280,15 +235,9 @@ export async function renderAsyncIterable(
       throwIfCancelled(writer);
       // When the stream reader cancels, the wait for a slow or endless source (e.g. a live feed)
       // ends at once, and the source is stopped below.
-      if (!takeQueuedItem(state)) {
-        const result = await flushAndAwait(writer, next());
-        if (!takeItem(state, result)) {
-          return;
-        }
-      }
-      // Awaitable, so a promise item (e.g. from a `ReadableStream`) reaches a `this.jsxToString`
-      // override resolved, like in arrays and sync iterables.
-      const pending = renderItem.call(this, state, writer);
+      const result = await flushAndAwait(writer, next());
+      // Promise items (e.g. from a `ReadableStream`) are awaited like in arrays and sync iterables.
+      const pending = renderResult.call(this, result, state, writer);
       if (isPromise(pending)) {
         await pending;
       }

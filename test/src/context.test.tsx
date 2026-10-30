@@ -194,7 +194,8 @@ test("override gets bytes as text and promises resolved", async () => {
         {promises}
       </p>,
     ),
-    `<p>[a][b1b2][c][d][e][f]</p>`,
+    // One text per byte item, like the chunks of a stream.
+    `<p>[a][b1][b2][c][d][e][f]</p>`,
   );
   assert.deepStrictEqual(seen, []);
 });

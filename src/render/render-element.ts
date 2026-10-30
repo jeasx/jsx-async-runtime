@@ -5,7 +5,13 @@ import {
   cancelUnreadStreamsOnRejection,
 } from "../utils/cancel-unread-streams.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
-import { decodeByteRun, decodeBytes } from "../utils/decode-bytes.js";
+import {
+  type ByteDecoding,
+  createByteDecoding,
+  decodeBytes,
+  decodeItem,
+  finishDecoding,
+} from "../utils/decode-bytes.js";
 import { getOwnChildren } from "../utils/get-own-children.js";
 import { handleRejection } from "../utils/handle-rejection.js";
 import { isAsyncIterable } from "../utils/is-async-iterable.js";
@@ -252,8 +258,6 @@ export function renderChildren(
   writer: Writer,
 ): void | Promise<void> {
   let i = 0;
-  // Open only between bytes and a promise right after them, see decodeByteRun().
-  let decoder: TextDecoder | undefined;
   try {
     for (; i < children.length; i++) {
       const child = children[i]!;
@@ -261,18 +265,17 @@ export function renderChildren(
         // Rendering won't get to the later children right away.
         handleRejection(children, i + 1);
         // Continues with this child, which renderChildrenAsync() awaits right away.
-        return renderChildrenAsync.call(this, children, i - 1, undefined, writer, decoder);
+        return renderChildrenAsync.call(this, children, i - 1, undefined, writer);
       }
-      let element = child;
       // `typeof` first, so text children skip the byte check.
       if (typeof child === "object" && isByteArray(child)) {
-        [element, i, decoder] = decodeByteRun(children, i, child);
+        break;
       }
       // Send large sync markup early; continue async if the reader is behind.
-      const pending = renderNested.call(this, element, writer) || flushIfFull(writer);
+      const pending = renderNested.call(this, child, writer) || flushIfFull(writer);
       if (isPromise(pending)) {
         handleRejection(children, i + 1);
-        return renderChildrenAsync.call(this, children, i, pending, writer, decoder);
+        return renderChildrenAsync.call(this, children, i, pending, writer);
       }
     }
   } catch (error) {
@@ -281,12 +284,48 @@ export function renderChildren(
     cancelUnreadStreams(children, error, i);
     throw error;
   }
+  // Stopped at bytes. They are rare, so they continue in a loop of their own,
+  // which keeps this one small and fast (about 2% in the benchmark).
+  if (i < children.length) {
+    return renderChildrenWithBytes.call(this, children, i, writer);
+  }
+}
+
+/**
+ * Continues renderChildren() from the bytes at `index`, rendering each child with
+ * renderSequenceItem(), so a character split between byte children is decoded correctly.
+ */
+function renderChildrenWithBytes(
+  this: any,
+  children: JSX.Element[],
+  index: number,
+  writer: Writer,
+): void | Promise<void> {
+  const bytes = createByteDecoding();
+  try {
+    for (; index < children.length; index++) {
+      const child = children[index]!;
+      if (isPromise(child)) {
+        handleRejection(children, index + 1);
+        return renderChildrenAsync.call(this, children, index - 1, undefined, writer, bytes);
+      }
+      const pending = renderSequenceItem.call(this, child, bytes, writer) || flushIfFull(writer);
+      if (isPromise(pending)) {
+        handleRejection(children, index + 1);
+        return renderChildrenAsync.call(this, children, index, pending, writer, bytes);
+      }
+    }
+    return finishSequence.call(this, bytes, writer);
+  } catch (error) {
+    handleRejection(children, index + 1);
+    cancelUnreadStreams(children, error, index);
+    throw error;
+  }
 }
 
 /**
  * Continues rendering the children after the child at `index`, once `pendingChild`
- * (the rendering of that child, if any) is done. `decoder` continues the bytes before
- * the next child, a promise, see decodeByteRun().
+ * (the rendering of that child, if any) is done. `bytes` continues the bytes before, if any.
  */
 async function renderChildrenAsync(
   this: any,
@@ -294,7 +333,7 @@ async function renderChildrenAsync(
   index: number,
   pendingChild: void | Promise<void>,
   writer: Writer,
-  decoder: TextDecoder | undefined,
+  bytes = createByteDecoding(),
 ): Promise<void> {
   try {
     if (pendingChild) {
@@ -302,23 +341,9 @@ async function renderChildrenAsync(
     }
     while (++index < children.length) {
       const child = children[index]!;
-      let element: JSX.Element = isPromise(child) ? await flushAndAwait(writer, child) : child;
-      if (typeof element === "object" && isByteArray(element)) {
-        [element, index, decoder] = decodeByteRun(children, index, element, decoder);
-      } else if (decoder) {
-        // The bytes before a promise ended within a character: render the "�" left in the decoder
-        // before what the promise resolved to.
-        const rest = decoder.decode();
-        decoder = undefined;
-        if (rest !== "") {
-          const pending = renderNested.call(this, rest, writer);
-          if (isPromise(pending)) {
-            await pending;
-          }
-        }
-      }
+      const element = isPromise(child) ? await flushAndAwait(writer, child) : child;
       // Only wait when the child has to, so sync siblings don't cost extra microtasks.
-      const pending = renderNested.call(this, element, writer);
+      const pending = renderSequenceItem.call(this, element, bytes, writer);
       if (isPromise(pending)) {
         await pending;
       }
@@ -327,10 +352,62 @@ async function renderChildrenAsync(
         await flushed;
       }
     }
+    const pending = finishSequence.call(this, bytes, writer);
+    if (isPromise(pending)) {
+      await pending;
+    }
   } catch (error) {
     // From the failed child on, rendering won't get to the rest.
     cancelUnreadStreams(children, error, index);
     throw error;
+  }
+}
+
+/**
+ * Renders an item of a sequence (children, an iterator or an async iterable) once its promise,
+ * if any, has resolved. Bytes are decoded with `bytes`, continuing the bytes before them, so
+ * a character split between two items is decoded correctly, even with a promise of bytes between
+ * them. Any other item ends that text first: a character cut off at its end renders as "�"
+ * on its own, so the item itself reaches a `this.jsxToString` override as is.
+ */
+export function renderSequenceItem(
+  this: any,
+  item: JSX.Element,
+  bytes: ByteDecoding,
+  writer: Writer,
+): void | Promise<void> {
+  if (isByteArray(item)) {
+    return renderText.call(this, decodeItem(bytes, item), writer);
+  }
+  if (bytes.decoder) {
+    const pending = renderText.call(this, finishDecoding(bytes), writer);
+    if (isPromise(pending)) {
+      return pending.then(() => renderNested.call(this, item, writer));
+    }
+  }
+  return renderNested.call(this, item, writer);
+}
+
+/**
+ * Ends a sequence: a character cut off at the end of its last bytes renders as "�".
+ */
+export function finishSequence(
+  this: any,
+  bytes: ByteDecoding,
+  writer: Writer,
+): void | Promise<void> {
+  if (bytes.decoder) {
+    return renderText.call(this, finishDecoding(bytes), writer);
+  }
+}
+
+/**
+ * Renders text decoded from bytes. Empty text (e.g. from bytes that end within a character)
+ * renders nothing, so it is skipped and an override doesn't get it.
+ */
+function renderText(this: any, text: string, writer: Writer): void | Promise<void> {
+  if (text !== "") {
+    return renderNested.call(this, text, writer);
   }
 }
 
@@ -368,8 +445,8 @@ export function renderNested(
   if (typeof $jsxToString !== "function" || $jsxToString === jsxToString) {
     return renderElement.call(this, jsxElement, writer);
   }
-  // The override gets bytes as text, like the decoded runs of bytes in arrays and iterables,
-  // so it doesn't have to handle both.
+  // The override gets bytes as text, like the byte items of arrays and iterables
+  // (see renderSequenceItem()), so it doesn't have to handle both.
   const result = $jsxToString.call(
     this,
     isByteArray(jsxElement) ? decodeBytes(jsxElement) : jsxElement,
