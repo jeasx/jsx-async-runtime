@@ -1,291 +1,53 @@
-import { html } from "jsx-async-runtime";
 import test from "node:test";
-import { delay } from "./helpers/delay.js";
 import { equal } from "./helpers/equal.js";
-import { rejectAfter } from "./helpers/reject-after.js";
+
+// `class` and `style` are plain attributes: strings render as is, and objects and arrays
+// follow the same rules as in every other attribute.
 
 test("class as string", () => equal(<div class="a b c"></div>, `<div class="a b c"></div>`));
 
 test("class as empty string", () => equal(<div class=""></div>, `<div class=""></div>`));
 
-test("class as object", () => {
-  const className1 = "";
-  const className2 = "hidden";
-  // An undefined key becomes "undefined", which is skipped like any other false condition.
-  const className3: any = undefined;
-  return equal(
-    <div
-      class={{
-        striped: false,
-        sticky: true,
-        highlight: true,
-        [className1]: !!className1,
-        [className2]: !!className2,
-        [className3]: !!className3,
-      }}
-    ></div>,
-    `<div class="sticky highlight hidden"></div>`,
-  );
-});
-
-test("class as empty object", () =>
-  equal(<div class={{ highlight: false, sticky: undefined }}></div>, "<div></div>"));
-
-test("class as array", () =>
-  equal(<div class={["a", "b", undefined, "c", null, ""]}></div>, `<div class="a b c"></div>`));
-
-test("class as empty array", () => equal(<div class={[]}></div>, `<div></div>`));
-
-test("class as nested array", () =>
-  equal(
-    <div class={["a", ["b", ["c", false]], [], null, "d"]}></div>,
-    `<div class="a b c d"></div>`,
-  ));
-
-test("class as array with objects", () =>
-  equal(
-    <div class={["a", { b: true, c: false }, [{ d: true }], "e"]}></div>,
-    `<div class="a b d e"></div>`,
-  ));
-
-test("class as Set", () =>
-  equal(<div class={new Set(["a", "b", "a"])}></div>, `<div class="a b"></div>`));
-
-test("class as empty Set", () => equal(<div class={new Set<string>()}></div>, `<div></div>`));
-
-test("class as Set nested in an array, with objects and arrays inside", () =>
-  equal(
-    <div class={["a", new Set<JSX.ClassValue>(["b", { c: true, d: false }, ["e"], null])]}></div>,
-    `<div class="a b c e"></div>`,
-  ));
-
-test("class as Map of name: condition pairs", () =>
-  equal(
-    <div class={new Map([["a", true], ["b", false], ["c", null], ["d", true]])}></div>,
-    `<div class="a d"></div>`,
-  ));
-
-test("class Map skips names that aren't strings and promise conditions, even if they reject", async () => {
-  const map: any = new Map<unknown, unknown>([
-    [{ x: 1 }, true],
-    ["a", rejectAfter(1, "never awaited")],
-    ["b", true],
-  ]);
-  const element = <div class={map}></div>;
-  await delay(5);
-  return equal(element, `<div class="b"></div>`);
-});
-
-test("class as generator and iterator helper", () => {
-  function* names() {
-    yield "a";
-    yield ["b", { c: true }];
-  }
-  return equal(
-    () => <div class={["x", names(), ["y", "z"].values().map((name) => `${name}!`)]}></div>,
-    `<div class="x a b c y! z!"></div>`,
-  );
-});
-
-test("class as generator before a promise attribute is read once", () => {
-  function* names() {
-    yield "a";
-    yield "b";
-  }
-  return equal(
-    () => <div id="i" class={names()} title={Promise.resolve("t")} data-x="x"></div>,
-    `<div id="i" class="a b" title="t" data-x="x"></div>`,
-  );
-});
-
-test("class iterable with its own string form renders the string", () =>
-  equal(
-    <div class={new URLSearchParams("a=1") as any}></div>,
-    `<div class="a=1"></div>`,
-  ));
-
-test("class array skips true, like falsy values", () => {
-  // e.g. `isActive || "inactive"`, which the types reject, but plain JS allows.
-  const isActive: any = true;
-  return equal(
-    <div class={["a", isActive || "inactive", [true], 0, 1]}></div>,
-    `<div class="a 1"></div>`,
-  );
-});
-
-test("class as undefined array", () =>
-  equal(<div class={[null, undefined, ""]}></div>, `<div></div>`));
-
-test("escape class array", () =>
-  equal(<div class={['a"b', "<c>"]} />, `<div class="a&quot;b &lt;c&gt;"></div>`));
-
-test("escape class object keys", () =>
-  equal(<div class={{ 'a"b': true }} />, `<div class="a&quot;b"></div>`));
-
-test("class array skips elements and html()", () =>
-  equal(
-    <div class={["a", html("<b>"), [<i />], { c: true }] as any} />,
-    `<div class="a c"></div>`,
-  ));
-
-test("class skips promise names and conditions", () =>
-  equal(
-    <div
-      class={
-        [
-          "a",
-          Promise.resolve("b"),
-          [Promise.resolve("c")],
-          { d: Promise.resolve(true), e: true },
-        ] as any
-      }
-    />,
-    `<div class="a e"></div>`,
-  ));
-
-test("class object skips promise conditions, even if they reject", () =>
-  equal(
-    () => <div class={{ a: true, b: rejectAfter(1, "class") as any }} />,
-    `<div class="a"></div>`,
-  ));
-
-test("class skips rejecting promises nested in objects", async () => {
-  await equal(
-    () => <div class={[{ a: true, b: rejectAfter(1, "nested class") as any }]} />,
-    `<div class="a"></div>`,
-  );
-  // Give a rejection that nobody handled the chance to fail the test.
-  await delay(10);
-});
-
-test("whole class value as promise is still awaited", () =>
-  equal(<div class={Promise.resolve({ a: true, b: false })} />, `<div class="a"></div>`));
-
-test("style skips promise values, even if they reject", async () => {
-  await equal(
-    () => (
-      <div
-        style={{
-          color: Promise.resolve("red") as any,
-          margin: rejectAfter(1, "style") as any,
-          padding: 0,
-        }}
-      />
-    ),
-    `<div style="padding: 0"></div>`,
-  );
-  await delay(10);
-});
-
-test("style from a promise skips nested promise values", async () => {
-  await equal(
-    () => (
-      <div style={Promise.resolve({ color: rejectAfter(1, "late style"), padding: 0 }) as any} />
-    ),
-    `<div style="padding: 0"></div>`,
-  );
-  await delay(10);
-});
-
 test("style as string", () => equal(<h1 style="color: red"></h1>, `<h1 style="color: red"></h1>`));
 
 test("style as empty string", () => equal(<h1 style=""></h1>, `<h1 style=""></h1>`));
 
-test("style as object", () =>
+test("escape class and style strings", () =>
   equal(
-    <h1
-      style={{
-        "background-image": 'url("url")',
-        "background-color": "red",
-        color: "white",
-        "padding-top": "1rem",
-        "padding-bottom": "1rem",
-      }}
-    >
-      Hello
-    </h1>,
-    `<h1 style="background-image: url(&quot;url&quot;); background-color: red; color: white; padding-top: 1rem; padding-bottom: 1rem">Hello</h1>`,
+    <div class={'a"b <c>'} style={'content: "<x>"'} />,
+    `<div class="a&quot;b &lt;c&gt;" style="content: &quot;&lt;x&gt;&quot;"></div>`,
   ));
 
-test("style as empty object", () => equal(<h1 style={{}}></h1>, `<h1></h1>`));
-
-test("style with numeric values", () =>
-  equal(
-    <div style={{ "z-index": 1, opacity: 0 }} />,
-    `<div style="z-index: 1; opacity: 0"></div>`,
-  ));
-
-test("style skips null, undefined, false and empty string values", () =>
-  equal(
-    <div
-      style={{ color: null, margin: undefined, display: false, padding: 0, "font-weight": "" }}
-    />,
-    `<div style="padding: 0"></div>`,
-  ));
-
-test("style with only skipped values", () =>
-  equal(
-    <div style={{ color: null, margin: undefined, display: false, "font-weight": "" }} />,
-    `<div></div>`,
-  ));
-
-test("style skips elements and html() values", () =>
-  equal(
-    <div style={{ color: html("red") as any, margin: (<b />) as any, padding: 0 }} />,
-    `<div style="padding: 0"></div>`,
-  ));
-
-test("style skips functions and Symbols instead of throwing or rendering source", () =>
-  equal(
-    <div style={{ color: (() => "red") as any, margin: Symbol("x") as any, padding: 0 }} />,
-    `<div style="padding: 0"></div>`,
-  ));
-
-test("style skips plain objects and arrays, but renders objects with their own toString", () =>
-  equal(
-    <div
-      style={{
-        color: { a: 1 } as any,
-        margin: ["1px", "2px"] as any,
-        "background-image": new URL("https://example.com/a.png") as any,
-      }}
-    />,
-    `<div style="background-image: https://example.com/a.png"></div>`,
-  ));
-
-test("class skips functions and Symbols", () =>
-  equal(
-    <div class={["a", (() => "b") as any, Symbol("c") as any, ["d", Symbol("e") as any]]} />,
-    `<div class="a d"></div>`,
-  ));
-
-test("class and style objects with their own string form render it, like other attributes", () =>
+test("class and style skip null, undefined and false", () =>
   equal(
     <>
-      <div class={new URL("https://example.com/") as any} />
-      <div style={new URL("https://example.com/") as any} />
-      <div class={new TextEncoder().encode("a b") as any} />
-      <div style={Buffer.from("color: red") as any} />
-      <div class={["a", new URL("https://example.com/") as any, Buffer.from("c") as any]} />
+      <div class={null} style={undefined} />
+      <div class={false as any} style={false as any} />
     </>,
-    `<div class="https://example.com/"></div><div style="https://example.com/"></div>` +
-      `<div class="a b"></div><div style="color: red"></div>` +
-      `<div class="a https://example.com/ c"></div>`,
+    `<div></div><div></div>`,
   ));
 
-test("class and style objects without their own string form are read as objects", () => {
-  class Styles {
-    color = "red";
-  }
-  class Classes {
-    active = true;
-    hidden = false;
-  }
+test("class and style objects and arrays render as JSON, like other attributes", () =>
+  equal(
+    <div class={{ a: true } as any} style={["color: red"] as any} />,
+    `<div class="{&quot;a&quot;:true}" style="[&quot;color: red&quot;]"></div>`,
+  ));
+
+test("class and style from a userland helper", () => {
+  const cx = (...names: unknown[]) => names.filter(Boolean).join(" ");
+  const css = (styles: Record<string, string | number | null>) =>
+    Object.entries(styles)
+      .filter(([, value]) => value != null)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join("; ");
   return equal(
-    <>
-      <div style={new Styles() as any} class={new Classes() as any} />
-      <div class={["a", new Classes() as any]} />
-    </>,
-    `<div style="color: red" class="active"></div><div class="a active"></div>`,
+    <div class={cx("a", false && "b", "c")} style={css({ color: "red", margin: null })} />,
+    `<div class="a c" style="color: red"></div>`,
   );
 });
+
+test("class and style as promises are awaited", () =>
+  equal(
+    <div class={Promise.resolve("a b")} style={Promise.resolve("color: red")} />,
+    `<div class="a b" style="color: red"></div>`,
+  ));

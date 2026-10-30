@@ -107,14 +107,8 @@ function Logo({ title }) {
   return (
     <h1
       style={
-        // Create inline styles via an object
-        {
-          "background-image": 'url("https://picsum.photos/1200/200")',
-          "background-color": "red",
-          color: "white",
-          "padding-top": "1rem",
-          "padding-bottom": "1rem",
-        }
+        // Inline styles are plain strings
+        'background-image: url("https://picsum.photos/1200/200"); background-color: red; color: white; padding-top: 1rem; padding-bottom: 1rem'
       }
     >
       <svg
@@ -146,21 +140,12 @@ async function Todos({ quantity }) {
     quantity > 0 && (
       <table style="margin: 0 auto; padding: 1rem; border: 1px solid lightgrey">
         <thead
-          class={
-            // Generate space separated class names for true properties
-            {
-              striped: false,
-              sticky: true,
-              '"classname-with-quotes"': true,
-            }
-          }
-          // For all attributes besides class & style objects get stringified
+          // Class names are plain strings; for conditional classes use a helper like clsx
+          class={["sticky", false && "striped"].filter(Boolean).join(" ")}
+          // Objects and arrays as attribute values are rendered as JSON
           data-props={{ foo: "bar", count: 10 }}
         >
-          <tr
-            // Use array for class names, join string values with space
-            class={["a", "b", "", undefined, "c"]}
-          >
+          <tr class="a b c">
             <th>Label</th>
             <th>Status</th>
           </tr>

@@ -53,18 +53,6 @@ declare global {
     type Element = SyncElement | AsyncElement;
     type Children = JSX.Element | Array<JSX.Element | Array<JSX.Element>>;
 
-    // Class names as a string, an object of `name: condition` pairs,
-    // or a (nested) array of both, e.g. `["a", ["b"], { c: cond }]`.
-    // Other iterables (e.g. a `Set`) work like arrays, and a `Map` like an object.
-    type ClassValue =
-      | string
-      | false
-      | null
-      | undefined
-      | { [key: string]: boolean | null | undefined }
-      | ReadonlyMap<string, boolean | null | undefined>
-      | Iterable<ClassValue>;
-
     // Valid tags: element names and components (TypeScript 5.1+). A component may return
     // a promise of any element, so `async function Page(): Promise<JSX.Element>` type-checks,
     // which `JSX.Element` alone can't express without referring to itself.
@@ -81,7 +69,7 @@ declare global {
       anchor?: string;
       autocapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters";
       autofocus?: "" | "autofocus" | boolean;
-      class?: ClassValue;
+      class?: string;
       contenteditable?: "" | "true" | "false" | "plaintext-only" | true;
       dir?: "auto" | "rtl" | "ltr";
       draggable?: "true" | "false";
@@ -203,7 +191,7 @@ declare global {
         | (string & {});
       slot?: string;
       spellcheck?: "" | "true" | "false" | true;
-      style?: string | { [key: string]: string | number | null | undefined | false };
+      style?: string;
       tabindex?: number | string;
       title?: string;
       translate?: "" | "yes" | "no" | true;
@@ -533,7 +521,7 @@ declare global {
       calcMode?: "discrete" | "linear" | "paced" | "spline";
       /** @deprecated */
       "cap-height"?: number | string;
-      class?: ClassValue;
+      class?: string;
       /** @deprecated */
       clip?: "auto" | (string & {});
       "clip-path"?: "none" | (string & {});
@@ -797,7 +785,7 @@ declare global {
       "stroke-miterlimit"?: number | string;
       "stroke-opacity"?: number | string;
       "stroke-width"?: number | string;
-      style?: string | { [key: string]: string | number | null | undefined | false };
+      style?: string;
       surfaceScale?: number | string;
       systemLanguage?: number | string;
       tabindex?: number | string;

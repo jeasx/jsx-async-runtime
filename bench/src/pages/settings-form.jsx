@@ -1,4 +1,5 @@
 import { Layout } from "../layout.js";
+import { cx } from "../cx.js";
 
 // A settings form with validation errors: labeled inputs, a select with 200 countries,
 // checkbox and radio groups, and many boolean and ARIA attributes.
@@ -31,7 +32,7 @@ function describedBy(id, hint, error) {
 
 function Field({ id, label, required = false, hint = undefined, error = undefined, children }) {
   return (
-    <div class={["field", { "has-error": !!error }]}>
+    <div class={cx("field", { "has-error": !!error })}>
       <label for={id}>
         {label}
         {required && (

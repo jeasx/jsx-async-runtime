@@ -1,4 +1,5 @@
 import { Layout } from "../layout.js";
+import { cx } from "../cx.js";
 
 // A dashboard that starts all its requests up front and passes the promises down,
 // as the README recommends for loading data in parallel: as props of async components,
@@ -54,7 +55,7 @@ function StatCard({ stat }) {
     <div class="stat">
       <h3>{stat.label}</h3>
       <p class="value">{stat.value}</p>
-      <p class={["change", stat.change < 0 ? "down" : "up"]}>
+      <p class={cx("change", stat.change < 0 ? "down" : "up")}>
         {stat.change > 0 && "+"}
         {stat.change}%
       </p>
@@ -67,7 +68,7 @@ async function RecentOrders({ orders }) {
     <table class="orders">
       <tbody>
         {(await orders).map((order) => (
-          <tr class={{ unpaid: !order.paid }}>
+          <tr class={cx({ unpaid: !order.paid })}>
             <td>
               <a href={`/orders/${order.id}`}>{order.id}</a>
             </td>

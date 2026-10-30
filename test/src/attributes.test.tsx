@@ -133,8 +133,8 @@ test("promise attributes are awaited", () =>
     <div
       id="a"
       title={delay(5, "<t>")}
-      class={Promise.resolve(["b", { c: true }])}
-      style={Promise.resolve({ color: "red" })}
+      class={Promise.resolve("b c")}
+      style={Promise.resolve("color: red")}
       hidden={Promise.resolve(true)}
       data-x={delay(1, { y: 1 })}
       data-none={Promise.resolve(undefined)}
@@ -220,5 +220,3 @@ test("Map, Set and class instances without toString render nothing", () => {
   );
 });
 
-test("style array renders nothing", () =>
-  equal(<div style={["color: red"] as any} />, `<div></div>`));

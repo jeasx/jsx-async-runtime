@@ -2,7 +2,7 @@ import { isJsxNode } from "../jsx/is-jsx-node.js";
 import type { ElementNode, Html } from "../jsx/jsx.types.js";
 
 /**
- * Checks for values that render nothing as attributes and in `style` and `class` objects:
+ * Checks for values that render nothing as attributes:
  * `null`, `undefined`, `false`, functions and Symbols (instead of their source or `Symbol(...)`),
  * and elements and html() markup (instead of their internal structure).
  * `true` isn't included, since it renders as a boolean attribute.

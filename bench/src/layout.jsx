@@ -1,4 +1,5 @@
 import { html } from "jsx-async-runtime";
+import { cx } from "./cx.js";
 
 /**
  * The page frame shared by all cases. `head` adds page-specific elements to the `<head>`.
@@ -20,7 +21,7 @@ export function Layout({ title, head = undefined, children }) {
             <ul>
               {["Home", "Products", "About", "Contact"].map((label) => (
                 <li>
-                  <a href={`/${label.toLowerCase()}`} class={{ active: label === "Products" }}>
+                  <a href={`/${label.toLowerCase()}`} class={cx({ active: label === "Products" })}>
                     {label}
                   </a>
                 </li>

@@ -229,7 +229,7 @@ Only elements created by JSX or `createElement` are rendered. Objects that merel
 
 Escaping doesn't check what a value means. URLs are not validated, so `href={userInput}` can still contain a `javascript:` link. Check URLs from untrusted sources yourself (e.g. allow only `http:` and `https:`).
 
-The same goes for styles. Style values are escaped for HTML, but not checked as CSS, so `style={{ color: userInput }}` with `"red; background: url(https://evil.example)"` adds a second property. Don't put untrusted input into styles, or allow only known values (e.g. a list of colors).
+The same goes for styles. Style values are escaped for HTML, but not checked as CSS, so ``style={`color: ${userInput}`}`` with `"red; background: url(https://evil.example)"` adds a second property. Don't put untrusted input into styles, or allow only known values (e.g. a list of colors).
 
 ## Attributes
 
@@ -243,17 +243,12 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | function or symbol                              | nothing                                                                         |
 | element or `html()`, e.g. `title={<b />}`       | nothing                                                                         |
 | promise, e.g. `title={loadTitle()}`             | awaited, then rendered like its value                                           |
-| `style={{ "padding-top": "1rem" }}`             | `style="padding-top: 1rem"` (`null`, `undefined`, `false` and `""` are skipped) |
-| `class={{ active: true, hidden: false }}`       | `class="active"`                                                                |
-| `class={["a", cond && "b"]}`                    | `class="a b"` (falsy entries are skipped)                                       |
-| `class={["a", ["b"], { c: true }]}`             | `class="a b c"` (arrays may nest and contain objects)                           |
-| `class={new Set(["a", "b"])}`                   | `class="a b"` (iterables work like arrays, a `Map` like an object)              |
 | plain object or array                           | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                                    |
 | bytes, e.g. a `Buffer`                          | UTF-8 text (escaped), like bytes as children                                    |
 | `Map`, `Set` or other object without `toString` | nothing                                                                         |
 | anything else (`URL`, `Date`, numbers)          | its string form, e.g. `href={new URL("https://example.com")}`                   |
 
-Style properties use CSS names (`background-color`, not `backgroundColor`). Keys are rendered exactly as written and camelCase isn't converted, so `style={{ fontSize: "1rem" }}` renders `style="fontSize: 1rem"`, which browsers ignore. Custom properties work as written, e.g. `style={{ "--gap": "1rem" }}`. Class names are strings: `true` and numbers in a `class` array don't type-check, so write `[!isActive && "inactive"]` instead of `[isActive || "inactive"]`, and `` `col-${n}` `` instead of `n`. Promises inside `style` and `class` values aren't awaited and are skipped, so `class={{ active: isActive() }}` with an async `isActive` adds nothing; await them before rendering, or pass the whole value as a promise (e.g. `class={loadClasses()}`). `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
+`class` and `style` are plain string attributes, like in HTML. Objects and arrays follow the rules above, so `class={{ active: true }}` renders JSON, not `class="active"`. To build class names from conditions, use a library like [clsx](https://github.com/lukeed/clsx), e.g. `class={clsx("btn", { active: isActive })}`. Write styles as strings, e.g. ``style={`--columns: ${n}; gap: 1rem`}``. `key` is accepted (e.g. when mapping lists), but never rendered as an attribute.
 
 Void tags like `<br />`, `<img />` or `<meta />` render as a single tag without a closing tag, e.g. `<br>`. Their children are ignored, so `<br>text</br>` renders `<br>` instead of invalid HTML. Void tags are recognized in lowercase, uppercase and capitalized (`br`, `BR`, `Br`), but not in other mixed case like `bR`.
 
@@ -379,12 +374,7 @@ export default function App() {
 
 function Header({ label }) {
   return (
-    <section
-      style={{
-        "background-color": "red",
-        "padding-bottom": "1rem",
-      }}
-    >
+    <section style="background-color: red; padding-bottom: 1rem">
       <h1 style="color: white; text-align: center">{label}</h1>
     </section>
   );
@@ -395,7 +385,7 @@ async function TodoList({ quantity }) {
 
   return (
     <table class="table">
-      <thead class={{ thead: true, striped: false, sticky: true }}>
+      <thead class="thead sticky">
         <tr>
           <th>Label</th>
           <th>Status</th>

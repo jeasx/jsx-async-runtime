@@ -1,4 +1,5 @@
 import { Layout } from "../layout.js";
+import { cx } from "../cx.js";
 
 // A discussion with nested replies, rendered by a recursive component.
 // 10 top-level comments with 3, 2 and 2 replies per level: 10 + 30 + 60 + 120 comments.
@@ -35,7 +36,7 @@ function Comment({ comment, depth }) {
   return (
     <li
       id={`comment-${comment.id}`}
-      class={["comment", `depth-${depth}`, { negative: comment.score < 0 }]}
+      class={cx("comment", `depth-${depth}`, { negative: comment.score < 0 })}
     >
       <header>
         <img class="avatar" src={comment.avatar} alt="" width={32} height={32} />

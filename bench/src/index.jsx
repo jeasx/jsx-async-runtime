@@ -7,6 +7,7 @@ import { COMMENT_COUNT, CommentThread } from "./pages/comment-thread.js";
 import { Dashboard } from "./pages/dashboard.js";
 import { PRODUCT_COUNT, ProductGrid } from "./pages/product-grid.js";
 import { SettingsForm } from "./pages/settings-form.js";
+import { cx } from "./cx.js";
 
 // Usage: npm run bench [-- <filter>...], e.g. `npm run bench -- stream`.
 
@@ -29,10 +30,10 @@ const comments = Array.from({ length: 1000 }, (_, i) => ({
 
 function Row({ row }) {
   return (
-    <tr id={`row-${row.id}`} class={["row", { active: row.active }]} data-id={row.id}>
+    <tr id={`row-${row.id}`} class={cx("row", { active: row.active })} data-id={row.id}>
       <td>{row.id}</td>
       <td>{row.name}</td>
-      <td style={{ "text-align": "right", color: row.active ? "green" : null }}>{row.price}</td>
+      <td style={row.active ? "text-align: right; color: green" : "text-align: right"}>{row.price}</td>
       <td>
         {row.tags.map((tag) => (
           <span class="tag">{tag}</span>

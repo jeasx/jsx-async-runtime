@@ -1,12 +1,10 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
-import { classToString } from "../utils/class-to-string.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeBytes } from "../utils/decode-bytes.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 import { rendersNothing } from "../utils/renders-nothing.js";
-import { styleToString } from "../utils/style-to-string.js";
-import { hasOwnStringForm, toText } from "../utils/to-text.js";
+import { toText } from "../utils/to-text.js";
 import { escapeHTML } from "./escape-entities.js";
 
 // Skips keys inherited from a polluted `Object.prototype` (e.g. by a naive deep merge
@@ -39,9 +37,9 @@ export function attributesToString(props: Record<string, unknown>): string | Pro
 
 /**
  * Renders the attributes from `from` (the first promise) on, once their promises resolved,
- * after the ones already rendered. Those are kept, since rendering them again would find
- * a one-time iterable (e.g. a generator in `class`) used up. A separate function, so the
- * hot loop above captures no variables in a closure (V8 keeps them in a slower context).
+ * after the ones already rendered, which are kept instead of rendered again. A separate
+ * function, so the hot loop above captures no variables in a closure (V8 keeps them in
+ * a slower context).
  */
 async function renderRestAsync(
   rendered: string,
@@ -110,21 +108,6 @@ function attributeToString(key: string, value: unknown): string {
     return "";
   }
   if (typeof value === "object") {
-    // Objects with their own string form (e.g. a `URL`) and bytes render it below, in `style`
-    // and `class` too, like in other attributes. Objects without one (e.g. a class instance
-    // with fields) are read as `style` and `class` objects.
-    if ((key === "style" || key === "class") && !hasOwnStringForm(value)) {
-      if (key === "style") {
-        // An array isn't a style object, so it renders nothing instead of `0: ...` for each item.
-        if (Array.isArray(value)) {
-          return "";
-        }
-        const styles = styleToString(value as Record<string, unknown>);
-        return styles && `style="${escapeHTML(styles)}"`;
-      }
-      const classes = classToString(value as unknown[] | Record<string, unknown>);
-      return classes && `class="${escapeHTML(classes)}"`;
-    }
     const prototype = Object.getPrototypeOf(value);
     if (!prototype || prototype === Object.prototype || Array.isArray(value)) {
       const json = JSON.stringify(value, valueToStringTransformer);

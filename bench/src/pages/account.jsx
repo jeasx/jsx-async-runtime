@@ -1,4 +1,5 @@
 import { Layout } from "../layout.js";
+import { cx } from "../cx.js";
 
 // An account page whose components read the user, the current path and translations
 // from the `this` context instead of passing them down as props.
@@ -57,7 +58,7 @@ function AccountNav() {
           const href = `/account/${item}`;
           const current = href === this.path;
           return (
-            <li class={{ current }}>
+            <li class={cx({ current })}>
               <a href={href} aria-current={current ? "page" : undefined}>
                 {this.t(`nav.${item}`)}
               </a>
@@ -85,7 +86,7 @@ function UserCard() {
 }
 
 function StatusBadge({ status }) {
-  return <span class={["status", `status-${status}`]}>{this.t(`status.${status}`)}</span>;
+  return <span class={cx("status", `status-${status}`)}>{this.t(`status.${status}`)}</span>;
 }
 
 function OrdersTable() {

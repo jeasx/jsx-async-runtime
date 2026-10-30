@@ -249,12 +249,11 @@ test("a polluted Object.prototype adds no attributes and no raw markup", async (
   const polluted = {
     onmouseover: "alert(1)",
     html: "<img src=x onerror=alert(1)>",
-    background: "url(https://evil.example)",
   };
   Object.assign(Object.prototype, polluted);
   try {
     await equal(
-      <div class={{ a: true }} style={{ color: "red" }}>
+      <div class="a" style="color: red">
         <p title={Promise.resolve("t")}>text</p>
         {html("<b>raw</b>")}
       </div>,

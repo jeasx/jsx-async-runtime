@@ -22,7 +22,7 @@ test("JSX compiled for the dev runtime type-checks and renders", async () => {
           <Item key={label} label={label} />
         ))}
       </List>
-      <p class={["x", false]} id={null}>
+      <p class="x" id={null}>
         text
       </p>
     </>

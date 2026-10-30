@@ -1,4 +1,5 @@
 import { Layout } from "../layout.js";
+import { cx } from "../cx.js";
 
 // A category page of an online shop, built from small design-system components
 // that spread their remaining props onto the element.
@@ -19,7 +20,7 @@ const products = Array.from({ length: PRODUCT_COUNT }, (_, i) => ({
 function Icon({ name, size = 16, class: className = undefined, ...rest }) {
   return (
     <svg
-      class={["icon", `icon-${name}`, className]}
+      class={cx("icon", `icon-${name}`, className)}
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -33,7 +34,7 @@ function Icon({ name, size = 16, class: className = undefined, ...rest }) {
 
 function Button({ variant = "primary", size = "md", icon = undefined, children, ...rest }) {
   return (
-    <button type="button" class={["btn", `btn-${variant}`, `btn-${size}`]} {...rest}>
+    <button type="button" class={cx("btn", `btn-${variant}`, `btn-${size}`)} {...rest}>
       {icon && <Icon name={icon} />}
       <span>{children}</span>
     </button>
@@ -41,14 +42,14 @@ function Button({ variant = "primary", size = "md", icon = undefined, children, 
 }
 
 function Badge({ tone = "neutral", children }) {
-  return <span class={["badge", `badge-${tone}`]}>{children}</span>;
+  return <span class={cx("badge", `badge-${tone}`)}>{children}</span>;
 }
 
 function Rating({ value }) {
   return (
     <div class="rating" role="img" aria-label={`${value} of 5 stars`}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <Icon name="star" class={{ filled: star <= value }} />
+        <Icon name="star" class={cx({ filled: star <= value })} />
       ))}
     </div>
   );
@@ -59,7 +60,7 @@ function ProductCard({ product }) {
   const image = `/images/${product.slug}`;
   return (
     <article
-      class={["card", { "card-sale": product.sale, "card-sold-out": product.soldOut }]}
+      class={cx("card", { "card-sale": product.sale, "card-sold-out": product.soldOut })}
       data-product-id={product.id}
     >
       <a href={url} class="card-image">
@@ -110,7 +111,7 @@ function Pagination({ page, pages }) {
       {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
         <a
           href={`?page=${n}`}
-          class={{ current: n === page }}
+          class={cx({ current: n === page })}
           aria-current={n === page ? "page" : undefined}
         >
           {n}
@@ -124,7 +125,7 @@ export function ProductGrid() {
   return (
     <Layout title="Products">
       <h1>All products</h1>
-      <div class="grid" style={{ "--columns": "4", gap: "1rem" }}>
+      <div class="grid" style="--columns: 4; gap: 1rem">
         {products.map((product) => (
           <ProductCard product={product} />
         ))}

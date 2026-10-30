@@ -23,21 +23,3 @@ export function toText(value: unknown): string | undefined {
   return String(value);
 }
 
-/**
- * Checks for objects that render their string form, e.g. a `URL`, a `Date` or bytes,
- * unlike arrays and plain objects, which are read item by item or key by key.
- * Only looks at the `toString` method without calling it. Plain objects are ruled out first by
- * their inherited `toString`, which is cheaper than reading the prototype, since `class` and
- * `style` objects are common.
- */
-export function hasOwnStringForm(value: object): boolean {
-  if (Array.isArray(value)) {
-    return false;
-  }
-  const toString = (value as { toString?: unknown }).toString;
-  if (typeof toString !== "function" || toString === Object.prototype.toString) {
-    return false;
-  }
-  const prototype = Object.getPrototypeOf(value);
-  return prototype !== null && prototype !== Object.prototype;
-}
