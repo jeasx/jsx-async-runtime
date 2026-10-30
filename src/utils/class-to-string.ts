@@ -1,6 +1,9 @@
+import { decodeBytes } from "./decode-bytes.js";
 import { handleRejection } from "./handle-rejection.js";
+import { isByteArray } from "./is-byte-array.js";
 import { isPromise } from "./is-promise.js";
 import { rendersNothing } from "./renders-nothing.js";
+import { hasOwnStringForm, toText } from "./to-text.js";
 
 // Skips keys inherited from a polluted `Object.prototype`. Module-local for V8's fast path,
 // see attributes-to-string.ts.
@@ -34,6 +37,12 @@ export function classToString(obj: unknown[] | Record<string, unknown>): string 
       if (isPromise(value)) {
         // Never awaited, so a rejection must not crash Node.
         handleRejection(value);
+        return;
+      }
+      // Objects with their own string form (e.g. a `URL`) and bytes add it as a name, like
+      // the `class` attribute itself. Other objects are read as `name: condition` pairs.
+      if (hasOwnStringForm(value)) {
+        add(isByteArray(value) ? decodeBytes(value) : toText(value)!);
         return;
       }
       const record = value as Record<string, unknown>;

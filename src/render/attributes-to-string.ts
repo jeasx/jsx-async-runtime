@@ -6,7 +6,7 @@ import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 import { rendersNothing } from "../utils/renders-nothing.js";
 import { styleToString } from "../utils/style-to-string.js";
-import { toText } from "../utils/to-text.js";
+import { hasOwnStringForm, toText } from "../utils/to-text.js";
 import { escapeHTML } from "./escape-entities.js";
 
 // Skips keys inherited from a polluted `Object.prototype` (e.g. by a naive deep merge
@@ -85,15 +85,18 @@ function attributeToString(key: string, value: unknown): string {
     return "";
   }
   if (typeof value === "object") {
-    if (key === "style") {
-      // An array isn't a style object, so it renders nothing instead of `0: ...` for each item.
-      if (Array.isArray(value)) {
-        return "";
+    // Objects with their own string form (e.g. a `URL`) and bytes render it below, in `style`
+    // and `class` too, like in other attributes. Objects without one (e.g. a class instance
+    // with fields) are read as `style` and `class` objects.
+    if ((key === "style" || key === "class") && !hasOwnStringForm(value)) {
+      if (key === "style") {
+        // An array isn't a style object, so it renders nothing instead of `0: ...` for each item.
+        if (Array.isArray(value)) {
+          return "";
+        }
+        const styles = styleToString(value as Record<string, unknown>);
+        return styles && `style="${escapeHTML(styles)}"`;
       }
-      const styles = styleToString(value as Record<string, unknown>);
-      return styles && `style="${escapeHTML(styles)}"`;
-    }
-    if (key === "class") {
       const classes = classToString(value as unknown[] | Record<string, unknown>);
       return classes && `class="${escapeHTML(classes)}"`;
     }

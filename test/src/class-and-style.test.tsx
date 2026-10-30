@@ -202,3 +202,34 @@ test("class skips functions and Symbols", () =>
     <div class={["a", (() => "b") as any, Symbol("c") as any, ["d", Symbol("e") as any]]} />,
     `<div class="a d"></div>`,
   ));
+
+test("class and style objects with their own string form render it, like other attributes", () =>
+  equal(
+    <>
+      <div class={new URL("https://example.com/") as any} />
+      <div style={new URL("https://example.com/") as any} />
+      <div class={new TextEncoder().encode("a b") as any} />
+      <div style={Buffer.from("color: red") as any} />
+      <div class={["a", new URL("https://example.com/") as any, Buffer.from("c") as any]} />
+    </>,
+    `<div class="https://example.com/"></div><div style="https://example.com/"></div>` +
+      `<div class="a b"></div><div style="color: red"></div>` +
+      `<div class="a https://example.com/ c"></div>`,
+  ));
+
+test("class and style objects without their own string form are read as objects", () => {
+  class Styles {
+    color = "red";
+  }
+  class Classes {
+    active = true;
+    hidden = false;
+  }
+  return equal(
+    <>
+      <div style={new Styles() as any} class={new Classes() as any} />
+      <div class={["a", new Classes() as any]} />
+    </>,
+    `<div style="color: red" class="active"></div><div class="a active"></div>`,
+  );
+});
