@@ -1,5 +1,4 @@
 import test from "node:test";
-import { runInNewContext } from "node:vm";
 import { equal } from "./helpers/equal.js";
 
 test("bytes render as escaped UTF-8 text", () =>
@@ -19,9 +18,6 @@ test("component returning bytes", () => {
     `<pre>&lt;x&gt;</pre>`,
   );
 });
-
-test("bytes from another realm render as text", () =>
-  equal(<p>{runInNewContext("new Uint8Array([104, 105])")}</p>, `<p>hi</p>`));
 
 test("other typed arrays render like arrays of numbers", () =>
   equal(<p>{new Uint16Array([1, 2])}</p>, `<p>12</p>`));

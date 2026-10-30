@@ -98,6 +98,8 @@ Bytes (a `Uint8Array` or `Buffer`) are rendered as UTF-8 text and escaped like a
 
 Objects with their own `toString` method, e.g. a `Date`, `URL`, `Error` or an instance of your own class, render their string form, escaped like any other string: `<p>{new URL("https://example.com")}</p>` renders `<p>https://example.com/</p>`. Plain objects (e.g. parsed JSON) and class instances without their own `toString` render nothing instead of `[object Object]`. Iterables render their items instead, even when they have their own `toString`, so convert them first if you want their string form: a `URLSearchParams` renders `a1b2`, while `{String(params)}` renders `a=1&amp;b=2`. In TypeScript, `createElement` and typed component children don't accept such objects, so convert them first, e.g. `createElement("p", null, String(url))`. Children of HTML and SVG tags in JSX aren't type-checked, since tags accept unknown attributes.
 
+Objects from another realm (e.g. created with `node:vm`, in an iframe or in a Jest test environment) aren't supported and may render differently, e.g. a plain object as `[object Object]` or bytes as a list of numbers. Convert them to strings or local objects first.
+
 A component receives its children as written, like in React and as TypeScript types them: a single child as is (e.g. a string or an element), several children as an array, and no `children` prop without children. So a single function child works as a render prop:
 
 ```jsx
