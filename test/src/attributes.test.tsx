@@ -144,6 +144,16 @@ test("promise attributes are awaited", () =>
     `<div id="a" title="&lt;t&gt;" class="b c" style="color: red" hidden data-x="{&quot;y&quot;:1}">x</div>`,
   ));
 
+test("own __proto__ attribute renders the same with promise attributes", async () => {
+  // Spreading parsed JSON gives an own `__proto__` key; a promise attribute must not drop it.
+  const props = JSON.parse(`{"__proto__":"x","id":"a"}`);
+  await equal(<div {...props} />, `<div __proto__="x" id="a"></div>`);
+  await equal(
+    <div {...props} title={Promise.resolve("t")} />,
+    `<div __proto__="x" id="a" title="t"></div>`,
+  );
+});
+
 test("promise attribute on void tag and with thenable", () =>
   equal(
     // Built with createElement, since the attribute types only allow promises.

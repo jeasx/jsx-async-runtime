@@ -51,7 +51,9 @@ function isAttribute(key: string): boolean {
  * Rejects with the first error, like a promise child does.
  */
 async function resolveAttributes(props: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const resolved: Record<string, unknown> = {};
+  // Without a prototype, an own `__proto__` key (e.g. from spread JSON) is set as an attribute
+  // like in the sync path, instead of calling the prototype setter and getting lost.
+  const resolved: Record<string, unknown> = Object.create(null);
   const pending: Promise<void>[] = [];
   for (const key in props) {
     if (!hasOwnProperty.call(props, key) || !isAttribute(key)) {
