@@ -9,16 +9,11 @@
  * recognized, so a context spread from the module (e.g. `{ ...runtime, user }`) is kept.
  */
 export function resolveContext(thisArg: any, name: string, method: Function): any {
-  return thisArg == null || isNamespace(thisArg) || isNamespaceCopy(thisArg, name, method)
+  if (thisArg == null || thisArg[Symbol.toStringTag] === "Module") {
+    return {};
+  }
+  const namespace = thisArg[name] === method ? thisArg.default : undefined;
+  return namespace != null && namespace[Symbol.toStringTag] === "Module" && namespace[name] === method
     ? {}
     : thisArg;
-}
-
-function isNamespace(value: any): boolean {
-  return value[Symbol.toStringTag] === "Module";
-}
-
-function isNamespaceCopy(value: any, name: string, method: Function): boolean {
-  const namespace = value[name] === method ? value.default : undefined;
-  return namespace != null && isNamespace(namespace) && namespace[name] === method;
 }
