@@ -27,7 +27,7 @@ export function attributesToString(props: Record<string, unknown>): string | Pro
     }
     const value = props[key];
     if (isPromise(value)) {
-      return resolveAttributes(props).then((resolved) => attributesToString(resolved) as string);
+      return renderRestAsync(result, props, key);
     }
     const str = attributeToString(key, value);
     if (str !== "") {
@@ -35,6 +35,21 @@ export function attributesToString(props: Record<string, unknown>): string | Pro
     }
   }
   return result;
+}
+
+/**
+ * Renders the attributes from `from` (the first promise) on, once their promises resolved,
+ * after the ones already rendered. Those are kept, since rendering them again would find
+ * a one-time iterable (e.g. a generator in `class`) used up. A separate function, so the
+ * hot loop above captures no variables in a closure (V8 keeps them in a slower context).
+ */
+async function renderRestAsync(
+  rendered: string,
+  props: Record<string, unknown>,
+  from: string,
+): Promise<string> {
+  const rest = attributesToString(await resolveAttributes(props, from)) as string;
+  return rendered !== "" && rest !== "" ? `${rendered} ${rest}` : rendered + rest;
 }
 
 // An attribute name must not be empty and
@@ -47,17 +62,27 @@ function isAttribute(key: string): boolean {
 }
 
 /**
- * Returns a copy of the attributes with all promise values awaited.
+ * Returns a copy of the attributes from `from` on, with all promise values awaited.
  * Rejects with the first error, like a promise child does.
  */
-async function resolveAttributes(props: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function resolveAttributes(
+  props: Record<string, unknown>,
+  from: string,
+): Promise<Record<string, unknown>> {
   // Without a prototype, an own `__proto__` key (e.g. from spread JSON) is set as an attribute
   // like in the sync path, instead of calling the prototype setter and getting lost.
   const resolved: Record<string, unknown> = Object.create(null);
   const pending: Promise<void>[] = [];
+  let started = false;
   for (const key in props) {
     if (!hasOwnProperty.call(props, key) || !isAttribute(key)) {
       continue;
+    }
+    if (!started) {
+      if (key !== from) {
+        continue;
+      }
+      started = true;
     }
     const value = props[key];
     // Assigned in prop order, so attributes render in the order they were written.

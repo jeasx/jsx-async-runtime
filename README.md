@@ -247,6 +247,7 @@ Attributes use their HTML names (`class`, `for`, `onclick`), not the React names
 | `class={{ active: true, hidden: false }}`       | `class="active"`                                                                |
 | `class={["a", cond && "b"]}`                    | `class="a b"` (falsy entries are skipped)                                       |
 | `class={["a", ["b"], { c: true }]}`             | `class="a b c"` (arrays may nest and contain objects)                           |
+| `class={new Set(["a", "b"])}`                   | `class="a b"` (iterables work like arrays, a `Map` like an object)              |
 | plain object or array                           | JSON, e.g. `data-config="{&quot;a&quot;:1}"`                                    |
 | bytes, e.g. a `Buffer`                          | UTF-8 text (escaped), like bytes as children                                    |
 | `Map`, `Set` or other object without `toString` | nothing                                                                         |

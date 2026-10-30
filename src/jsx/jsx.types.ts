@@ -55,13 +55,15 @@ declare global {
 
     // Class names as a string, an object of `name: condition` pairs,
     // or a (nested) array of both, e.g. `["a", ["b"], { c: cond }]`.
+    // Other iterables (e.g. a `Set`) work like arrays, and a `Map` like an object.
     type ClassValue =
       | string
       | false
       | null
       | undefined
       | { [key: string]: boolean | null | undefined }
-      | Array<ClassValue>;
+      | ReadonlyMap<string, boolean | null | undefined>
+      | Iterable<ClassValue>;
 
     // Valid tags: element names and components (TypeScript 5.1+). A component may return
     // a promise of any element, so `async function Page(): Promise<JSX.Element>` type-checks,

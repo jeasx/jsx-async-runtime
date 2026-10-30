@@ -48,6 +48,62 @@ test("class as array with objects", () =>
     `<div class="a b d e"></div>`,
   ));
 
+test("class as Set", () =>
+  equal(<div class={new Set(["a", "b", "a"])}></div>, `<div class="a b"></div>`));
+
+test("class as empty Set", () => equal(<div class={new Set<string>()}></div>, `<div></div>`));
+
+test("class as Set nested in an array, with objects and arrays inside", () =>
+  equal(
+    <div class={["a", new Set<JSX.ClassValue>(["b", { c: true, d: false }, ["e"], null])]}></div>,
+    `<div class="a b c e"></div>`,
+  ));
+
+test("class as Map of name: condition pairs", () =>
+  equal(
+    <div class={new Map([["a", true], ["b", false], ["c", null], ["d", true]])}></div>,
+    `<div class="a d"></div>`,
+  ));
+
+test("class Map skips names that aren't strings and promise conditions, even if they reject", async () => {
+  const map: any = new Map<unknown, unknown>([
+    [{ x: 1 }, true],
+    ["a", rejectAfter(1, "never awaited")],
+    ["b", true],
+  ]);
+  const element = <div class={map}></div>;
+  await delay(5);
+  return equal(element, `<div class="b"></div>`);
+});
+
+test("class as generator and iterator helper", () => {
+  function* names() {
+    yield "a";
+    yield ["b", { c: true }];
+  }
+  return equal(
+    () => <div class={["x", names(), ["y", "z"].values().map((name) => `${name}!`)]}></div>,
+    `<div class="x a b c y! z!"></div>`,
+  );
+});
+
+test("class as generator before a promise attribute is read once", () => {
+  function* names() {
+    yield "a";
+    yield "b";
+  }
+  return equal(
+    () => <div id="i" class={names()} title={Promise.resolve("t")} data-x="x"></div>,
+    `<div id="i" class="a b" title="t" data-x="x"></div>`,
+  );
+});
+
+test("class iterable with its own string form renders the string", () =>
+  equal(
+    <div class={new URLSearchParams("a=1") as any}></div>,
+    `<div class="a=1"></div>`,
+  ));
+
 test("class array skips true, like falsy values", () => {
   // e.g. `isActive || "inactive"`, which the types reject, but plain JS allows.
   const isActive: any = true;
