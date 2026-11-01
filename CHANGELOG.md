@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.0.0 - 2026-11-01
 
 Adds streaming, renders about 2x faster than v2, supports many more child types and closes several injection paths.
 
