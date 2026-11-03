@@ -1,5 +1,8 @@
 # jsx-async-runtime
 
+[![npm](https://img.shields.io/npm/v/jsx-async-runtime)](https://www.npmjs.com/package/jsx-async-runtime)
+[![license](https://img.shields.io/npm/l/jsx-async-runtime)](LICENSE)
+
 An asynchronous JSX runtime without dependencies, to be used as an HTML template engine on the server or in the browser.
 
 - **Async components**: `await` data right inside your components.
