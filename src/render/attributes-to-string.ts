@@ -1,6 +1,7 @@
 import { isJsxNode } from "../jsx/is-jsx-node.js";
 import { createNameValidator } from "../utils/create-name-validator.js";
 import { decodeBytes } from "../utils/decode-bytes.js";
+import { handleRejection } from "../utils/handle-rejection.js";
 import { isByteArray } from "../utils/is-byte-array.js";
 import { isPromise } from "../utils/is-promise.js";
 import { toText } from "../utils/to-text.js";
@@ -144,9 +145,12 @@ function valueToStringTransformer(_key: string, value: unknown): unknown {
   if (typeof value === "bigint") {
     return String(value);
   }
-  // Only promise attribute values are awaited. A nested promise would render as `{}`,
-  // and its rejection (already marked as handled by jsx()) would be lost, so fail instead.
+  // Only promise attribute values are awaited. A nested promise would render as `{}`, so fail
+  // instead. jsx() only guards promises one level deep in a plain object, so one nested deeper
+  // (e.g. in `data={[{ p }]}`) is marked as handled here, since nobody awaits it anymore.
+  // No extra walk: JSON.stringify already visits it.
   if (isPromise(value)) {
+    handleRejection(value);
     throw new TypeError(
       "A promise nested in an object or array attribute can't be rendered. " +
         "Await it first, or pass it as the attribute value itself.",

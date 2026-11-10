@@ -193,6 +193,14 @@ test("promise nested in what a promise attribute resolves to rejects", () =>
 test("rejected promise nested in an attribute rejects instead of being lost", () =>
   rejects(() => <div data-x={[Promise.reject(new Error("nested"))]} />, NESTED_PROMISE_ERROR));
 
+// jsx() only guards promises one level deep in a plain object. Deeper ones are marked as handled
+// when the render fails on them, so they can't crash Node (rejects() waits for that).
+test("rejected promise nested deeper in an attribute doesn't crash", () =>
+  rejects(
+    () => <div data-x={[{ p: Promise.reject(new Error("deep")) }]} />,
+    NESTED_PROMISE_ERROR,
+  ));
+
 test("props that aren't rendered as attributes are not awaited", async () => {
   const never = Promise.reject(new Error("never awaited"));
   let thenCalled = false;

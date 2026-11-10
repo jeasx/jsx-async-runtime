@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `jsx()` only guards promises one level deep in a plain object, so one nested deeper (e.g. in `data={[{ p }]}`) could crash Node with an unhandled rejection once the render failed on it. Mark it as handled before failing.
 - `readStream()` never called `releaseLock()` once the stream was used up, so a fully rendered `ReadableStream` child stayed locked. Release it on done, like `for await` does.
 
 ## 3.0.0 - 2026-11-01
