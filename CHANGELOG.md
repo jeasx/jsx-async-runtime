@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `readStream()` never called `releaseLock()` once the stream was used up, so a fully rendered `ReadableStream` child stayed locked. Release it on done, like `for await` does.
+
 ## 3.0.0 - 2026-11-01
 
 Adds streaming, renders about 2x faster than v2, supports many more child types and closes several injection paths.

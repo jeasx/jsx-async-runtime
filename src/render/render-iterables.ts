@@ -195,7 +195,14 @@ function stopIterator(
 function readStream(stream: ReadableStream<JSX.Element>): AsyncIterator<JSX.Element> {
   const reader = stream.getReader();
   return {
-    next: () => reader.read() as Promise<IteratorResult<JSX.Element>>,
+    next: async () => {
+      const result = (await reader.read()) as IteratorResult<JSX.Element>;
+      // Give the stream back once it is used up, like `for await` does.
+      if (result.done) {
+        reader.releaseLock();
+      }
+      return result;
+    },
     return: async () => {
       await reader.cancel();
       return { done: true, value: undefined };

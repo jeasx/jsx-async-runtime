@@ -4,6 +4,7 @@ import test from "node:test";
 import { delay } from "./helpers/delay.js";
 import { equal } from "./helpers/equal.js";
 import { rejects } from "./helpers/rejects.js";
+import { renderers } from "./helpers/renderers.js";
 
 test("async generator as children", () => {
   async function* items() {
@@ -57,6 +58,21 @@ test("readable stream as children", () => {
       },
     });
   return equal(() => <pre>{createStream()}</pre>, `<pre>&lt;a&gt;b</pre>`);
+});
+
+test("a rendered readable stream is unlocked again", async () => {
+  for (const render of renderers) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue("a");
+        controller.close();
+      },
+    });
+    assert.strictEqual(await render(<p>{stream}</p>), `<p>a</p>`);
+    assert.strictEqual(stream.locked, false);
+    // The stream is used up, but can still be handed to another reader.
+    assert.deepStrictEqual(await stream.getReader().read(), { done: true, value: undefined });
+  }
 });
 
 test("async iterable uses the jsxToString override", async () => {
