@@ -4,10 +4,10 @@ import test from "node:test";
 import { equal } from "./helpers/equal.js";
 
 test("bytes render as escaped UTF-8 text", () =>
-  equal(<pre>{Buffer.from("a < b ü")}</pre>, `<pre>a &lt; b ü</pre>`));
+  equal(<pre>{Buffer.from("a < b ü")}</pre>, `<pre>\na &lt; b ü</pre>`));
 
 test("Uint8Array renders as UTF-8 text", () =>
-  equal(<pre>{new TextEncoder().encode("€ & co")}</pre>, `<pre>€ &amp; co</pre>`));
+  equal(<pre>{new TextEncoder().encode("€ & co")}</pre>, `<pre>\n€ &amp; co</pre>`));
 
 test("bytes as top-level element", () => equal(Buffer.from("ü"), `ü`));
 
@@ -17,7 +17,7 @@ test("component returning bytes", () => {
     <pre>
       <File />
     </pre>,
-    `<pre>&lt;x&gt;</pre>`,
+    `<pre>\n&lt;x&gt;</pre>`,
   );
 });
 
@@ -26,7 +26,7 @@ test("other typed arrays render like arrays of numbers", () =>
 
 test("byte stream renders as escaped UTF-8 text", () =>
   // A `fetch()` body is a stream of bytes, like this one.
-  equal(() => <pre>{new Response("héllo <b>").body}</pre>, `<pre>héllo &lt;b&gt;</pre>`));
+  equal(() => <pre>{new Response("héllo <b>").body}</pre>, `<pre>\nhéllo &lt;b&gt;</pre>`));
 
 test("character split between byte chunks", () => {
   // "ü" is 0xc3 0xbc in UTF-8.

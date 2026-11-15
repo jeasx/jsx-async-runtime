@@ -26,27 +26,41 @@ import { escapeHTML } from "./escape-entities.js";
 import { jsxToString } from "./jsx-to-string.js";
 import { renderAsyncIterable, renderIterable } from "./render-iterables.js";
 
-// HTML tag names are case-insensitive, so the uppercase and capitalized variants are void too
-// (e.g. `<BR>` and `<Br>`). Other mixed case (e.g. `<bR>`) is rare and not recognized,
-// so a single lookup does the check.
-const VOID_TAGS = new Set(
-  [
-    "area",
-    "base",
-    "br",
-    "col",
-    "embed",
-    "hr",
-    "img",
-    "input",
-    "link",
-    "meta",
-    "param",
-    "source",
-    "track",
-    "wbr",
-  ].flatMap((tag) => [tag, tag.toUpperCase(), tag[0]!.toUpperCase() + tag.slice(1)]),
+// Void tags can't have content or a closing tag.
+const VOID_TAGS = createTagSet(
+  "area",
+  "base",
+  "br",
+  "col",
+  "embed",
+  "hr",
+  "img",
+  "input",
+  "link",
+  "meta",
+  "param",
+  "source",
+  "track",
+  "wbr",
 );
+
+// The HTML parser drops a newline right after the start tag of these elements, so a leading
+// newline in their content would be lost (e.g. a `<textarea>` value). A newline is written after
+// the start tag, so the parser drops that one instead. It is written whatever the content is,
+// since the content may not be known yet when the start tag is sent (e.g. a promise or a stream),
+// and the parser drops it anyway.
+const LEADING_NEWLINE_TAGS = createTagSet("listing", "pre", "textarea");
+
+/**
+ * Creates a set of lowercase tag names with their uppercase and capitalized variants,
+ * since HTML tag names are case-insensitive (e.g. `br`, `BR` and `Br`). Other mixed case
+ * (e.g. `bR`) is rare and not recognized, so a single lookup does the check.
+ */
+function createTagSet(...tags: string[]): Set<string> {
+  return new Set(
+    tags.flatMap((tag) => [tag, tag.toUpperCase(), tag[0]!.toUpperCase() + tag.slice(1)]),
+  );
+}
 
 // A tag must start with an ASCII letter and must not contain characters
 // that end the tag name or break the markup.
@@ -225,6 +239,10 @@ function renderTag(
   if (VOID_TAGS.has(tag)) {
     discardChildren(tag, children);
     return;
+  }
+
+  if (LEADING_NEWLINE_TAGS.has(tag)) {
+    writer.buffer += "\n";
   }
 
   const closeTag = `</${tag}>`;

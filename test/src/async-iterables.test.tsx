@@ -57,7 +57,7 @@ test("readable stream as children", () => {
         controller.close();
       },
     });
-  return equal(() => <pre>{createStream()}</pre>, `<pre>&lt;a&gt;b</pre>`);
+  return equal(() => <pre>{createStream()}</pre>, `<pre>\n&lt;a&gt;b</pre>`);
 });
 
 test("a rendered readable stream is unlocked again", async () => {

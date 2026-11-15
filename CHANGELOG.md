@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The HTML parser drops a newline right after the `<pre>`, `<textarea>` and `<listing>` start tags, so a leading newline of their content was lost (e.g. a `<textarea>` value lost it on every save). Write a newline after these start tags, like React does for content that starts with one. It is written for any content, since the content isn't known yet when the start tag is streamed, so the markup changes (`<pre>x</pre>` renders as `<pre>\nx</pre>`), but not what browsers show. Exact-string snapshots of these tags need an update.
+
 ## 3.0.1 - 2026-11-11
 
 - `jsx()` only guards promises one level deep in a plain object, so one nested deeper (e.g. in `data={[{ p }]}`) could crash Node with an unhandled rejection once the render failed on it. Mark it as handled before failing.
