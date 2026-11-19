@@ -59,7 +59,11 @@ export type Writer = {
    * Shared with nested `jsxToString` writers, so they stop too.
    */
   waits: Set<(error: Error) => void> | undefined;
-  flush(): void | Promise<void>;
+  /**
+   * Sends the markup rendered so far. With `holdBack` (the buffer reached `chunkSize`),
+   * a stream writer sends only whole chunks and keeps the rest in the buffer.
+   */
+  flush(holdBack?: boolean): void | Promise<void>;
   /**
    * Ends the pause of a flush, so rendering continues. Called when the stream reader
    * wants more (the stream's `pull`) and by cancelWriter(). Writers that never pause do nothing.
@@ -114,9 +118,9 @@ export function createStreamWriter(
     chunkSize,
     cancelled: false,
     waits: new Set(),
-    flush() {
+    flush(holdBack) {
       throwIfCancelled(writer);
-      enqueueBuffer(writer, controller);
+      enqueueBuffer(writer, controller, holdBack);
       if ((controller.desiredSize ?? 1) <= 0) {
         return new Promise<void>((resolve) => {
           endPause = resolve;
@@ -132,16 +136,40 @@ export function createStreamWriter(
 }
 
 /**
- * Sends the markup rendered so far as a chunk of the stream.
+ * Sends the markup rendered so far as chunks of the stream, each at most `chunkSize` characters
+ * (a buffer from a single large child or a big `html()` markup is split, without splitting
+ * a surrogate pair). With `holdBack`, only whole chunks are sent and the rest stays in the
+ * buffer for the next flush, so a buffer just over `chunkSize` doesn't send a tiny extra chunk.
  */
 export function enqueueBuffer(
   writer: Writer,
   controller: ReadableStreamDefaultController<string>,
+  holdBack = false,
 ): void {
-  if (writer.buffer !== "") {
-    controller.enqueue(writer.buffer);
-    writer.buffer = "";
+  const buffer = writer.buffer;
+  const size = writer.chunkSize;
+  if (buffer === "" || (holdBack && buffer.length < size)) {
+    return;
   }
+  if (!holdBack && buffer.length <= size) {
+    writer.buffer = "";
+    controller.enqueue(buffer);
+    return;
+  }
+  // Without `holdBack`, send until nothing is left; with it, only while a whole chunk is left.
+  const minimum = holdBack ? size : 1;
+  let index = 0;
+  while (buffer.length - index >= minimum) {
+    let end = Math.min(index + size, buffer.length);
+    // Don't split a surrogate pair, so each chunk is valid UTF-16 on its own.
+    const code = buffer.charCodeAt(end - 1);
+    if (end < buffer.length && end - index > 1 && code >= 0xd800 && code <= 0xdbff) {
+      end--;
+    }
+    controller.enqueue(buffer.slice(index, end));
+    index = end;
+  }
+  writer.buffer = index === buffer.length ? "" : buffer.slice(index);
 }
 
 /**
@@ -182,11 +210,12 @@ export function throwIfCancelled(writer: Pick<Writer, "cancelled">): void {
 
 /**
  * Sends the markup early once the buffer reaches `chunkSize`, so large sync markup streams.
+ * Only whole chunks are sent; the rest stays in the buffer.
  * Returns a promise when rendering should pause until the reader catches up.
  */
 export function flushIfFull(writer: Writer): void | Promise<void> {
   if (writer.buffer.length >= writer.chunkSize) {
-    return writer.flush();
+    return writer.flush(true);
   }
 }
 

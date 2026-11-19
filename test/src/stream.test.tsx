@@ -1,4 +1,4 @@
-import { jsxToStream, jsxToString } from "jsx-async-runtime";
+import { html, jsxToStream, jsxToString } from "jsx-async-runtime";
 import { strict as assert } from "node:assert";
 import test from "node:test";
 import { setFlagsFromString } from "node:v8";
@@ -72,6 +72,52 @@ test("stream splits large sync markup into chunks", async () => {
     assert.ok(chunk.length < 17 * 1024, `chunk of ${chunk.length} characters`);
   }
   assert.strictEqual(chunks.join(""), await jsxToString(<div>{rows}</div>));
+});
+
+test("stream sends full chunks for large sync markup", async () => {
+  const rows = Array.from({ length: 5000 }, (_, i) => <p>row {i}</p>);
+  const chunks = await streamToChunks(jsxToStream(<div>{rows}</div>));
+  assert.ok(chunks.length > 2, `got ${chunks.length} chunk(s)`);
+  // The rest of a full buffer is held back, so no tiny chunk follows each full one.
+  for (const chunk of chunks.slice(0, -1)) {
+    assert.strictEqual(chunk.length, 16 * 1024);
+  }
+  assert.ok(chunks.at(-1)!.length <= 16 * 1024);
+  assert.strictEqual(chunks.join(""), await jsxToString(<div>{rows}</div>));
+});
+
+test("stream splits a single large child into chunks", async () => {
+  const chunks = await streamToChunks(jsxToStream(<div>{"a".repeat(100000)}</div>));
+  assert.ok(chunks.length > 1, `got ${chunks.length} chunk(s)`);
+  for (const chunk of chunks) {
+    // A large buffer is split into chunks of at most 16 KB (the last one may be shorter).
+    assert.ok(chunk.length <= 16 * 1024, `chunk of ${chunk.length} characters`);
+  }
+  assert.strictEqual(chunks.join(""), `<div>${"a".repeat(100000)}</div>`);
+});
+
+test("stream splits large html() markup into chunks", async () => {
+  const chunks = await streamToChunks(
+    jsxToStream(<div>{html(`<p>${"a".repeat(50000)}</p>`)}</div>),
+  );
+  assert.ok(chunks.length > 1, `got ${chunks.length} chunk(s)`);
+  for (const chunk of chunks) {
+    assert.ok(chunk.length <= 16 * 1024, `chunk of ${chunk.length} characters`);
+  }
+  assert.strictEqual(chunks.join(""), `<div><p>${"a".repeat(50000)}</p></div>`);
+});
+
+test("stream doesn't split surrogate pairs between chunks", async () => {
+  // `<div>` is 5 characters, so the emoji run starts at an odd offset and the first
+  // 16 KB boundary falls between the two halves of an emoji and must be trimmed.
+  const text = "😀".repeat(20001);
+  const chunks = await streamToChunks(jsxToStream(<div>{text}</div>));
+  assert.strictEqual(chunks[0].length, 16 * 1024 - 1, "first boundary wasn't trimmed");
+  for (const chunk of chunks) {
+    assert.ok(chunk.length <= 16 * 1024, `chunk of ${chunk.length} characters`);
+    assert.ok(chunk.isWellFormed(), "chunk with a lone surrogate");
+  }
+  assert.strictEqual(chunks.join(""), `<div>${text}</div>`);
 });
 
 test("stream waits for the reader", async () => {

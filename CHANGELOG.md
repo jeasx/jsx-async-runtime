@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The HTML parser drops a newline right after the `<pre>`, `<textarea>` and `<listing>` start tags, so a leading newline of their content was lost (e.g. a `<textarea>` value lost it on every save). Write a newline after these start tags, like React does for content that starts with one. It is written for any content, since the content isn't known yet when the start tag is streamed, so the markup changes (`<pre>x</pre>` renders as `<pre>\nx</pre>`), but not what browsers show. Exact-string snapshots of these tags need an update.
+- #jsxToStream now splits a buffer larger than the chunk size (e.g. from a single large text child or a big #html markup) into chunks of at most 16 KB (without splitting a surrogate pair) instead of sending it as one oversized chunk, so the chunk-size claim holds for every render.
 
 ## 3.0.1 - 2026-11-11
 
