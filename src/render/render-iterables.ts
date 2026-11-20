@@ -233,7 +233,15 @@ function readStream(stream: ReadableStream<JSX.Element>): AsyncIterator<JSX.Elem
   const reader = stream.getReader();
   return {
     next: async () => {
-      const result = (await reader.read()) as IteratorResult<JSX.Element>;
+      let result: IteratorResult<JSX.Element>;
+      try {
+        result = (await reader.read()) as IteratorResult<JSX.Element>;
+      } catch (error) {
+        // The source failed, so the stream isn't stopped with return(). Give it back here,
+        // like a stream's own async iterator does. Safe, since the failed read is settled.
+        reader.releaseLock();
+        throw error;
+      }
       // Give the stream back once it is used up, like `for await` does.
       if (result.done) {
         reader.releaseLock();
@@ -286,8 +294,9 @@ export async function renderAsyncIterable(
       // Don't pull more items once the stream reader is gone.
       throwIfCancelled(writer);
       // When the stream reader cancels, the wait for a slow or endless source (e.g. a live feed)
-      // ends at once, and the source is stopped below.
-      const result = await flushAndAwait(writer, next());
+      // ends at once, and the source is stopped below. `next` is passed uncalled, so the markup
+      // so far is sent before the source is asked for its next item.
+      const result = await flushAndAwait(writer, next);
       // Promise items (e.g. from a `ReadableStream`) are awaited like in arrays and sync iterables.
       const pending = renderResult.call(this, result, state, writer);
       if (isPromise(pending)) {

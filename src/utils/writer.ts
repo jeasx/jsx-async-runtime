@@ -254,19 +254,27 @@ export function flushIfFull(writer: Writer): void | Promise<void> {
 /**
  * Sends the markup rendered so far, then waits for `value`
  * and (when the stream reader is behind) for the reader to catch up.
+ * `value` may be a function that starts the work, called only after the flush, so the markup
+ * so far is sent before e.g. the next item of a source is requested.
  * Both are awaited together, so a rejection of `value` is handled right away.
  * When the stream reader cancels, the wait rejects at once instead of waiting for `value`.
  */
-export function flushAndAwait<T>(writer: Writer, value: PromiseLike<T>): Promise<T> {
+export function flushAndAwait<T>(
+  writer: Writer,
+  value: PromiseLike<T> | (() => PromiseLike<T>),
+): Promise<T> {
   let ready: void | Promise<void>;
   try {
     ready = writer.flush();
   } catch (error) {
     // The flush failed (e.g. the stream was cancelled), so `value` is never awaited.
-    handleRejection(value);
+    // A function is never called then, so there is nothing to handle.
+    if (typeof value !== "function") {
+      handleRejection(value);
+    }
     throw error;
   }
-  const waiting = untilCancelled(writer, value);
+  const waiting = untilCancelled(writer, typeof value === "function" ? value() : value);
   if (!ready) {
     return waiting;
   }

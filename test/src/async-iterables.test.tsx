@@ -102,6 +102,18 @@ test("a readable stream stopped by a failed render is unlocked again", async () 
   }
 });
 
+test("a readable stream whose source fails is unlocked again", async () => {
+  for (const render of renderers) {
+    const stream = new ReadableStream<JSX.Element>({
+      pull(controller) {
+        controller.error(new Error("source failed"));
+      },
+    });
+    await assert.rejects(render(<p>{stream}</p>), { message: "source failed" });
+    assert.strictEqual(stream.locked, false);
+  }
+});
+
 test("a readable stream stopped by a stream cancel is unlocked again", async () => {
   for (const cancel of [
     undefined,
