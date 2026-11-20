@@ -317,7 +317,7 @@ Things to keep in mind:
 
 - Once a chunk is sent, it can't be changed. If a component throws, the stream ends with an error after the chunks already sent, so the response can't switch to an error page anymore.
 - Patterns that change the markup after rendering (like the head unification in the [example project](https://github.com/jeasx/jsx-async-runtime/tree/main/example)) don't work with streaming.
-- A `this.jsxToString` override is still honored, but returns a string, so everything it renders is sent as one chunk. When the client disconnects, rendering inside the override stops too, as long as each stream gets its own context object.
+- A `this.jsxToString` override is still honored, but returns a string, so everything it renders is sent as one chunk. When the client disconnects, rendering inside the override stops too. Streams rendered at the same time with the same context object don't stop each other's overrides, but an override then stops only once all of them are cancelled, so give each stream its own context object.
 
 ## Customizing rendering
 

@@ -2,36 +2,65 @@ import { handleRejection } from "./handle-rejection.js";
 import { noOp } from "./no-op.js";
 
 /**
- * The writer of the stream that a context is rendered to, set by `jsxToStream` while rendering.
- * A nested `jsxToString` call with the same context (e.g. from a `this.jsxToString` override
- * or a component) uses it to stop when the stream reader cancels, like the stream itself does.
- * Keyed by context, so streams rendered at the same time need their own context objects.
+ * The streams that render a context at the same time, seen by nested `jsxToString` calls with
+ * that context (e.g. from a `this.jsxToString` override or a component): they stop and their
+ * waits reject like the stream does when its reader cancels. A nested call can't tell which of
+ * several streams it belongs to, so it stops only once all of them are cancelled. A cancel of one
+ * stream then never stops the nested renders of another (e.g. when concurrent requests share a
+ * context), while a single stream (the common case) stops them right away.
  */
-const streamWriters = new WeakMap<object, Writer>();
+export type StreamGroup = Pick<Writer, "cancelled" | "waits">;
+
+type GroupState = StreamGroup & {
+  /** The streams of the context that are still rendering. */
+  live: Set<Writer>;
+  /** Set once one of them was cancelled. */
+  someCancelled: boolean;
+};
+
+const streamGroups = new WeakMap<object, GroupState>();
 
 /**
- * Makes `writer` the stream writer of `context` while the stream renders, so nested
- * `jsxToString` calls with this context (e.g. from an override) see a cancel.
- * Returns a function that removes it once rendering ended, unless another stream
- * took the context over. Contexts that aren't objects can't be keys and are skipped.
+ * Adds `writer` to the stream group of `context` while the stream renders, see StreamGroup.
+ * Returns a function that removes it, called when rendering ended or the reader cancelled.
+ * Once no stream of the group is left and one of them was cancelled, the group is cancelled,
+ * so nested renders that outlived a cancelled stream stop. Contexts that aren't objects can't
+ * be keys and are skipped.
  */
 export function attachStreamWriter(context: unknown, writer: Writer): () => void {
   if (typeof context !== "function" && (typeof context !== "object" || context === null)) {
     return noOp;
   }
-  streamWriters.set(context, writer);
+  let group = streamGroups.get(context);
+  if (!group) {
+    group = { cancelled: false, waits: new Set(), live: new Set(), someCancelled: false };
+    streamGroups.set(context, group);
+  }
+  group.live.add(writer);
+  const $group = group;
   return () => {
-    if (streamWriters.get(context) === writer) {
-      streamWriters.delete(context);
+    if (!$group.live.delete(writer)) {
+      return;
+    }
+    $group.someCancelled ||= writer.cancelled;
+    if ($group.live.size > 0) {
+      return;
+    }
+    // A later stream with this context starts a new group.
+    if (streamGroups.get(context) === $group) {
+      streamGroups.delete(context);
+    }
+    if ($group.someCancelled) {
+      cancelWriter($group);
     }
   };
 }
 
 /**
- * Returns the writer of the stream that `context` is rendered to, if any.
+ * Returns the stream group that `context` is rendered in, if any.
  */
-export function getStreamWriter(context: unknown): Writer | undefined {
-  return streamWriters.get(context as object);
+export function getStreamGroup(context: unknown): StreamGroup | undefined {
+  return streamGroups.get(context as object);
 }
 
 /**
@@ -73,10 +102,11 @@ export type Writer = {
 
 /**
  * Creates a writer that collects all markup in the buffer, nothing is sent early.
- * Inside a stream (`stream` is its writer, e.g. when called from a `this.jsxToString` override),
- * rendering stops like the stream does when its reader cancels: at the next component or promise.
+ * Inside a stream (`stream` is the stream group of the context, e.g. when called from a
+ * `this.jsxToString` override), rendering stops like the stream does when its reader cancels:
+ * at the next component or promise. See StreamGroup for streams that share a context.
  */
-export function createStringWriter(stream: Writer | undefined): Writer {
+export function createStringWriter(stream: StreamGroup | undefined): Writer {
   if (!stream) {
     // `waits` is set, so it isn't inherited from a polluted `Object.prototype`.
     return {
@@ -182,13 +212,15 @@ function cancelledError(): Error {
 /**
  * Marks the writer as cancelled when the stream reader is gone: drops the unsent markup,
  * ends a pause and rejects the pending waits (for promises and async iterables),
- * so rendering stops right away.
+ * so rendering stops right away. A stream group has only its waits to reject.
  */
-export function cancelWriter(writer: Writer): void {
+export function cancelWriter(writer: Writer | StreamGroup): void {
   writer.cancelled = true;
-  writer.buffer = "";
-  // Let a paused render continue, so it stops at its next check (e.g. the next component).
-  writer.resume();
+  if ("resume" in writer) {
+    writer.buffer = "";
+    // Let a paused render continue, so it stops at its next check (e.g. the next component).
+    writer.resume();
+  }
   const waits = writer.waits;
   if (waits) {
     const error = cancelledError();

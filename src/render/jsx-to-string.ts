@@ -4,7 +4,7 @@ import {
 } from "../utils/cancel-unread-streams.js";
 import { isPromise } from "../utils/is-promise.js";
 import { resolveContext } from "../utils/resolve-context.js";
-import { createStringWriter, getStreamWriter } from "../utils/writer.js";
+import { createStringWriter, getStreamGroup } from "../utils/writer.js";
 import { renderElement } from "./render-element.js";
 
 /**
@@ -23,7 +23,7 @@ export function jsxToString(
 ): string | Promise<string> {
   try {
     const context = resolveContext(this, "jsxToString", jsxToString);
-    const writer = createStringWriter(getStreamWriter(context));
+    const writer = createStringWriter(getStreamGroup(context));
     const pending = renderElement.call(context, jsxElement, writer);
     return isPromise(pending)
       ? cancelUnreadStreamsOnRejection(

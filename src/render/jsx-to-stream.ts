@@ -44,11 +44,13 @@ export function jsxToStream(
 
   // Set in `start`, which the stream calls right away (the controller only exists there).
   let writer: Writer;
+  // Leaves the stream group of the context, see attachStreamWriter().
+  let end: () => void;
 
   const source: UnderlyingDefaultSource<string> = {
     start(controller) {
       writer = createStreamWriter(controller, CHUNK_SIZE);
-      const end = attachStreamWriter(context, writer);
+      end = attachStreamWriter(context, writer);
       const done = () => {
         end();
         // The reader is gone, so the stream must not be written or closed anymore.
@@ -85,6 +87,8 @@ export function jsxToStream(
     },
     cancel() {
       cancelWriter(writer);
+      // Right away, so nested renders that only this stream kept going stop now.
+      end();
     },
   };
 
