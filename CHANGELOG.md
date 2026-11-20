@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- #jsxToStream could hang at full CPU on an endless iterable (e.g. a generator that yields forever) whose items render nothing (e.g. `null`), or whose items a fast reader kept up with in microtasks: the reader's cancel never got a chance to run. A stream render now waits for the event loop once every 1,024 items of an iterable, so a cancel gets through and stops the source. #jsxToString stays sync.
+- Promises nested deeper in plain-object props (e.g. `data={{ user: { profile: loadProfile() } }}`) were only guarded one level deep when the element was created. When rendering never reached them (e.g. an earlier sibling threw), their rejection was unhandled and could crash Node. Plain objects nested in plain objects are now walked up to 5 levels deep (cycle-safe; plain objects in arrays, Sets and Maps are still not walked, so passing large data stays cheap).
 - The HTML parser drops a newline right after the `<pre>`, `<textarea>` and `<listing>` start tags, so a leading newline of their content was lost (e.g. a `<textarea>` value lost it on every save). Write a newline after these start tags, like React does for content that starts with one. It is written for any content, since the content isn't known yet when the start tag is streamed, so the markup changes (`<pre>x</pre>` renders as `<pre>\nx</pre>`), but not what browsers show. Exact-string snapshots of these tags need an update.
 - #jsxToStream now splits a buffer larger than the chunk size (e.g. from a single large text child or a big #html markup) into chunks of at most 16 KB (without splitting a surrogate pair) instead of sending it as one oversized chunk, so the chunk-size claim holds for every render.
 
