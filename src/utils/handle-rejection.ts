@@ -7,15 +7,20 @@ import { noOp } from "./no-op.js";
 // see attributes-to-string.ts.
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
+// How many levels of plain objects are walked, e.g. `data={{ user: { profile: loadProfile() } }}`.
+// Bounds the walk, so cyclic data (e.g. `data.self = data`) ends without a `seen` set.
+const MAX_OBJECT_DEPTH = 5;
+
 /**
  * Promises start before rendering gets to them and may reject in the meantime.
  * Marks such a rejection as handled, so Node doesn't crash with an unhandled rejection.
  * Whoever awaits the promise later (the renderer or a component) still gets the error.
  *
  * Walks into arrays (from `start` on), Sets and Maps (keys and values), e.g. children like
- * `{[<Header />, ids.map(loadItem)]}` or an array prop. A plain object is only walked when it's the value itself (not nested),
- * e.g. a prop like `data={{ user: loadUser() }}`, so passing large or cyclic data
- * (e.g. rows that reference their parent) to many elements stays cheap and safe.
+ * `{[<Header />, ids.map(loadItem)]}` or an array prop, and into plain objects nested in plain
+ * objects, a few levels deep, e.g. a prop like `data={{ user: { profile: loadProfile() } }}`.
+ * Plain objects in collections aren't walked, so passing large or cyclic data (e.g. rows that
+ * reference their parent) to many elements stays cheap and safe.
  */
 export function handleRejection(value: unknown, start = 0): void {
   if (typeof value !== "object" || value === null) {
@@ -28,14 +33,36 @@ export function handleRejection(value: unknown, start = 0): void {
     forEachInCollection(value, ignoreRejection, start);
   } else if (!isJsxNode(value)) {
     // Elements are skipped, since their props were handled when they were created.
-    const prototype = Object.getPrototypeOf(value);
-    if (prototype === Object.prototype || prototype === null) {
-      const record = value as Record<string, unknown>;
-      for (const key in record) {
-        if (hasOwnProperty.call(record, key)) {
-          forEachItem(record[key], ignoreRejection);
-        }
-      }
+    if (isPlainObject(value)) {
+      handleObject(value as Record<string, unknown>, MAX_OBJECT_DEPTH);
+    }
+  }
+}
+
+function isPlainObject(value: object): boolean {
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+/** Handles the values of a plain object, and of the plain objects nested in it (`depth` levels). */
+function handleObject(record: Record<string, unknown>, depth: number): void {
+  for (const key in record) {
+    if (!hasOwnProperty.call(record, key)) {
+      continue;
+    }
+    const item = record[key];
+    if (
+      depth > 1 &&
+      typeof item === "object" &&
+      item !== null &&
+      !(item instanceof Promise) &&
+      !isCollection(item) &&
+      !isJsxNode(item) &&
+      isPlainObject(item)
+    ) {
+      handleObject(item as Record<string, unknown>, depth - 1);
+    } else {
+      forEachItem(item, ignoreRejection);
     }
   }
 }

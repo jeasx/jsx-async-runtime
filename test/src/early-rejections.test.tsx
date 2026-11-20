@@ -1,7 +1,10 @@
+import { createElement } from "jsx-async-runtime";
+import { strict as assert } from "node:assert";
 import test from "node:test";
 import Timeout from "./components/Timeout.js";
 import { delay } from "./helpers/delay.js";
 import { equal } from "./helpers/equal.js";
+import { renderers } from "./helpers/renderers.js";
 import { rejectAfter } from "./helpers/reject-after.js";
 import { rejects } from "./helpers/rejects.js";
 
@@ -274,5 +277,75 @@ test("promise in an array nested several times rejects while an earlier sibling 
       </div>
     ),
     "shared array",
+  );
+});
+
+// A promise nested two or more levels deep in a plain-object prop must be guarded when the element
+// is created: when rendering ends before it is ever rendered, its rejection is nobody's to handle,
+// so Node would crash with an unhandled rejection.
+
+test("deep promise in an object prop rejects after an earlier sibling threw", () => {
+  const Boom = () => {
+    throw new Error("first");
+  };
+  const Name = ({ data }: { data: { user: { name: Promise<string> } } }) => data.user.name;
+  return rejects(
+    () => (
+      <div>
+        <Boom />
+        <Name data={{ user: { name: rejectAfter(5, "deep boom") } }} />
+      </div>
+    ),
+    "first",
+  );
+});
+
+test("deep promise in an object attribute is handled when the tag is invalid", async () => {
+  // Rendering succeeds, the attribute is dropped with its invalid tag, and no one ever awaits
+  // the promise. Its rejection must still be handled, so it can't crash Node.
+  const markup = await Promise.all(
+    renderers.map((render) =>
+      render(
+        createElement("this tag is invalid!", {
+          "data-user": { profile: { name: rejectAfter(5, "deep boom") } },
+        }),
+      ),
+    ),
+  );
+  assert.deepStrictEqual(markup, ["", ""]);
+  // Give the late rejection the chance to crash the test, like the rejects helper does.
+  await delay(40);
+});
+
+test("promise in a cyclic object prop is handled without looping", () => {
+  const Boom = () => {
+    throw new Error("first");
+  };
+  const Data = (_: { data: object }) => null;
+  return rejects(() => {
+    const data: Record<string, unknown> = { user: { name: rejectAfter(5, "cyclic boom") } };
+    data.self = data;
+    return (
+      <div>
+        <Boom />
+        <Data data={data} />
+      </div>
+    );
+  }, "first");
+});
+
+test("promise in an array nested in an object prop rejects after an earlier sibling threw", () => {
+  const Boom = () => {
+    throw new Error("first");
+  };
+  const Data = (_: { data: object }) => null;
+  return rejects(
+    () => (
+      <div>
+        <Boom />
+        <Data data={{ user: { tags: [rejectAfter(5, "nested boom")] } }} />
+      </div>
+    ),
+    "first",
   );
 });
