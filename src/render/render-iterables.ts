@@ -241,7 +241,14 @@ function readStream(stream: ReadableStream<JSX.Element>): AsyncIterator<JSX.Elem
       return result;
     },
     return: async () => {
-      await reader.cancel();
+      try {
+        await reader.cancel();
+      } finally {
+        // Give the stream back, like next() does once it is used up and like a stream's own
+        // async iterator does. Also when the source's cancel fails. Safe once the cancel
+        // settled, since no read is pending then.
+        reader.releaseLock();
+      }
       return { done: true, value: undefined };
     },
   };
