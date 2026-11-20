@@ -1,14 +1,22 @@
 # Changelog
 
-## Unreleased
+## 3.0.2 - 2026-11-20
 
-- Streams rendered at the same time with the same context object (e.g. a context shared by concurrent requests) took over each other's cancel handling in nested `jsxToString` calls (e.g. from a `this.jsxToString` override): cancelling one stream could fail another with "Stream cancelled", and once a stream ended, a cancel of the other no longer stopped its nested renders. Nested renders now stop only once all streams of their context are cancelled, so one stream never stops another. Giving each stream its own context object is still recommended: a cancelled stream's nested renders may keep running while another stream with its context is live. Sharing a context object between #jsxToStream and a separate #jsxToString call is not supported, since the string render can't tell that it isn't nested in the stream: cancelling the stream fails it too.
-- A `ReadableStream` child stayed locked after it was stopped (e.g. the render failed or the stream reader cancelled), unlike one that was read to the end. It is now unlocked in that case too, like a stream's own async iterator does, also when the source's `cancel` fails or the source itself errors. Since it was cancelled, rendering it again renders nothing.
-- #jsxToStream could hang at full CPU on an endless iterable (e.g. a generator that yields forever) whose items render nothing (e.g. `null`), or whose items a fast reader kept up with in microtasks: the reader's cancel never got a chance to run. A stream render now waits for the event loop once every 1,024 items of an iterable, so a cancel gets through and stops the source. #jsxToString stays sync.
-- Promises nested deeper in plain-object props (e.g. `data={{ user: { profile: loadProfile() } }}`) were only guarded one level deep when the element was created. When rendering never reached them (e.g. an earlier sibling threw), their rejection was unhandled and could crash Node. Plain objects nested in plain objects are now walked up to 5 levels deep (cycle-safe; plain objects in arrays, Sets and Maps are still not walked, so passing large data stays cheap).
-- The HTML parser drops a newline right after the `<pre>`, `<textarea>` and `<listing>` start tags, so a leading newline of their content was lost (e.g. a `<textarea>` value lost it on every save). Write a newline after these start tags, like React does for content that starts with one. It is written for any content, since the content isn't known yet when the start tag is streamed, so the markup changes (`<pre>x</pre>` renders as `<pre>\nx</pre>`), but not what browsers show. Exact-string snapshots of these tags need an update.
-- #jsxToStream now splits a buffer larger than the chunk size (e.g. from a single large text child or a big #html markup) into chunks of at most 16 KB (without splitting a surrogate pair) instead of sending it as one oversized chunk, so the chunk-size claim holds for every render.
-- #jsxToStream asked an async iterable child (e.g. an async generator or a `ReadableStream`) for its next item before sending the markup rendered so far, so work the source does when asked (e.g. a slow synchronous step) delayed that chunk. The markup is now sent first.
+### Changes
+
+- `<pre>`, `<textarea>` and `<listing>` now always get a newline right after the start tag, like React does. Browsers drop the first newline there, so a leading newline of the content was lost before (e.g. a `<textarea>` value on every save). What browsers show doesn't change, but the markup does (`<pre>x</pre>` renders as `<pre>\nx</pre>`), so exact-string snapshots of these tags need an update.
+
+### Streaming
+
+- Chunks are at most 16 KB now, also for a single large text child or big #html markup (surrogate pairs are never split).
+- The markup rendered so far is sent before an async iterable child (e.g. an async generator or a `ReadableStream`) is asked for its next item, so slow work in the source no longer delays it.
+- A cancel now stops an endless iterable (e.g. a generator that yields forever), even when its items render nothing. Before, the render could hang at full CPU. #jsxToString isn't affected and stays sync.
+- A `ReadableStream` child is unlocked again when rendering stops early (the render failed or the reader cancelled), not only when it was read to the end. Since it was cancelled, rendering it again renders nothing.
+- Streams that render at the same time with the same context object (e.g. one shared by concurrent requests) no longer cancel each other's nested #jsxToString calls (e.g. in a `this.jsxToString` override). Still give each stream its own context: while another stream with the same context is live, a cancelled stream's nested renders keep running. A separate #jsxToString call with the context of a live stream is still stopped by that stream's cancel.
+
+### Error handling
+
+- Promises nested up to 5 levels deep in plain-object props (e.g. `data={{ user: { profile: loadProfile() } }}`) are now guarded when the element is created. Before, only the first level was, so a rejection could crash Node when rendering never got to it (e.g. after an earlier sibling threw). Objects inside arrays, Sets and Maps are still not walked, so passing large data stays cheap.
 
 ## 3.0.1 - 2026-11-11
 
