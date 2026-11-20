@@ -12,6 +12,35 @@ import { finishSequence, renderChildren, renderSequenceItem } from "./render-ele
 // in them be handled like in an array.
 const EAGER_ITERATORS = new Set(["Array Iterator", "Map Iterator", "Set Iterator"]);
 
+// How many items of an iterable are rendered before a stream render waits for the event loop
+// (a power of two, see shouldYield()).
+// Without it, an endless iterable whose items render nothing (so nothing flushes or awaits), or
+// whose reader keeps up in microtasks, would starve timers, and a cancel could never get through.
+const YIELD_INTERVAL = 1024;
+
+/**
+ * Checks whether the render should wait for the event loop after `count` items.
+ * Only in a stream (`waits` is set, also for its nested string writers): a cancel can't happen in
+ * a plain `jsxToString`, so it stays sync.
+ */
+function shouldYield(writer: Writer, count: number): boolean {
+  return (count & (YIELD_INTERVAL - 1)) === 0 && writer.waits !== undefined;
+}
+
+/** Waits for the event loop once, so pending timers (e.g. a reader's cancel) can run. */
+function yieldToEventLoop(): Promise<void> {
+  return new Promise((resolve) => {
+    const scope = globalThis as { setImmediate?: (callback: () => void) => unknown };
+    if (typeof scope.setImmediate === "function") {
+      scope.setImmediate(resolve);
+    } else if (typeof setTimeout === "function") {
+      setTimeout(resolve, 0);
+    } else {
+      resolve();
+    }
+  });
+}
+
 /** The progress of reading a lazy iterator or an async iterable. */
 type IteratorState = ByteDecoding & {
   /** Set once the iterator is used up. */
@@ -104,9 +133,13 @@ function renderIterator(
 ): void | Promise<void> {
   const state = createIteratorState();
   try {
+    let count = 0;
     while (!state.done) {
       // Send large sync markup early; continue async if the reader is behind.
-      const pending = renderNextItem.call(this, iterator, state, writer) || flushIfFull(writer);
+      let pending = renderNextItem.call(this, iterator, state, writer) || flushIfFull(writer);
+      if (!isPromise(pending) && !state.done && shouldYield(writer, ++count)) {
+        pending = yieldToEventLoop();
+      }
       if (isPromise(pending)) {
         return renderIteratorAsync.call(this, iterator, state, pending, writer);
       }
@@ -129,6 +162,7 @@ async function renderIteratorAsync(
 ): Promise<void> {
   try {
     await pendingItem;
+    let count = 0;
     while (!state.done) {
       // Don't read more items once the stream reader is gone.
       throwIfCancelled(writer);
@@ -139,6 +173,9 @@ async function renderIteratorAsync(
       const flushed = flushIfFull(writer);
       if (flushed) {
         await flushed;
+      }
+      if (shouldYield(writer, ++count)) {
+        await yieldToEventLoop();
       }
     }
   } catch (error) {
@@ -237,6 +274,7 @@ export async function renderAsyncIterable(
     }
   };
   try {
+    let count = 0;
     while (!state.done) {
       // Don't pull more items once the stream reader is gone.
       throwIfCancelled(writer);
@@ -247,6 +285,9 @@ export async function renderAsyncIterable(
       const pending = renderResult.call(this, result, state, writer);
       if (isPromise(pending)) {
         await pending;
+      }
+      if (shouldYield(writer, ++count)) {
+        await yieldToEventLoop();
       }
     }
   } catch (error) {
